@@ -33,5 +33,32 @@
   "Delivery": "Delivery",
   "AddNewShop": "Add New Shop",
   "Cancel": "Cancel",
-  "Next": "Next"
+  "Next": "Next",
+
+  "_comment_Batch_print": "Batch Print",
+
+  "SelectCategoryForSearch": "Select category for search",
+  "RecipientAddress": "Recipient Address",
+  "OrderSn": "Order Sn",
+  "AccountName": "Account Name",
+  "Product": "Product",
+  "Amount": "Amount",
+  "WaitingForShipment": "Waiting For Shipment",
+  "Shipped": "Shipped",
+  "Search": "Search",
+  "Reset": "Reset",
+  "AddNewTemplate": "Add New Template",
+  "SelectAll": "Select all",
+  "Selected": "selected",
+  "Buyers": "Buyers",
+  "Orders": "Orders",
+  "ImportOrder": "Import Order",
+  "Export": "Export",
+  "CustomerName": "Customer Name",
+  "Address": "Address",
+  "CustomerMark": "Customer Mark",
+  "DeliveryCompany": "Delivery Company",
+  "DeliveryCode": "Delivery Code",
+  "ProductDetails": "Product Details",
+  "OrderAcceptedAndPrint": "Order Accepted & Print"
 }

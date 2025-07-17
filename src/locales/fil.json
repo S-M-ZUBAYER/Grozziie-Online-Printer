@@ -33,5 +33,32 @@
   "Delivery": "Paghahatid",
   "AddNewShop": "Magdagdag ng Bagong Tindahan",
   "Cancel": "Kanselahin",
-  "Next": "Susunod"
+  "Next": "Susunod",
+
+  "_comment_Batch_print": "Batch Print",
+
+  "SelectCategoryForSearch": "Pumili ng kategorya para sa paghahanap",
+  "RecipientAddress": "Address ng Tatanggap",
+  "OrderSn": "Numero ng Order",
+  "AccountName": "Pangalan ng Account",
+  "Product": "Produkto",
+  "Amount": "Halaga",
+  "Waiting For Shipment": "Naghihintay ng Padala",
+  "Shipped": "Naipadala na",
+  "Search": "Maghanap",
+  "Reset": "I-reset",
+  "AddNewTemplate": "Magdagdag ng Bagong Template",
+  "SelectAll": "Piliin lahat",
+  "Selected": "napili",
+  "Buyers": "Mamimili",
+  "Orders": "Mga Order",
+  "ImportOrder": "Mag-import ng Order",
+  "Export": "I-export",
+  "CustomerName": "Pangalan ng Customer",
+  "Address": "Address",
+  "CustomerMark": "Tala ng Customer",
+  "DeliveryCompany": "Kumpanya ng Paghahatid",
+  "DeliveryCode": "Tracking Code",
+  "ProductDetails": "Detalye ng Produkto",
+  "OrderAcceptedAndPrint": "Tinanggap ang Order at I-print"
 }

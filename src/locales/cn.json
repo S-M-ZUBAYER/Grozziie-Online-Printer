@@ -33,5 +33,32 @@
   "Delivery": "配送",
   "AddNewShop": "添加新店铺",
   "Cancel": "取消",
-  "Next": "下一步"
+  "Next": "下一步",
+
+  "_comment_Batch_print": "Batch Print",
+
+  "SelectCategoryForSearch": "选择搜索类别",
+  "RecipientAddress": "收件地址",
+  "OrderSn": "订单编号",
+  "AccountName": "账号名称",
+  "Product": "产品",
+  "Amount": "金额",
+  "Waiting For Shipment": "待发货",
+  "Shipped": "已发货",
+  "Search": "搜索",
+  "Reset": "重置",
+  "AddNewTemplate": "添加新模板",
+  "SelectAll": "全选",
+  "Selected": "已选",
+  "Buyers": "买家",
+  "Orders": "订单",
+  "ImportOrder": "导入订单",
+  "Export": "导出",
+  "CustomerName": "客户名称",
+  "Address": "地址",
+  "CustomerMark": "客户备注",
+  "DeliveryCompany": "物流公司",
+  "DeliveryCode": "物流单号",
+  "ProductDetails": "产品详情",
+  "OrderAcceptedAndPrint": "订单已确认并打印"
 }
