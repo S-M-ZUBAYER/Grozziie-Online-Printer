@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { RxCross1 } from "react-icons/rx";
 import PacmanLoader from "react-spinners/PacmanLoader";
 import FadeLoader from "react-spinners/FadeLoader";
+import { useTranslation } from "react-i18next";
 
 const BatchPrintTable = ({
   filteredData,
@@ -23,6 +24,7 @@ const BatchPrintTable = ({
   const selectedLanguage = useSelector(
     (state) => state.user.selectedLanguageRedux
   );
+  const { t } = useTranslation();
 
   return (
     <div className="mt-6">
@@ -46,15 +48,11 @@ const BatchPrintTable = ({
           <thead className="">
             <tr className="h-11 text-black text-opacity-80 capitalize text-center text-sm font-normal leading-4">
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-l-md">
-                <span className="mr-[10px]">
-                  {selectedLanguage === "zh-CN" ? "账户名称" : "account name"}
-                </span>
+                <span className="mr-[10px]">{t("AccountName")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                <span className="mr-[10px]">
-                  {selectedLanguage === "zh-CN" ? "客户名称" : "customer name"}
-                </span>
+                <span className="mr-[10px]">{t("ReceiverName")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">

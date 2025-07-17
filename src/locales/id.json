@@ -33,5 +33,32 @@
   "Delivery": "Pengiriman",
   "AddNewShop": "Tambah Toko Baru",
   "Cancel": "Batalkan",
-  "Next": "Berikutnya"
+  "Next": "Berikutnya",
+
+  "_comment_Batch_print": "Batch Print",
+
+  "SelectCategoryForSearch": "Pilih kategori untuk pencarian",
+  "RecipientAddress": "Alamat Penerima",
+  "OrderSn": "Nomor Pesanan",
+  "AccountName": "Nama Akun",
+  "Product": "Produk",
+  "Amount": "Jumlah",
+  "Waiting For Shipment": "Menunggu Pengiriman",
+  "Shipped": "Dikirim",
+  "Search": "Cari",
+  "Reset": "Atur Ulang",
+  "AddNewTemplate": "Tambah Template Baru",
+  "SelectAll": "Pilih Semua",
+  "Selected": "dipilih",
+  "Buyers": "Pembeli",
+  "Orders": "Pesanan",
+  "ImportOrder": "Impor Pesanan",
+  "Export": "Ekspor",
+  "CustomerName": "Nama Pelanggan",
+  "Address": "Alamat",
+  "CustomerMark": "Catatan Pelanggan",
+  "DeliveryCompany": "Perusahaan Pengiriman",
+  "DeliveryCode": "Kode Pengiriman",
+  "ProductDetails": "Detail Produk",
+  "OrderAcceptedAndPrint": "Pesanan Diterima & Dicetak"
 }
