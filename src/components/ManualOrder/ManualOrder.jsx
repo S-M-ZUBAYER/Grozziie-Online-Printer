@@ -945,8 +945,9 @@ const ManualOrder = () => {
                     onClick={() => handleToPrevious(currentBar - 1)}
                     title="previous"
                     type="button"
-                    className={`inline-flex items-center justify-center w-8 h-8 py-0 border rounded-md shadow-md bg-white dark:border-gray-800 ${leftPaginationBtn ? "border-black" : ""
-                      } `}
+                    className={`inline-flex items-center justify-center w-8 h-8 py-0 border rounded-md shadow-md bg-white dark:border-gray-800 ${
+                      leftPaginationBtn ? "border-black" : ""
+                    } `}
                   >
                     <svg
                       viewBox="0 0 24 24"
@@ -964,16 +965,18 @@ const ManualOrder = () => {
                     onClick={() => handleToShowCurrentBarData(currentBar)}
                     type="button"
                     title="Page 1"
-                    className={` inline-flex items-center justify-center w-8 h-8 text-sm font-semibold border rounded shadow-md bg-white ${currentBar === showPage ? "text-[#004368]" : ""
-                      }`}
+                    className={` inline-flex items-center justify-center w-8 h-8 text-sm font-semibold border rounded shadow-md bg-white ${
+                      currentBar === showPage ? "text-[#004368]" : ""
+                    }`}
                   >
                     {currentBar}
                   </button>
                   <button
                     onClick={() => handleToShowCurrentBarData(currentBar + 1)}
                     type="button"
-                    className={`text-[#004368] text-opacity-20 inline-flex items-center justify-center w-8 h-8 text-sm border rounded shadow-md bg-white dark:border-gray-800 ${currentBar === showPage ? "text-[#004368]" : ""
-                      } `}
+                    className={`text-[#004368] text-opacity-20 inline-flex items-center justify-center w-8 h-8 text-sm border rounded shadow-md bg-white dark:border-gray-800 ${
+                      currentBar === showPage ? "text-[#004368]" : ""
+                    } `}
                     title="Page 2"
                   >
                     {currentBar + 1 > totalPart ? ".." : currentBar + 1}
@@ -981,8 +984,9 @@ const ManualOrder = () => {
                   <button
                     onClick={() => handleToShowCurrentBarData(currentBar + 2)}
                     type="button"
-                    className={`text-[#004368] text-opacity-20 inline-flex items-center justify-center w-8 h-8 text-sm border rounded shadow-md bg-white dark:border-gray-800 ${currentBar === showPage ? "text-[#004368]" : ""
-                      }`}
+                    className={`text-[#004368] text-opacity-20 inline-flex items-center justify-center w-8 h-8 text-sm border rounded shadow-md bg-white dark:border-gray-800 ${
+                      currentBar === showPage ? "text-[#004368]" : ""
+                    }`}
                     title="Page 3"
                   >
                     {currentBar + 2 > totalPart ? ".." : currentBar + 2}
@@ -991,8 +995,9 @@ const ManualOrder = () => {
                     onClick={() => handleToNext(currentBar + 1)}
                     title="next"
                     type="button"
-                    className={`inline-flex items-center justify-center w-8 h-8 py-0 border rounded-md shadow-md bg-white dark:border-gray-800 ${leftPaginationBtn ? "border-black" : ""
-                      } `}
+                    className={`inline-flex items-center justify-center w-8 h-8 py-0 border rounded-md shadow-md bg-white dark:border-gray-800 ${
+                      leftPaginationBtn ? "border-black" : ""
+                    } `}
                   >
                     <svg
                       viewBox="0 0 24 24"
@@ -1115,9 +1120,9 @@ const ManualOrder = () => {
                             (item) => item?.id === customerData?.id
                           )}
                           onChange={() => handleCheckboxChange(customerData)}
-                        // checked={selectedItems.includes(product.id)}
-                        // onChange={() => handleCheckboxChange(product.id)}
-                        // onClick={() => handleProductCheck(product)}
+                          // checked={selectedItems.includes(product.id)}
+                          // onChange={() => handleCheckboxChange(product.id)}
+                          // onClick={() => handleProductCheck(product)}
                         />
                         <p className="ml-2 text-black text-opacity-80 text-sm font-normal leading-4 capitalize">
                           {customerData?.account_name.length > 10
@@ -1141,7 +1146,7 @@ const ManualOrder = () => {
                           : customerData?.remark}
                       </td>
                       <td className="text-black text-opacity-80 text-sm font-normal leading-4 capitalize">
-                        {customerData?.company_name.length > 15
+                        {customerData?.company_name?.length > 15
                           ? customerData?.company_name.slice(0, 15) + " ..."
                           : customerData?.company_name}
                       </td>
@@ -1199,7 +1204,7 @@ const ManualOrder = () => {
                                           {selectedCustomer?.item_list[0]
                                             ?.goods_name
                                             ? selectedCustomer?.item_list[0]
-                                              ?.goods_name
+                                                ?.goods_name
                                             : "No Data"}
                                         </span>
                                       </h2>
