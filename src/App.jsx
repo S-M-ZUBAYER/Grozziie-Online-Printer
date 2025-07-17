@@ -16,8 +16,12 @@ import { useLoadOrderListMutation } from "./features/allApis/batchPrintApi";
 import { orderListParameter } from "./components/BatchPrint/OrderListParameter";
 import { decryptArrayData } from "./Share/Function/OrderListFunctions";
 import { orderListData } from "./features/slice/orderListSlice";
-import { fetchAvailableWaybills, fetchLogisticCompanies } from "./components/BatchPrint/BatchPrinterFunctions";
+import {
+  fetchAvailableWaybills,
+  fetchLogisticCompanies,
+} from "./components/BatchPrint/BatchPrinterFunctions";
 import { shopDeliveryCompanyList } from "./features/slice/shopDeliveryCompanySlice";
+import { setAllShopList } from "./features/slice/allShopSlice";
 
 function App() {
   const dispatch = useDispatch();
@@ -28,9 +32,7 @@ function App() {
   const [pddAccessToken, setPddAccessToken] = useState(
     localStorage.getItem("pddAccessToken")
   );
-  const [pddMallId, setPddMallId] = useState(
-    localStorage.getItem("pddMallId")
-  );
+  const [pddMallId, setPddMallId] = useState(localStorage.getItem("pddMallId"));
   const [mallId, setMallId] = useState(null);
   const [mallError, setMallError] = useState(null);
   useEffect(() => {
@@ -39,7 +41,39 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {
+    fetch(
+      "https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/shops/authorizedShops"
+    )
+      .then((response) => {
+        console.log(response, "this is tiktok response");
 
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+          console.log("Fetching TikTok Shop authorized shops...");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("API Response:", data);
+        console.log("Fetching TikTok Shop authorized shops...");
+
+        if (data?.data?.shops) {
+          localStorage.setItem(
+            "tiktokShopInfo",
+            JSON.stringify(data.data.shops)
+          );
+          dispatch(setAllShopList(data.data.shops));
+
+          console.log("Shops saved to localStorage.");
+        } else {
+          console.warn("No shops found in API response.");
+        }
+      })
+      .catch((error) => {
+        console.error("There was a problem with the fetch operation:", error);
+      });
+  }, []);
   // Temporary add the feature to get all available express company
   const [deliveryCompanyName, setDeliveryCompanyName] = useState([]);
   const [shopDeliveryCompanyName, setShopDeliveryCompanyName] = useState([]);
@@ -84,7 +118,6 @@ function App() {
     fetchCompanies(); // Call the function to fetch companies
   }, []);
 
-
   // Fetch order list data
   useEffect(() => {
     const fetchData = async () => {
@@ -112,7 +145,7 @@ function App() {
               const filteredOrderList = orderList.filter(
                 (item) => item.address !== ""
               );
-              console.log(filteredOrderList, "initial data")
+              console.log(filteredOrderList, "initial data");
               setOrderListDataEncrypt(filteredOrderList.slice(0, 2));
               // If you need to dispatch the filtered list, uncomment below
               // dispatch(orderListData(filteredOrderList));
@@ -154,10 +187,11 @@ function App() {
     }
   };
 
-
   const fetchMallIdData = async (PddToken) => {
     try {
-      const response = await fetch(`https://grozziieget.zjweiting.com:3091/GrozziiePrint-WebAPI/mall/info?accessToken=${PddToken}`);
+      const response = await fetch(
+        `https://grozziieget.zjweiting.com:3091/GrozziiePrint-WebAPI/mall/info?accessToken=${PddToken}`
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -172,7 +206,6 @@ function App() {
       setMallError(error.message);
     }
   };
-
 
   const decryptAndDispatchOrderList = async () => {
     try {
@@ -191,37 +224,6 @@ function App() {
   useEffect(() => {
     decryptAndDispatchOrderList();
   }, [orderListDataEncrypt]);
-
-  // Handle URL code parameter and fetch token
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const codeParam = urlParams.get("code");
-    // const codeParam =  "7ddfbed58c504537b51cf5c859a58121198a58f5";
-
-    if (codeParam) {
-      setCode(codeParam);
-      fetch(
-        // `https://grozziieget.zjweiting.com:3091/GrozziiePrint-WebAPI/token?code=${codeParam}`
-        `https://grozziieget.zjweiting.com:3091/GrozziiePrint-WebAPI/token/code_refresh_token?code=${codeParam}`
-      )
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          localStorage.setItem("pddAccessToken", data.access_token);
-          setApiResponse(data);
-          fetchData();
-          fetchMallIdData(data.access_token);
-        })
-        .catch((error) => {
-          console.error("There was a problem with the fetch operation:", error);
-        });
-    }
-  }, []);
-
 
   // Fetch user data with token
   // const fetchUserData = async () => {
