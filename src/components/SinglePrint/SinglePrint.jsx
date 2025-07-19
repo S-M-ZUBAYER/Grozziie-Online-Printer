@@ -23,6 +23,7 @@ import toast from "react-hot-toast";
 import { orderListData } from "../../features/slice/orderListSlice";
 import PropagateLoader from "react-spinners/PropagateLoader";
 import FadeLoader from "react-spinners/FadeLoader";
+import { useTranslation } from "react-i18next";
 
 const logoOptions = ["Homer", "Marge", "Bart", "Lisa", "Maggie"];
 const bannerOptions = ["Homer", "Marge", "Bart", "Lisa", "Maggie"];
@@ -31,6 +32,8 @@ const billOptions = ["Homer", "Marge", "Bart", "Lisa", "Maggie"];
 const SinglePrint = () => {
   const orderListDataGet = useSelector((state) => state.orderList.data);
   const dispatch = useDispatch();
+
+  const { t } = useTranslation();
 
   const [refundStatusCheck, setRefundStatusCheck] = useState(
     "Waiting For Shipment"
@@ -53,8 +56,8 @@ const SinglePrint = () => {
       refundStatusCheck === "Waiting For Shipment"
         ? orderListDataGet
         : refundStatusCheck === "shipped"
-          ? printedData
-          : [];
+        ? printedData
+        : [];
     currentClient = data && data[0]?.order_sn;
     dispatch(
       checkedItemsChange({ items: data && [data[0]], from: refundStatusCheck })
@@ -405,7 +408,7 @@ const SinglePrint = () => {
               <div className="ml-4 flex items-center">
                 <RiContactsLine className="mr-[9px] w-6 h-4 text-[#004368]" />
                 <p className="text-[#004368] text-base font-bold capitalize">
-                  {selectedLanguage === "zh-CN" ? "客户名单" : "Customer list"}
+                  {t("CustomerList")}
                 </p>
               </div>
               <ul className="ml-8 mt-3 max-h-[590px] overflow-y-auto">
@@ -415,9 +418,7 @@ const SinglePrint = () => {
                   <div className="flex flex-col items-center justify-center py-28">
                     <FadeLoader color="#004368" size={25} />
                     <p className="text-xs font-medium pt-10 text-[#004368]">
-                      {selectedLanguage === "zh-CN"
-                        ? "数据正在加载，请稍候..."
-                        : "Data is Loading. Please Wait..."}
+                      {t("DataLoading")}
                     </p>
                   </div>
                 ) : (
@@ -425,13 +426,14 @@ const SinglePrint = () => {
                     <li
                       key={index}
                       onClick={() => handleToSelectCustomer(client)}
-                      className={`text-black opacity-80 text-sm font-light capitalize pb-2 cursor-pointer ${active === client?.order_sn &&
+                      className={`text-black opacity-80 text-sm font-light capitalize pb-2 cursor-pointer ${
+                        active === client?.order_sn &&
                         "text-[#004368] font-medium text-[15px]"
-                        }`}
+                      }`}
                     >
                       {client?.receiver_name
                         ? client?.receiver_name
-                        : "No Name"}
+                        : t("NoData")}
                     </li>
                   ))
                 )}
@@ -446,17 +448,17 @@ const SinglePrint = () => {
               <div className="col-span-1">
                 <p className="text-[#004368] text-sm font-medium capitalize">
                   {/* waiting for shipment */}
-                  {refundStatusCheck}
+                  {t(refundStatusCheck)}
                 </p>
               </div>
               {/* this data coming from server and data dynamic */}
               <div className="col-span-1 flex items-center justify-center">
                 <p className="text-black opacity-40 text-sm font-medium capitalize">
-                  500 {selectedLanguage === "zh-CN" ? "买家" : "buyers"}
+                  500 {t("Orders")}
                 </p>
                 <div className="w-[1px] h-8 bg-black opacity-40 mx-2"></div>
                 <p className="text-black opacity-40 text-sm font-medium capitalize">
-                  700 {selectedLanguage === "zh-CN" ? "订单" : "orders"}
+                  700 {t("Orders")}
                 </p>
               </div>
               {/* here need to add button onclik for cheage page and dynamic data add from excel */}
@@ -472,7 +474,7 @@ const SinglePrint = () => {
                   onClick={handleImportOrderClick}
                   className="text-[#004368] text-sm font-normal capitalize cursor-pointer"
                 >
-                  {selectedLanguage === "zh-CN" ? "导入订单" : "Import Order"}
+                  {t("ImportOrder")}
                 </p>
               </div>
 
@@ -488,11 +490,9 @@ const SinglePrint = () => {
                 </Link> */}
                 <button
                   onClick={handleBatchPrinterExcelClick}
-                  className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[115px] h-10 px-8 py-2 rounded-md cursor-pointer"
+                  className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto h-10 px-8 py-2 rounded-md  text-[15px] font-medium capitalize cursor-pointer"
                 >
-                  <p className="text-[15px] font-medium capitalize cursor-pointer">
-                    {selectedLanguage === "zh-CN" ? "导出" : "Export"}
-                  </p>
+                  {t("Export")}
                 </button>
               </div>
             </div>
@@ -503,50 +503,34 @@ const SinglePrint = () => {
                 <thead className="">
                   <tr className="h-11 text-black text-opacity-80 capitalize text-center text-sm font-light">
                     <th className="sticky top-0 flex justify-between bg-[#0043681A] bg-opacity-80 rounded-l-md">
-                      <span className="mr-[10px]">
-                        {selectedLanguage === "zh-CN" ? "姓名" : "Name"}
-                      </span>
+                      <span className="mr-[10px]">{t("Name")}</span>
                       <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                     </th>
                     <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                      <span className="mr-[10px]">
-                        {selectedLanguage === "zh-CN" ? "数量" : "Quantity"}
-                      </span>
+                      <span className="mr-[10px]">{t("Quantity")}</span>
                       <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                     </th>
                     <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                      <span className="mr-[10px]">
-                        {selectedLanguage === "zh-CN"
-                          ? "收件人姓名"
-                          : "Recipient Name"}
-                      </span>
+                      <span className="mr-[10px]">{t("RecipientName")}</span>
                       <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                     </th>
                     <th
                       className="sticky top-0 bg-[#0043681A] bg-opac
                     ity-80"
                     >
-                      <span className="mr-[10px]">
-                        {selectedLanguage === "zh-CN" ? "地址" : "Address"}
-                      </span>
+                      <span className="mr-[10px]">{t("Address")}</span>
                       <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                     </th>
                     <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                      <span className="mr-[10px]">
-                        {selectedLanguage === "zh-CN" ? "信息" : "Message"}
-                      </span>
+                      <span className="mr-[10px]">{t("Message")}</span>
                       <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                     </th>
                     <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                      <span className="mr-[10px]">
-                        {selectedLanguage === "zh-CN"
-                          ? "交付模板"
-                          : "Delivery Template"}
-                      </span>
+                      <span className="mr-[10px]">{t("DeliveryTemplate")}</span>
                       <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                     </th>
                     <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-r-lg">
-                      {selectedLanguage === "zh-CN" ? "追踪" : "Tracking"}
+                      {t("Tracking")}
                     </th>
                   </tr>
                 </thead>
@@ -560,37 +544,37 @@ const SinglePrint = () => {
                       <td className="text-black text-sm font-light capitalize">
                         {selectedClient?.receiver_name_mask
                           ? selectedClient?.receiver_name_mask
-                          : "No Data"}
+                          : t("NoData")}
                       </td>
                       <td className="text-black text-sm font-light capitalize">
                         {selectedClient?.item_list?.[0]?.goods_count
                           ? selectedClient?.item_list?.[0]?.goods_count
-                          : "No Data"}
+                          : t("NoData")}
                       </td>
                       <td className="text-black text-sm font-light capitalize">
                         {selectedClient?.receiver_name
                           ? selectedClient?.receiver_name
-                          : "No Data"}
+                          : t("NoData")}
                       </td>
                       <td className="text-black text-sm font-light capitalize">
                         {selectedClient?.receiver_address
                           ? selectedClient?.receiver_address
-                          : "No Data"}
+                          : t("NoData")}
                       </td>
                       <td className="text-black text-sm font-light capitalize">
                         {selectedClient?.remark
                           ? selectedClient?.remark
-                          : "No Data"}
+                          : t("NoData")}
                       </td>
                       <td className="text-black text-sm font-light capitalize">
                         {selectedClient?.delivery_one_day
-                          ? "Express"
-                          : "Regular"}
+                          ? t("Express")
+                          : t("Regular")}
                       </td>
                       <td className="text-black text-sm font-light capitalize">
                         {selectedClient?.tracking_number
                           ? selectedClient?.tracking_number
-                          : "No Data"}
+                          : t("NoData")}
                       </td>
                     </tr>
                   )}
@@ -603,93 +587,69 @@ const SinglePrint = () => {
                   <div>
                     <div className="flex items-center mb-[10px]">
                       <p className="text-black text-[15px] font-medium capitalize">
-                        {selectedLanguage === "zh-CN"
-                          ? "收件人姓名："
-                          : "Recipient Name:"}
+                        {t("RecipientName")}
                       </p>
                       <p className="text-black text-[15px] font-light capitalize ml-3">
                         {selectedClient?.receiver_name
                           ? selectedClient?.receiver_name
-                          : selectedLanguage === "zh-CN"
-                            ? "没有数据"
-                            : "No Data"}
+                          : t("NoData")}
                       </p>
                     </div>
                     <div className="flex items-center mb-[10px]">
                       <p className="text-black text-[15px] font-medium capitalize">
-                        {selectedLanguage === "zh-CN"
-                          ? "联系电话："
-                          : "Contact Number:"}
+                        {t("ContactNumber")}
                       </p>
                       <p className="text-black text-[15px] font-light capitalize ml-3">
                         {selectedClient?.receiver_phone
                           ? selectedClient?.receiver_phone
-                          : selectedLanguage === "zh-CN"
-                            ? "没有数据"
-                            : "No Data"}
+                          : t("NoData")}
                       </p>
                     </div>
                     <div className="flex items-center mb-[10px]">
                       <p className="text-black text-[15px] font-medium capitalize">
-                        {selectedLanguage === "zh-CN" ? "地址:" : "Address:"}
+                        {t("Address")}
                       </p>
                       <p className="text-black text-[15px] font-light capitalize ml-3">
                         {selectedClient?.receiver_address
                           ? selectedClient?.receiver_address
-                          : selectedLanguage === "zh-CN"
-                            ? "没有数据"
-                            : "No Data"}
+                          : t("NoData")}
                       </p>
                     </div>
                     <div className="flex items-center">
                       <p className="text-black text-[15px] font-medium capitalize">
-                        {selectedLanguage === "zh-CN"
-                          ? "订货时间:"
-                          : "Order Time:"}
+                        {t("OrderTime")}
                       </p>
                       <p className="text-black text-[15px] font-light capitalize ml-3">
                         {selectedClient?.confirm_time
                           ? selectedClient?.confirm_time
-                          : selectedLanguage === "zh-CN"
-                            ? "没有数据"
-                            : "No Data"}
+                          : t("NoData")}
                       </p>
                     </div>
                   </div>
                   <div className="">
                     <div className="flex items-center mb-[10px]">
                       <p className="text-black text-[15px] font-medium capitalize">
-                        {selectedLanguage === "zh-CN"
-                          ? "固定电话:"
-                          : "Fixed Telephone:"}
+                        {t("FixedTelephone")}
                       </p>
                       <p className="text-black text-[15px] font-light capitalize ml-3">
                         {selectedClient?.receiver_phone
                           ? selectedClient?.receiver_phone
-                          : selectedLanguage === "zh-CN"
-                            ? "没有数据"
-                            : "No Data"}
+                          : t("NoData")}
                       </p>
                     </div>
                     <div className="flex items-center mb-[10px]">
                       <p className="text-black text-[15px] font-medium capitalize">
-                        {selectedLanguage === "zh-CN"
-                          ? "运货时间："
-                          : "Shipping Time:"}
+                        {t("ShippingTime")}
                       </p>
                       <p className="text-black text-[15px] font-light capitalize ml-3">
                         {selectedClient?.last_ship_time
                           ? selectedClient?.last_ship_time
-                          : selectedLanguage === "zh-CN"
-                            ? "没有数据"
-                            : "No Data"}
+                          : t("NoData")}
                       </p>
                     </div>
                     <div className="flex items-center mb-[10px]">
                       <p className="text-black text-[15px] font-medium capitalize">
-                        {selectedLanguage === "zh-CN"
-                          ? "总金额："
-                          : "Total Amount:"}
+                        {t("TotalAmount")}
                       </p>
                       <p className="text-black text-[15px] font-light capitalize ml-3">
                         <span>
@@ -702,9 +662,7 @@ const SinglePrint = () => {
                     </div>
                     <div className="flex items-center">
                       <p className="text-black text-[15px] font-medium capitalize">
-                        {selectedLanguage === "zh-CN"
-                          ? "收到付款："
-                          : "Received Payment:"}
+                        {t("ReceivedPayment")}
                       </p>
                       <p className="text-black text-[15px] font-light capitalize ml-3">
                         <span>
@@ -720,20 +678,16 @@ const SinglePrint = () => {
                 {/* body middle */}
                 <div className="my-5 flex items-center gap-2">
                   <input
-                    placeholder={
-                      selectedLanguage === "zh-CN" ? "信息" : "Message"
-                    }
+                    placeholder={t("Message")}
                     className="w-[330px] h-10 rounded-md p-2 bg-[#0043681A] focus:outline-none"
                   />
                   <input
-                    placeholder={
-                      selectedLanguage === "zh-CN" ? "评论" : "Remark"
-                    }
+                    placeholder={t("Remark")}
                     className="w-[250px] h-10 rounded-md p-2 bg-[#0043681A] focus:outline-none"
                   />
                   <select className="h-10 rounded-md outline-none text-[#00000099] font-normal text-[15px] capitalize px-[15px] py-2 text-center inline-flex items-center bg-[#0043681A] ">
                     <option disabled selected>
-                      {selectedLanguage === "zh-CN" ? "标识" : "Logo"}
+                      {t("Logo")}
                     </option>
                     {logoOptions.map((status, index) => (
                       <option key={index} value={status}>
@@ -743,7 +697,7 @@ const SinglePrint = () => {
                   </select>
                   <select className="w-[180px] h-10 rounded-md outline-none text-[#00000099] font-normal text-[15px] capitalize px-[15px] py-2 text-center inline-flex items-center bg-[#0043681A] ">
                     <option disabled selected>
-                      {selectedLanguage === "zh-CN" ? "横幅" : "Banner"}
+                      {t("Banner")}
                     </option>
                     {bannerOptions.map((status, index) => (
                       <option key={index} value={status}>
@@ -753,7 +707,7 @@ const SinglePrint = () => {
                   </select>
                   <select className="w-[180px] h-10 rounded-md outline-none text-[#00000099] font-normal text-[15px] capitalize px-[15px] py-2 text-center inline-flex items-center bg-[#0043681A] ">
                     <option disabled selected>
-                      {selectedLanguage === "zh-CN" ? "账单" : "Bill"}
+                      {t("Bill")}
                     </option>
                     {billOptions.map((status, index) => (
                       <option key={index} value={status}>
@@ -778,13 +732,11 @@ const SinglePrint = () => {
                     </div>
                     <div className="ml-4">
                       <p className="text-[#004368] text-[15px] font-bold leading-normal capitalize mb-4">
-                        {selectedLanguage === "zh-CN"
-                          ? "产品详情"
-                          : "Product Details"}
+                        {t("ProductDetails")}
                       </p>
                       <div className="flex items-center mb-[10px]">
                         <p className="text-black text-[15px] font-medium capitalize">
-                          {selectedLanguage === "zh-CN" ? "价格：" : "Price:"}
+                          {t("Price")}
                         </p>
                         <p className="text-black text-[15px] font-light capitalize ml-3">
                           {selectedClient?.item_list?.[0]?.goods_price
@@ -795,9 +747,7 @@ const SinglePrint = () => {
                       </div>
                       <div className="flex items-center mb-[10px]">
                         <p className="text-black text-[15px] font-medium capitalize">
-                          {selectedLanguage === "zh-CN"
-                            ? "项目编号："
-                            : "Item Number:"}
+                          {t("ItemNumber")}
                         </p>
                         <p className="text-black text-[15px] font-light capitalize ml-3">
                           {selectedClient?.item_list?.[0]?.goods_spec}
@@ -805,30 +755,22 @@ const SinglePrint = () => {
                       </div>
                       <div className="flex items-center mb-[10px]">
                         <p className="text-black text-[15px] font-medium capitalize">
-                          {selectedLanguage === "zh-CN"
-                            ? "销售属性："
-                            : "Sales Attributes:"}
+                          {t("SalesAttributes")}
                         </p>
                         <p className="text-black text-[15px] font-light capitalize ml-3">
-                          {selectedLanguage === "zh-CN"
-                            ? "一年保修"
-                            : "One Year Warranty"}
+                          {t("OneYearWarranty")}
                         </p>
                         <div className="flex items-center ml-[135px]">
                           <p className="text-black text-[15px] font-medium capitalize">
-                            {selectedLanguage === "zh-CN" ? "颜色：" : "Color:"}
+                            {t("Color")}
                           </p>
                           <p className="text-black text-[15px] font-light capitalize ml-3">
-                            {selectedLanguage === "zh-CN"
-                              ? "蓝白色"
-                              : "Blue, White"}
+                            {t("BlueWhite")}
                           </p>
                         </div>
                         <div className="flex items-center ml-[60px] mb-[10px]">
                           <p className="text-black text-[15px] font-medium capitalize">
-                            {selectedLanguage === "zh-CN"
-                              ? "数量："
-                              : "Quantity:"}
+                            {t("Quantity")}
                           </p>
                           <p className="text-black text-[15px] font-light capitalize ml-3">
                             {selectedClient?.item_list?.[0]?.goods_count}
@@ -849,24 +791,20 @@ const SinglePrint = () => {
         <div className="flex items-center justify-end">
           <Link
             to="/manualorder"
-            className="w-52 h-10 bg-white text-[#004368] rounded-md border flex items-center justify-center hover:bg-[#004368] hover:text-white p-2"
+            className="w-auto h-10 bg-white text-[#004368] rounded-md border flex items-center justify-center hover:bg-[#004368] hover:text-white p-2"
           >
             <FaEdit className="w-4 h-4" />
-            <span className="text-[15px] font-medium leading-normal capitalize pl-2">
-              {selectedLanguage === "zh-CN"
-                ? "创建手动订单"
-                : "Create manual order"}
+            <span className="text-[15px] font-medium leading-normal capitalize pl-2 whitespace-nowrap">
+              {t("CreateManualOrder")}
             </span>
           </Link>
           <Link
             to="/batchprintexpressdelivery"
-            className="w-52 h-10 bg-white text-[#004368]  hover:bg-[#004368] hover:text-white rounded-md border flex items-center justify-center p-2 ml-3"
+            className="w-auto h-10 bg-white text-[#004368]  hover:bg-[#004368] hover:text-white rounded-md border flex items-center justify-center p-2 ml-3"
           >
             <MdOutlineLocalPrintshop className="w-[18px] h-[18px]" />
-            <span className="text-[15px] font-medium leading-normal capitalize pl-1 hover:text-white">
-              {selectedLanguage === "zh-CN"
-                ? "打印快递"
-                : "print express delivery"}
+            <span className="text-[15px] font-medium leading-normal capitalize pl-1 hover:text-white whitespace-nowrap">
+              {t("PrintExpressDelivery")}
             </span>
           </Link>
           {/* <button className="w-52 h-10 bg-white text-[#004368]  hover:bg-[#004368] hover:text-white rounded-md border flex items-center p-2 ml-3">
