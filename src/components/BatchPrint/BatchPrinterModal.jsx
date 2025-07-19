@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import FadeLoader from "react-spinners/FadeLoader";
 import { useSetStoreDeliveryCompaniesListMutation } from "../../features/allApis/storeDeliveryCompanyListApi";
 import { generateRandomNumberWithTime } from "../../Share/Function/FunctionalComponent";
+import { useTranslation } from "react-i18next";
 
 const BatchPrinterModal = () => {
   const [loading, setLoading] = useState(false);
@@ -25,6 +26,7 @@ const BatchPrinterModal = () => {
   const [selectedWp_code, setSelectedWp_code] = useState("");
   const [showImgLoading, setShowImgLoading] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const { t } = useTranslation();
 
   // show the specific model functionalities
   const [selectedModel, setSelectedModel] = useState("");
@@ -40,7 +42,6 @@ const BatchPrinterModal = () => {
     e.preventDefault();
     document.getElementById("my_modal_BatchPrint").close();
   };
-
 
   console.log(previewImg, "preview image");
 
@@ -469,7 +470,7 @@ const BatchPrinterModal = () => {
         <button className="text-[15px] font-medium capitalize flex items-center justify-between">
           <FaPlus className="w-[14px] h-[14px]" />
           <span className="pl-4 text-sm font-medium capitalize">
-            {selectedLanguage === "zh-CN" ? "添加新模板" : "Add New Template"}
+            {t("AddNewTemplate")}
           </span>
         </button>
       </button>
@@ -477,9 +478,7 @@ const BatchPrinterModal = () => {
       <dialog id="my_modal_BatchPrint" className="modal">
         <div className="bg-white rounded-2xl w-[1100px] h-[850px] pt-10">
           <h3 className="text-[#004368] font-bold text-lg mx-10">
-            {selectedLanguage === "zh-CN"
-              ? "选择公司名称"
-              : "Select Company Name"}
+            {t("SelectCompanyName")}
           </h3>
           <div className="grid grid-cols-5 gap-1">
             <div className="col-span-2">
@@ -501,7 +500,7 @@ const BatchPrinterModal = () => {
 
               <div className=" mx-10">
                 <p className="text-[#004368] text-xl font-semibold leading-normal capitalize mb-3 text-start">
-                  {selectedLanguage === "zh-CN" ? "模型列表" : "model list"}
+                  {t("ModelList")}
                 </p>
                 <div className="grid grid-cols-12 max-h-[549px]">
                   {/* left side */}
@@ -513,11 +512,12 @@ const BatchPrinterModal = () => {
                           <button onClick={() => handleToSelectModel(model)}>
                             <div className="bg-[#004368] bg-opacity-10 w-[251px] mx-auto h-[0.5px] mb-2"></div>
                             <p
-                              className={`pl-8 pt-2 mb-2 cursor-pointer text-start ${selectedModel?.standard_template_id ===
+                              className={`pl-8 pt-2 mb-2 cursor-pointer text-start ${
+                                selectedModel?.standard_template_id ===
                                 model?.standard_template_id
-                                ? "font-semibold text-[#004368]"
-                                : ""
-                                }`}
+                                  ? "font-semibold text-[#004368]"
+                                  : ""
+                              }`}
                             >
                               {model?.standard_template_name}
                             </p>
@@ -534,7 +534,7 @@ const BatchPrinterModal = () => {
                       className="w-[182px] mt-8  bg-[#004368] text-white  text-center text-[15px] leading-normal font-semibold rounded-md hover:bg-[#004368] hover:bg-opacity-30 hover:text-black py-2 mr-5"
                       onClick={() => handleToFinalPreview()}
                     >
-                      {selectedLanguage === "zh-CN" ? "预览" : "Preview"}
+                      {t("Preview")}
                     </button>
                   </div>
                 </div>
@@ -543,13 +543,11 @@ const BatchPrinterModal = () => {
               <div className=" mt-8 ">
                 <div className="text-left ml-8">
                   <p>
-                    {selectedLanguage === "zh-CN"
-                      ? "模板名称："
-                      : "Template Name:"}
+                    {t("TemplateName")}
                     {selectedModel?.standard_template_name}
                   </p>
                   <p>
-                    {selectedLanguage === "zh-CN" ? "WP 代码:" : "WP Code:"}
+                    {t("WPCode")}
                     {selectedWp_code}
                   </p>
                   <CovertImage
@@ -584,20 +582,14 @@ const BatchPrinterModal = () => {
                   className="bg-[#004368] bg-opacity-30 hover:bg-[#004368] text-black hover:text-white w-[100px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mt-5 mr-3"
                   onClick={handleCloseModal}
                 >
-                  {selectedLanguage === "zh-CN" ? "关闭" : "Close"}
+                  {t("Close")}
                 </p>
                 <button
                   onClick={handleToStoreTemplate}
                   className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[100px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mt-5"
                   type="submit"
                 >
-                  {selectedLanguage === "zh-CN"
-                    ? loading
-                      ? "Loading"
-                      : "存储"
-                    : loading
-                      ? "Loading"
-                      : "Store"}
+                  {loading ? t("Loading") : t("Store")}
                 </button>
               </div>
             </div>

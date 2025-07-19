@@ -27,8 +27,12 @@ import { orderListData } from "../../features/slice/orderListSlice";
 import ConfirmationModal from "../../Share/ConfirmationModal";
 import { TiInfoOutline } from "react-icons/ti";
 import { AiOutlineCheckCircle } from "react-icons/ai";
-import { fetchAvailableWaybills, fetchLogisticCompanies } from "./BatchPrinterFunctions";
+import {
+  fetchAvailableWaybills,
+  fetchLogisticCompanies,
+} from "./BatchPrinterFunctions";
 import { shopDeliveryCompanyList } from "../../features/slice/shopDeliveryCompanySlice";
+import { useTranslation } from "react-i18next";
 
 const BatchPrint = () => {
   const [selectAll, setSelectAll] = useState(false);
@@ -40,6 +44,8 @@ const BatchPrint = () => {
   const [refundStatusCheck, setRefundStatusCheck] = useState(
     "Waiting For Shipment"
   );
+  const { t } = useTranslation();
+
   const [searchFields, setSearchFields] = useState({
     RecipientAddress: "",
     isActiveRecipientAddress: "",
@@ -127,7 +133,6 @@ const BatchPrint = () => {
     // Usage:
     storeDecryptedOrderList(loadOrderList);
   }, [loadOrderList]);
-
 
   // start the functionalities to get all express delivery company list
   // call the function with useEffect to get the the company name list
@@ -221,16 +226,13 @@ const BatchPrint = () => {
     data?.slice(0, 5)
   );
 
-
-
-
   const calculateTotalPart = () => {
     data =
       refundStatusCheck === "Waiting For Shipment"
         ? totalOrderData
         : refundStatusCheck === "shipped"
-          ? printedData
-          : [];
+        ? printedData
+        : [];
     return Math.ceil((data || []).length / 5);
   };
   const [totalPart, setTotalPart] = useState(calculateTotalPart());
@@ -250,8 +252,7 @@ const BatchPrint = () => {
     if (totalPart <= 1) {
       setLeftPaginationBtn(false);
       setRightPaginationBtn(false);
-    }
-    else {
+    } else {
       setLeftPaginationBtn(false);
       setRightPaginationBtn(true);
     }
@@ -271,8 +272,8 @@ const BatchPrint = () => {
         refundStatusCheck === "Waiting For Shipment"
           ? totalOrderData
           : refundStatusCheck === "shipped"
-            ? printedData
-            : [];
+          ? printedData
+          : [];
       const currentData = count * 5;
       // setCurrentCustomerData(data?.slice(currentData - 5, currentData));
       // setFilteredData(customersData?.slice(currentData - 5, currentData));
@@ -287,8 +288,8 @@ const BatchPrint = () => {
       refundStatusCheck === "Waiting For Shipment"
         ? totalOrderData
         : refundStatusCheck === "shipped"
-          ? printedData
-          : [];
+        ? printedData
+        : [];
 
     if (count <= totalPart) {
       if (count > 1) {
@@ -311,15 +312,14 @@ const BatchPrint = () => {
     }
   };
 
-
   // pagination prev option
   const handleToPrevious = (count) => {
     const data =
       refundStatusCheck === "Waiting For Shipment"
         ? totalOrderData
         : refundStatusCheck === "shipped"
-          ? printedData
-          : [];
+        ? printedData
+        : [];
 
     if (count > 0) {
       if (count === 1) {
@@ -341,7 +341,6 @@ const BatchPrint = () => {
       setLeftPaginationBtn(false);
     }
   };
-
 
   // details modal functionality
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -667,12 +666,12 @@ const BatchPrint = () => {
                 for="selectAll"
                 className="text-black opacity-80 text-sm font-normal capitalize pl-2 pr-1"
               >
-                {selectedLanguage === "zh-CN" ? "全选" : "select all"}
+                {t("SelectAll")}
               </label>
               {/* this data coming from dynamic when items selected */}
 
               <span className="text-black opacity-80 text-xs font-light capitalize">
-                ({checkedItems?.length} selected)
+                ({checkedItems?.length} {t("Selected")})
               </span>
             </div>
 
@@ -682,17 +681,17 @@ const BatchPrint = () => {
                 {/* {selectedLanguage === "zh-CN"
                   ? "等待发货"
                   : "waiting for shipment"} */}
-                {refundStatusCheck}
+                {t(refundStatusCheck)}
               </p>
             </div>
 
             <div className="col-span-1 flex items-center justify-center">
               <p className="text-black opacity-40 text-sm font-medium capitalize">
-                500 {selectedLanguage === "zh-CN" ? "买家" : "buyers"}
+                500 {t("Buyers")}
               </p>
               <div className="w-[1px] h-8 bg-black opacity-40 mx-2"></div>
               <p className="text-black opacity-40 text-sm font-medium capitalize">
-                700 {selectedLanguage === "zh-CN" ? "订单" : "orders"}
+                700 {t("Orders")}
               </p>
             </div>
 
@@ -714,7 +713,7 @@ const BatchPrint = () => {
                 onClick={handleImportOrderClick}
                 className="text-[#004368] text-sm font-normal capitalize cursor-pointer"
               >
-                {selectedLanguage === "zh-CN" ? "导入订单" : "Import Order"}
+                {t("ImportOrder")}
               </p>
             </div>
 
@@ -725,7 +724,9 @@ const BatchPrint = () => {
                     onClick={() => handleToPrevious(currentBar - 1)}
                     title="previous"
                     type="button"
-                    className={`inline-flex items-center justify-center w-8 h-8 py-0 border rounded-md shadow-md bg-white dark:border-gray-800 ${leftPaginationBtn ? "border-black" : ""} `}
+                    className={`inline-flex items-center justify-center w-8 h-8 py-0 border rounded-md shadow-md bg-white dark:border-gray-800 ${
+                      leftPaginationBtn ? "border-black" : ""
+                    } `}
                   >
                     <svg
                       viewBox="0 0 24 24"
@@ -743,16 +744,18 @@ const BatchPrint = () => {
                     onClick={() => handleToShowCurrentBarData(currentBar)}
                     type="button"
                     title="Page 1"
-                    className={` inline-flex items-center justify-center w-8 h-8 text-sm font-semibold border rounded shadow-md bg-white ${currentBar === showPage ? "text-[#004368]" : ""
-                      }`}
+                    className={` inline-flex items-center justify-center w-8 h-8 text-sm font-semibold border rounded shadow-md bg-white ${
+                      currentBar === showPage ? "text-[#004368]" : ""
+                    }`}
                   >
                     {currentBar}
                   </button>
                   <button
                     onClick={() => handleToShowCurrentBarData(currentBar + 1)}
                     type="button"
-                    className={`text-[#004368] text-opacity-20 inline-flex items-center justify-center w-8 h-8 text-sm border rounded shadow-md bg-white dark:border-gray-800  ${currentBar === showPage ? "text-[#004368]" : ""
-                      } `}
+                    className={`text-[#004368] text-opacity-20 inline-flex items-center justify-center w-8 h-8 text-sm border rounded shadow-md bg-white dark:border-gray-800  ${
+                      currentBar === showPage ? "text-[#004368]" : ""
+                    } `}
                     title="Page 2"
                   >
                     {currentBar + 1 > totalPart ? ".." : currentBar + 1}
@@ -760,8 +763,9 @@ const BatchPrint = () => {
                   <button
                     onClick={() => handleToShowCurrentBarData(currentBar + 2)}
                     type="button"
-                    className={`text-[#004368] text-opacity-20 inline-flex items-center justify-center w-8 h-8 text-sm border rounded shadow-md bg-white dark:border-gray-800 ${currentBar === showPage ? "text-[#004368]" : ""
-                      }`}
+                    className={`text-[#004368] text-opacity-20 inline-flex items-center justify-center w-8 h-8 text-sm border rounded shadow-md bg-white dark:border-gray-800 ${
+                      currentBar === showPage ? "text-[#004368]" : ""
+                    }`}
                     title="Page 3"
                   >
                     {currentBar + 2 > totalPart ? ".." : currentBar + 2}
@@ -770,7 +774,9 @@ const BatchPrint = () => {
                     onClick={() => handleToNext(currentBar + 1)}
                     title="next"
                     type="button"
-                    className={`inline-flex items-center justify-center w-8 h-8 py-0 border rounded-md shadow-md bg-white dark:border-gray-200 ${rightPaginationBtn ? "border-black" : ""}`}
+                    className={`inline-flex items-center justify-center w-8 h-8 py-0 border rounded-md shadow-md bg-white dark:border-gray-200 ${
+                      rightPaginationBtn ? "border-black" : ""
+                    }`}
                   >
                     <svg
                       viewBox="0 0 24 24"
@@ -797,7 +803,7 @@ const BatchPrint = () => {
                 className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[115px] h-10 px-8 py-2 rounded-md cursor-pointer"
               >
                 <p className="text-[15px] font-medium capitalize cursor-pointer">
-                  {selectedLanguage === "zh-CN" ? "导出" : "Export"}
+                  {t("Export")}
                 </p>
               </button>
             </div>
@@ -859,9 +865,7 @@ const BatchPrint = () => {
             <span className=" h-10 flex items-center justify-center">
               <MdOutlineLocalPrintshop className="w-[18px] h-[18px]" />
               <span className="text-[15px] font-medium leading-normal capitalize pl-1">
-                {selectedLanguage === "zh-CN"
-                  ? "订单已接受 & 打印"
-                  : "Order Accepted & Print"}
+                {t("OrderAcceptedAndPrint")}
               </span>
             </span>
           </button>
