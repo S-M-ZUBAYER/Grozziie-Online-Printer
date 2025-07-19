@@ -7,7 +7,7 @@ export const baseApi = createApi({
     // baseUrl: "http://localhost:5000/api/v1",
     // baseUrl: "https://jsonplaceholder.typicode.com",
     // baseUrl: "https://grozziieget.zjweiting.com:3091/GrozziiePrint-WebAPI",
-    baseUrl: "https://grozziie.zjweiting.com:3091/tiktokshop-partner",
+    baseUrl: "https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/",
     // credentials: "include",
   }),
   endpoints: () => ({}),
