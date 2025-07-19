@@ -16,8 +16,12 @@ import { useLoadOrderListMutation } from "./features/allApis/batchPrintApi";
 import { orderListParameter } from "./components/BatchPrint/OrderListParameter";
 import { decryptArrayData } from "./Share/Function/OrderListFunctions";
 import { orderListData } from "./features/slice/orderListSlice";
-import { fetchAvailableWaybills, fetchLogisticCompanies } from "./components/BatchPrint/BatchPrinterFunctions";
+import {
+  fetchAvailableWaybills,
+  fetchLogisticCompanies,
+} from "./components/BatchPrint/BatchPrinterFunctions";
 import { shopDeliveryCompanyList } from "./features/slice/shopDeliveryCompanySlice";
+import { setAllShopList } from "./features/slice/allShopSlice";
 
 function App() {
   const dispatch = useDispatch();
@@ -28,9 +32,9 @@ function App() {
   const [pddAccessToken, setPddAccessToken] = useState(
     localStorage.getItem("pddAccessToken")
   );
-  const [pddMallId, setPddMallId] = useState(
-    localStorage.getItem("pddMallId")
-  );
+  const [tikTokShopCipher, setTikTokShopCipher] = useState("");
+
+  const [pddMallId, setPddMallId] = useState(localStorage.getItem("pddMallId"));
   const [mallId, setMallId] = useState(null);
   const [mallError, setMallError] = useState(null);
   useEffect(() => {
@@ -39,10 +43,44 @@ function App() {
     }
   }, []);
 
+  useEffect(() => {
+    fetch(
+      "https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/shops/authorizedShops"
+    )
+      .then((response) => {
+        console.log(response, "this is tiktok response");
 
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+          console.log("Fetching TikTok Shop authorized shops...");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("API Response:", data);
+        console.log("Fetching TikTok Shop authorized shops...");
+        setTikTokShopCipher(data.data.shops[0].cipher);
+        if (data?.data?.shops) {
+          localStorage.setItem(
+            "tiktokShopInfo",
+            JSON.stringify(data.data.shops)
+          );
+          dispatch(setAllShopList(data.data.shops));
+
+          console.log("Shops saved to localStorage.");
+        } else {
+          console.warn("No shops found in API response.");
+        }
+      })
+      .catch((error) => {
+        console.error("There was a problem with the fetch operation:", error);
+      });
+  }, []);
   // Temporary add the feature to get all available express company
   const [deliveryCompanyName, setDeliveryCompanyName] = useState([]);
   const [shopDeliveryCompanyName, setShopDeliveryCompanyName] = useState([]);
+  console.log(tikTokShopCipher, "Cipher");
+
   useEffect(() => {
     if (deliveryCompanyName) {
       fetchAvailableWaybills(deliveryCompanyName)
@@ -84,40 +122,68 @@ function App() {
     fetchCompanies(); // Call the function to fetch companies
   }, []);
 
-
   // Fetch order list data
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const urlParams = new URLSearchParams(window.location.search);
+  //       const codeParam = urlParams.get("code");
+  //       const response = await loadOrderList({
+  //         pddAccessToken,
+  //         data: orderListParameter,
+  //       });
+
+  //       if (response.error) {
+  //         console.log("This is response error", response.error);
+  //       } else {
+  //         if (!codeParam) {
+  //           if (
+  //             response?.data?.error_response?.error_code === 10019 ||
+  //             response?.data?.error_response?.error_code === 10001
+  //           ) {
+  //             window.location.href =
+  //               "https://fuwu.pinduoduo.com/service-market/auth?response_type=code&client_id=93db78c22c8448729db51e435c67e376&redirect_uri=https://grozziie.zjweiting.com:57609&state=1212";
+  //           } else {
+  //             const orderList =
+  //               response?.data?.order_list_get_response?.order_list || [];
+  //             const filteredOrderList = orderList.filter(
+  //               (item) => item.address !== ""
+  //             );
+  //             console.log(filteredOrderList, "initial data");
+  //             setOrderListDataEncrypt(filteredOrderList.slice(0, 2));
+  //             // If you need to dispatch the filtered list, uncomment below
+  //             // dispatch(orderListData(filteredOrderList));
+  //           }
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, [loadOrderList, pddAccessToken]); // Adding loadOrderList to the dependency array to avoid infinite loops
+
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const codeParam = urlParams.get("code");
-        const response = await loadOrderList({
-          pddAccessToken,
-          data: orderListParameter,
-        });
+        const response = await loadOrderList({ tikTokShopCipher }).unwrap();
+        console.log("Raw Response:", response);
 
-        if (response.error) {
-          console.log("This is response error", response.error);
+        const orders = response?.data?.orders;
+
+        if (Array.isArray(orders) && orders.length > 0) {
+          const filteredOrderList = orders.filter((item) => item?.buyerEmail);
+          console.log("Filtered Orders:", filteredOrderList);
+          setOrderListDataEncrypt(filteredOrderList.slice(0, 2));
+
+          // Optional: Dispatch
+          // dispatch(orderListData(filteredOrderList));
         } else {
-          if (!codeParam) {
-            if (
-              response?.data?.error_response?.error_code === 10019 ||
-              response?.data?.error_response?.error_code === 10001
-            ) {
-              window.location.href =
-                "https://fuwu.pinduoduo.com/service-market/auth?response_type=code&client_id=93db78c22c8448729db51e435c67e376&redirect_uri=https://grozziie.zjweiting.com:57609&state=1212";
-            } else {
-              const orderList =
-                response?.data?.order_list_get_response?.order_list || [];
-              const filteredOrderList = orderList.filter(
-                (item) => item.address !== ""
-              );
-              console.log(filteredOrderList, "initial data")
-              setOrderListDataEncrypt(filteredOrderList.slice(0, 2));
-              // If you need to dispatch the filtered list, uncomment below
-              // dispatch(orderListData(filteredOrderList));
-            }
-          }
+          console.warn(
+            "No valid orders received or unexpected format",
+            response
+          );
         }
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -125,39 +191,40 @@ function App() {
     };
 
     fetchData();
-  }, [loadOrderList, pddAccessToken]); // Adding loadOrderList to the dependency array to avoid infinite loops
+  }, [loadOrderList, tikTokShopCipher]);
 
   // old code
-  const fetchData = async () => {
-    try {
-      const response = await loadOrderList({
-        pddAccessToken,
-        data: orderListParameter,
-      });
-      if ("error" in response) {
-        console.log("This is response error");
-      } else {
-        console.log(response, "check response");
-        const orderList = response?.data?.order_list_get_response?.order_list;
-        const filteredOrderList = orderList?.filter((item) => {
-          return item.address !== "";
-        });
+  // const fetchData = async () => {
+  //   try {
+  //     const response = await loadOrderList({
+  //       pddAccessToken,
+  //       data: orderListParameter,
+  //     });
+  //     if ("error" in response) {
+  //       console.log("This is response error");
+  //     } else {
+  //       console.log(response, "check response");
+  //       const orderList = response?.data?.order_list_get_response?.order_list;
+  //       const filteredOrderList = orderList?.filter((item) => {
+  //         return item.address !== "";
+  //       });
 
-        setOrderListDataEncrypt(filteredOrderList.slice(0, 5));
-        // setOrderListDataEncrypt(orderList.slice(10, 18));
-        // dispatch(
-        //     orderListData(filteredOrderList)
-        // );
-      }
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
+  //       setOrderListDataEncrypt(filteredOrderList.slice(0, 5));
+  //       // setOrderListDataEncrypt(orderList.slice(10, 18));
+  //       // dispatch(
+  //       //     orderListData(filteredOrderList)
+  //       // );
+  //     }
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
 
   const fetchMallIdData = async (PddToken) => {
     try {
-      const response = await fetch(`https://grozziieget.zjweiting.com:3091/GrozziiePrint-WebAPI/mall/info?accessToken=${PddToken}`);
+      const response = await fetch(
+        `https://grozziieget.zjweiting.com:3091/GrozziiePrint-WebAPI/mall/info?accessToken=${PddToken}`
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -172,7 +239,6 @@ function App() {
       setMallError(error.message);
     }
   };
-
 
   const decryptAndDispatchOrderList = async () => {
     try {
@@ -191,37 +257,6 @@ function App() {
   useEffect(() => {
     decryptAndDispatchOrderList();
   }, [orderListDataEncrypt]);
-
-  // Handle URL code parameter and fetch token
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const codeParam = urlParams.get("code");
-    // const codeParam =  "7ddfbed58c504537b51cf5c859a58121198a58f5";
-
-    if (codeParam) {
-      setCode(codeParam);
-      fetch(
-        // `https://grozziieget.zjweiting.com:3091/GrozziiePrint-WebAPI/token?code=${codeParam}`
-        `https://grozziieget.zjweiting.com:3091/GrozziiePrint-WebAPI/token/code_refresh_token?code=${codeParam}`
-      )
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error("Network response was not ok");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          localStorage.setItem("pddAccessToken", data.access_token);
-          setApiResponse(data);
-          fetchData();
-          fetchMallIdData(data.access_token);
-        })
-        .catch((error) => {
-          console.error("There was a problem with the fetch operation:", error);
-        });
-    }
-  }, []);
-
 
   // Fetch user data with token
   // const fetchUserData = async () => {

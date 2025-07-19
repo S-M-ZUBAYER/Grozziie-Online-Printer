@@ -10,7 +10,7 @@ import shipped from "../../assets/shipped01.png";
 import needPrint from "../../assets/needtoprint01.png";
 
 import { useTranslation } from "react-i18next";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import { useGetShippedDataUsQuery } from "../../features/allApis/shippedDataGetUsApi";
 import { findPrintedToday, findShippedLast7Days } from "./HomeFunction";
@@ -19,6 +19,8 @@ import {
   fetchLogisticCompanies,
 } from "../BatchPrint/BatchPrinterFunctions";
 import { shopDeliveryCompanyList } from "../../features/slice/shopDeliveryCompanySlice";
+// import { setAllShopList } from "../../features/slice/allShopSlice";
+
 import {
   accountUserChange,
   checkedDefaultExpressChange,
