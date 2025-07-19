@@ -3,15 +3,14 @@ import { baseApi } from "../api/baseApi";
 const batchPrintApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     loadOrderList: builder.mutation({
-      query: ({ pddAccessToken, data }) => ({
-        url: `/order/list?accessToken=${pddAccessToken}`,
-        method: "POST",
-        body: JSON.stringify(data),
+      query: ({ tikTokShopCipher }) => ({
+        url: `/order/list?pageSize=10&cipher=${tikTokShopCipher}`,
+        method: "POST", // ✅ Use GET since you’re not sending any body data
         headers: {
           "Content-Type": "application/json",
         },
       }),
-      invalidatesTags: ["users"],
+      invalidatesTags: ["users"], // 📝 Use appropriate tags for cache invalidation
     }),
 
     getBatchPrint: builder.query({
