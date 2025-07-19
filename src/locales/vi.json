@@ -60,5 +60,14 @@
   "DeliveryCompany": "Công ty giao hàng",
   "DeliveryCode": "Mã vận chuyển",
   "ProductDetails": "Chi tiết sản phẩm",
-  "OrderAcceptedAndPrint": "Đơn hàng đã chấp nhận & in"
+  "OrderAcceptedAndPrint": "Đơn hàng đã chấp nhận & in",
+  "SelectCompanyName": "Chọn tên công ty",
+  "ModelList": "Danh sách mẫu",
+  "Preview": "Xem trước",
+  "TemplateName": "Tên mẫu",
+  "WPCode": "Mã WP",
+  "Loading": "Đang tải",
+  "Store": "Cửa hàng",
+  "Close": "Đóng",
+  "ReceiverName": "Tên người nhận"
 }

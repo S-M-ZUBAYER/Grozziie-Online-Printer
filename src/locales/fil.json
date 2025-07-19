@@ -60,5 +60,14 @@
   "DeliveryCompany": "Kumpanya ng Paghahatid",
   "DeliveryCode": "Tracking Code",
   "ProductDetails": "Detalye ng Produkto",
-  "OrderAcceptedAndPrint": "Tinanggap ang Order at I-print"
+  "OrderAcceptedAndPrint": "Tinanggap ang Order at I-print",
+  "SelectCompanyName": "Pumili ng Pangalan ng Kumpanya",
+  "ModelList": "Listahan ng Modelo",
+  "Preview": "I-preview",
+  "TemplateName": "Pangalan ng Template",
+  "WPCode": "WP Code",
+  "Loading": "Naglo-load",
+  "Store": "Tindahan",
+  "Close": "Isara",
+  "ReceiverName": "Pangalan ng Tatanggap"
 }

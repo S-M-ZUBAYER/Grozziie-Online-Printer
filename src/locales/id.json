@@ -60,5 +60,14 @@
   "DeliveryCompany": "Perusahaan Pengiriman",
   "DeliveryCode": "Kode Pengiriman",
   "ProductDetails": "Detail Produk",
-  "OrderAcceptedAndPrint": "Pesanan Diterima & Dicetak"
+  "OrderAcceptedAndPrint": "Pesanan Diterima & Dicetak",
+  "SelectCompanyName": "Pilih Nama Perusahaan",
+  "ModelList": "Daftar Model",
+  "Preview": "Pratinjau",
+  "TemplateName": "Nama Template",
+  "WPCode": "Kode WP",
+  "Loading": "Memuat",
+  "Store": "Toko",
+  "Close": "Tutup",
+  "ReceiverName": "Nama Penerima"
 }
