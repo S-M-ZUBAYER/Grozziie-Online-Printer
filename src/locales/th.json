@@ -60,5 +60,14 @@
   "DeliveryCompany": "บริษัทจัดส่ง",
   "DeliveryCode": "รหัสการจัดส่ง",
   "ProductDetails": "รายละเอียดสินค้า",
-  "OrderAcceptedAndPrint": "คำสั่งซื้อได้รับการยืนยันและพิมพ์"
+  "OrderAcceptedAndPrint": "คำสั่งซื้อได้รับการยืนยันและพิมพ์",
+  "SelectCompanyName": "เลือกชื่อบริษัท",
+  "ModelList": "รายการโมเดล",
+  "Preview": "ดูตัวอย่าง",
+  "TemplateName": "ชื่อเทมเพลต",
+  "WPCode": "รหัส WP",
+  "Loading": "กำลังโหลด",
+  "Store": "ร้านค้า",
+  "Close": "ปิด",
+  "ReceiverName": "ชื่อผู้รับ"
 }

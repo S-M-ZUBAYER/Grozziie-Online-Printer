@@ -865,9 +865,7 @@ const BatchPrint = () => {
             <span className=" h-10 flex items-center justify-center">
               <MdOutlineLocalPrintshop className="w-[18px] h-[18px]" />
               <span className="text-[15px] font-medium leading-normal capitalize pl-1">
-                {selectedLanguage === "zh-CN"
-                  ? "订单已接受 & 打印"
-                  : "Order Accepted & Print"}
+                {t("OrderAcceptedAndPrint")}
               </span>
             </span>
           </button>

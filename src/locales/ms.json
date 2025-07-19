@@ -60,5 +60,14 @@
   "DeliveryCompany": "Syarikat Penghantaran",
   "DeliveryCode": "Kod Penghantaran",
   "ProductDetails": "Butiran Produk",
-  "OrderAcceptedAndPrint": "Pesanan Diterima & Cetak"
+  "OrderAcceptedAndPrint": "Pesanan Diterima & Cetak",
+  "SelectCompanyName": "Pilih Nama Syarikat",
+  "ModelList": "Senarai Model",
+  "Preview": "Pratonton",
+  "TemplateName": "Nama Templat",
+  "WPCode": "Kod WP",
+  "Loading": "Memuatkan",
+  "Store": "Kedai",
+  "Close": "Tutup",
+  "ReceiverName": "Nama Penerima"
 }
