@@ -7,6 +7,7 @@ import { DateRange } from "react-date-range";
 import { CiSearch } from "react-icons/ci";
 import { RxReset } from "react-icons/rx";
 import { filterDataByDateRange } from "./SearchComponentFunction";
+import { useTranslation } from "react-i18next";
 
 const NewSearchComponent = ({
   setRefundStatusCheck,
@@ -44,20 +45,22 @@ const NewSearchComponent = ({
   const [amount, setAmount] = useState("");
   const [activeButton, setActiveButton] = useState("");
   const [currentActiveButton, setCurrentActiveButton] = useState(false);
-
+  const { t } = useTranslation();
 
   const handleSelect = (date) => {
     setStartDate(date.selection.startDate);
     setEndDate(date.selection.endDate);
-    if (date.selection.startDate, date.selection.endDate) {
+    if ((date.selection.startDate, date.selection.endDate)) {
       console.log("got 2 value");
-      setFilteredData(filterDataByDateRange(customersData, date.selection.startDate, date.selection.endDate));
+      setFilteredData(
+        filterDataByDateRange(
+          customersData,
+          date.selection.startDate,
+          date.selection.endDate
+        )
+      );
     }
   };
-
-
-
-
 
   const selectedLanguage = useSelector(
     (state) => state.user.selectedLanguageRedux
@@ -180,7 +183,6 @@ const NewSearchComponent = ({
     setRefundStatusCheck(event.target.value);
   };
 
-
   const selectionRange = {
     startDate: startDate,
     endDate: endDate,
@@ -201,8 +203,7 @@ const NewSearchComponent = ({
   return (
     <div className="bg-white rounded-[17px] shadow-[6px 9px 16.4px 0px rgba(0, 0, 0, 0.04)] py-4 pl-3 pr-2">
       <p className="text-[#004368] text-sm font-semibold mb-[6px]">
-        {selectedLanguage === "zh-CN" ? "选择搜索类别" : "Select category for search"}
-
+        {t("SelectCategoryForSearch")}
       </p>
       <div className="flex items-center space-x-2">
         {/* disable button */}
@@ -264,68 +265,80 @@ const NewSearchComponent = ({
         <div className="">
           <button
             onClick={handleRecipientAddressChange}
-            className={`w-[180px] h-10 rounded-md outline-none font-normal text-[15px] capitalize px-3 py-2 text-center items-center ${isActiveBtnRecipientAddress ? "bg-[#004368]" : "bg-[#0043681A]"
-              } text-${isActiveBtnRecipientAddress ? "white" : "black"
-              } cursor-pointer ${isActiveBtnRecipientAddress
+            className={`w-auto h-10 rounded-md outline-none font-normal text-[15px] capitalize px-8 py-2 text-center items-center whitespace-nowrap ${
+              isActiveBtnRecipientAddress ? "bg-[#004368]" : "bg-[#0043681A]"
+            } text-${
+              isActiveBtnRecipientAddress ? "white" : "black"
+            } cursor-pointer ${
+              isActiveBtnRecipientAddress
                 ? "hover:bg-[#004368]"
                 : "hover:bg-[#0043681A]"
-              }`}
+            }`}
             name="RecipientAddress"
           >
-            Recipient Address
+            {t("RecipientAddress")}
           </button>
         </div>
 
         <div className="">
           <button
             onClick={handleOrderIdChangeBySearch}
-            className={`w-[180px] h-10 rounded-md outline-none font-normal text-[15px] capitalize px-3 py-2 text-center items-center ${isActiveBtnOrderId ? "bg-[#004368]" : "bg-[#0043681A]"
-              } text-${isActiveBtnOrderId ? "white" : "black"} cursor-pointer ${isActiveBtnOrderId ? "hover:bg-[#004368]" : "hover:bg-[#0043681A]"
-              }`}
+            className={`w-[180px] h-10 rounded-md outline-none font-normal text-[15px] capitalize px-3 py-2 text-center items-center ${
+              isActiveBtnOrderId ? "bg-[#004368]" : "bg-[#0043681A]"
+            } text-${isActiveBtnOrderId ? "white" : "black"} cursor-pointer ${
+              isActiveBtnOrderId ? "hover:bg-[#004368]" : "hover:bg-[#0043681A]"
+            }`}
             name="OrderId"
           >
             {currentRenderingPage === "ManualOrderPage"
               ? "Order ID"
-              : "Order Sn"}
+              : t("OrderSn")}
           </button>
         </div>
 
         <div className="">
           <button
             onClick={handleAccountNameBySearch}
-            className={`w-[180px] h-10 rounded-md outline-none font-normal text-[15px] capitalize px-3 py-2 text-center items-center ${isActiveBtnAccountName ? "bg-[#004368]" : "bg-[#0043681A]"
-              } text-${isActiveBtnAccountName ? "white" : "black"
-              } cursor-pointer ${isActiveBtnAccountName
+            className={`w-auto h-10 rounded-md outline-none font-normal text-[15px] capitalize px-8 whitespace-nowrap py-2 text-center items-center ${
+              isActiveBtnAccountName ? "bg-[#004368]" : "bg-[#0043681A]"
+            } text-${
+              isActiveBtnAccountName ? "white" : "black"
+            } cursor-pointer ${
+              isActiveBtnAccountName
                 ? "hover:bg-[#004368]"
                 : "hover:bg-[#0043681A]"
-              }`}
+            }`}
             name="AccountName"
           >
-            Account Name
+            {t("AccountName")}
           </button>
         </div>
 
         <div className="">
           <button
             onClick={handleProductBySearch}
-            className={`w-[180px] h-10 rounded-md outline-none font-normal text-[15px] capitalize px-3 py-2 text-center items-center ${isActiveBtnProduct ? "bg-[#004368]" : "bg-[#0043681A]"
-              } text-${isActiveBtnProduct ? "white" : "black"} cursor-pointer ${isActiveBtnProduct ? "hover:bg-[#004368]" : "hover:bg-[#0043681A]"
-              }`}
+            className={`w-[180px] h-10 rounded-md outline-none font-normal text-[15px] capitalize px-3 py-2 text-center items-center ${
+              isActiveBtnProduct ? "bg-[#004368]" : "bg-[#0043681A]"
+            } text-${isActiveBtnProduct ? "white" : "black"} cursor-pointer ${
+              isActiveBtnProduct ? "hover:bg-[#004368]" : "hover:bg-[#0043681A]"
+            }`}
             name="Product"
           >
-            Product
+            {t("Product")}
           </button>
         </div>
 
         <div className="">
           <button
             onClick={handleAmountBySearch}
-            className={`w-[180px] h-10 rounded-md outline-none font-normal text-[15px] capitalize px-3 py-2 text-center items-center ${isActiveBtnAmount ? "bg-[#004368]" : "bg-[#0043681A]"
-              } text-${isActiveBtnAmount ? "white" : "black"} cursor-pointer ${isActiveBtnAmount ? "hover:bg-[#004368]" : "hover:bg-[#0043681A]"
-              }`}
+            className={`w-[180px] h-10 rounded-md outline-none font-normal text-[15px] capitalize px-3 py-2 text-center items-center ${
+              isActiveBtnAmount ? "bg-[#004368]" : "bg-[#0043681A]"
+            } text-${isActiveBtnAmount ? "white" : "black"} cursor-pointer ${
+              isActiveBtnAmount ? "hover:bg-[#004368]" : "hover:bg-[#0043681A]"
+            }`}
             name="Amount"
           >
-            Amount
+            {t("Amount")}
           </button>
         </div>
 
@@ -349,7 +362,7 @@ const NewSearchComponent = ({
               value={"manualOrder"}
               className="text-base font-light bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[220px] h-12 px-8 py-3 rounded-md cursor-pointer"
             >
-              Manual Order
+              {t("ManualOrder")}
             </button>
           ) : (
             <select
@@ -365,7 +378,7 @@ const NewSearchComponent = ({
                   value={status}
                   className="text-base font-light"
                 >
-                  {status}
+                  {t(status)}
                 </option>
               ))}
             </select>
@@ -406,7 +419,7 @@ const NewSearchComponent = ({
             <input
               id="searchInput"
               type="text"
-              placeholder="Search"
+              placeholder={t("Search")}
               onChange={handleSearchAllChange}
               className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-transparent outline-none"
             />
@@ -415,20 +428,18 @@ const NewSearchComponent = ({
 
         <button
           onClick={handleToSearch}
-          className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[115px] h-12 px-8 py-3 rounded-md cursor-pointer"
+          className="bg-[#004368] w-auto hover:bg-opacity-30 text-white hover:text-black  h-12 px-8 py-3 rounded-md cursor-pointer text-[15px] font-medium capitalize"
         >
-          <button className="text-[15px] font-medium capitalize">
-            {selectedLanguage === "zh-CN" ? "搜索" : "Search"}
-          </button>
+          {t("Search")}
         </button>
 
         <button
           onClick={handleToReset}
-          className="bg-[#0043681A] w-[115px] h-12 flex items-center justify-center px-3 py-2 rounded-md cursor-pointer hover:bg-[#004368] hover:text-white "
+          className="bg-[#0043681A]  h-12 flex items-center justify-center whitespace-nowrap px-4 w-auto  py-2 rounded-md cursor-pointer hover:bg-[#004368] hover:text-white "
         >
           <RxReset className="w-5 h-5" />
-          <span className="text-[15px] font-medium rounded-md capitalize pl-1">
-            {selectedLanguage === "zh-CN" ? "重置" : "Reset"}
+          <span className="text-[15px] font-medium rounded-md capitalize pl-1 ">
+            {t("Reset")}
           </span>
         </button>
       </div>
