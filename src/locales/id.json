@@ -1,6 +1,7 @@
 {
   "home": "Beranda",
   "batchPrint": "Cetak Massal",
+  "packages": "Paket",
   "singlePrint": "Cetak Tunggal",
   "settings": "Pengaturan",
   "utility": "Utilitas",

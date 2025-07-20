@@ -1,6 +1,7 @@
 {
   "home": "主页",
   "batchPrint": "批量打印",
+  "packages": "包裹",
   "singlePrint": "单次打印",
   "settings": "设置",
   "utility": "实用工具",
