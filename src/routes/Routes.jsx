@@ -56,6 +56,7 @@ import PrivateRoute from "../components/Private/PrivateRoute";
 import PaymentPrivateRoute from "../components/Private/PaymentPrivateRoute";
 import PaymentAlipay from "../components/Pricing/PaymentAlipay";
 import VerifyEmailPage from "../components/Auth/VerifyEmailPage";
+import Package from "../components/Packages/Package";
 
 export const routes = createBrowserRouter([
   {
@@ -137,6 +138,10 @@ export const routes = createBrowserRouter([
           // </PaymentPrivateRoute>
           // </PrivateRoute>
         ),
+      },
+      {
+        path: "/packages",
+        element: <Package />,
       },
       {
         path: "/singlePrint",
