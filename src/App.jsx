@@ -175,8 +175,7 @@ function App() {
         if (Array.isArray(orders) && orders.length > 0) {
           const filteredOrderList = orders.filter((item) => item?.buyerEmail);
           console.log("Filtered Orders:", filteredOrderList);
-          setOrderListDataEncrypt(filteredOrderList.slice(0, 2));
-
+          dispatch(orderListData(filteredOrderList));
           // Optional: Dispatch
           // dispatch(orderListData(filteredOrderList));
         } else {
@@ -240,23 +239,23 @@ function App() {
     }
   };
 
-  const decryptAndDispatchOrderList = async () => {
-    try {
-      // Decrypt the orderList
-      const decryptedOrderList = await decryptArrayData(orderListDataEncrypt);
-      console.log(decryptedOrderList);
-      // Dispatch the decrypted orderList
-      dispatch(orderListData(decryptedOrderList));
+  // const decryptAndDispatchOrderList = async () => {
+  //   try {
+  //     // Decrypt the orderList
+  //     const decryptedOrderList = await decryptArrayData(orderListDataEncrypt);
+  //     console.log(decryptedOrderList);
+  //     // Dispatch the decrypted orderList
+  //     dispatch(orderListData(decryptedOrderList));
 
-      console.log(decryptedOrderList, "check response"); // Log the decrypted orderList
-    } catch (error) {
-      console.error("Error decrypting orderList:", error);
-    }
-  };
+  //     console.log(decryptedOrderList, "check response"); // Log the decrypted orderList
+  //   } catch (error) {
+  //     console.error("Error decrypting orderList:", error);
+  //   }
+  // };
 
-  useEffect(() => {
-    decryptAndDispatchOrderList();
-  }, [orderListDataEncrypt]);
+  // useEffect(() => {
+  //   decryptAndDispatchOrderList();
+  // }, [orderListDataEncrypt]);
 
   // Fetch user data with token
   // const fetchUserData = async () => {

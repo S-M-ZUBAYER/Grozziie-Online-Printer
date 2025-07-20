@@ -33,6 +33,7 @@ const BatchPrintExpressDelivery = () => {
   const checkedExpressChecking = useSelector(
     (state) => state.user.checkedExpressFromRedux
   );
+  console.log(checkedExpressChecking, checkedItemsChecking, "item");
 
   const dispatch = useDispatch();
 
@@ -71,56 +72,96 @@ const BatchPrintExpressDelivery = () => {
   const [stdTemplate, setStdTemplate] = useState([]);
   const [selectedModel, setSelectedModel] = useState({});
 
-  useEffect(() => {
-    const token = localStorage.getItem("GrozziieToken");
-    fetchUser(token);
-    setLoading(true);
-    setError(false);
-    const selectedWpCode =
-      checkedItemsChecking?.from === "shipped"
-        ? checkedItemsChecking?.items[0].print_data.wp_code
-        : checkedExpressChecking?.wp_code;
-    const url = `https://grozziieget.zjweiting.com:3091/GrozziiePrint-WebAPI/stdtemplates-store/wp_code/${selectedWpCode}`;
-    fetch(url)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        if (checkedItemsChecking?.from === "shipped") {
-          const foundTemplate = data?.standard_templates?.find((template) => {
-            if (
-              template.standard_template_url ===
-              checkedItemsChecking?.items[0]?.print_data?.templateUrl
-            ) {
-              return template;
-            }
-          });
+  const [packageId, setPackageId] = useState(
+    checkedItemsChecking?.items[0]?.packages[0]?.id
+  );
+  const [cipher, setCipher] = useState(localStorage.getItem("tiktokShopInfo"));
+  const [packageDetails, setPackageDetails] = useState(null);
+  const [waybillUrl, setWaybillUrl] = useState(null); // If there's any
 
-          setStdTemplate([foundTemplate]);
-          setSelectedModel(foundTemplate);
-          setLoading(false);
-          return;
-        }
-        setStdTemplate(data?.standard_templates);
-        setSelectedModel(data?.standard_templates[0]);
-        setLoading(false);
-        setQuantityNotice(
-          <div className=" font-bold text-red-500">
-            {selectedLanguage === "zh-CN"
-              ? "请先选择任意模板！"
-              : "Please choose any template first!"}
-          </div>
+  useEffect(() => {
+    if (!cipher || !packageId) return;
+
+    const fetchPackageDetails = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(
+          `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/details?cipher=${cipher[0].cipher}&packageId=${packageId}`
         );
-      })
-      .catch((error) => {
-        console.error("Error:", error);
+
+        const json = await res.json();
+
+        if (json.code === 0 && json.data) {
+          setPackageDetails(json.data);
+
+          // 🔎 If your API returns a direct waybill URL, assign it like this:
+          if (json.data.waybillUrl) {
+            setWaybillUrl(json.data.waybillUrl);
+          }
+        } else {
+          console.error("API Error:", json.message);
+        }
+      } catch (error) {
+        console.error("Fetch error:", error);
+      } finally {
         setLoading(false);
-        setError(true);
-      });
-  }, []);
+      }
+    };
+
+    fetchPackageDetails();
+  }, [cipher, packageId]);
+
+  // useEffect(() => {
+  //   const token = localStorage.getItem("GrozziieToken");
+  //   fetchUser(token);
+  //   setLoading(true);
+  //   setError(false);
+  //   const selectedWpCode =
+  //     checkedItemsChecking?.from === "shipped"
+  //       ? checkedItemsChecking?.items[0].print_data.wp_code
+  //       : checkedExpressChecking?.wp_code;
+  //   const url = `https://grozziieget.zjweiting.com:3091/GrozziiePrint-WebAPI/stdtemplates-store/wp_code/${selectedWpCode}`;
+  //   fetch(url)
+  //     .then((response) => {
+  //       if (!response.ok) {
+  //         throw new Error(`HTTP error! Status: ${response.status}`);
+  //       }
+  //       return response.json();
+  //     })
+  //     .then((data) => {
+  //       if (checkedItemsChecking?.from === "shipped") {
+  //         const foundTemplate = data?.standard_templates?.find((template) => {
+  //           if (
+  //             template.standard_template_url ===
+  //             checkedItemsChecking?.items[0]?.print_data?.templateUrl
+  //           ) {
+  //             return template;
+  //           }
+  //         });
+
+  //         setStdTemplate([foundTemplate]);
+  //         setSelectedModel(foundTemplate);
+  //         setLoading(false);
+  //         return;
+  //       }
+  //       setStdTemplate(data?.standard_templates);
+  //       setSelectedModel(data?.standard_templates[0]);
+  //       setLoading(false);
+  //       setQuantityNotice(
+  //         <div className=" font-bold text-red-500">
+  //           {selectedLanguage === "zh-CN"
+  //             ? "请先选择任意模板！"
+  //             : "Please choose any template first!"}
+  //         </div>
+  //       );
+  //     })
+  //     .catch((error) => {
+  //       console.error("Error:", error);
+  //       setLoading(false);
+  //       setError(true);
+  //     });
+  // }, []);
+
   const [WaybillRequestData, setWaybillRequestData] = useState({});
 
   const pddAccessToken = localStorage.getItem("pddAccessToken");
@@ -985,7 +1026,7 @@ const BatchPrintExpressDelivery = () => {
             ) : (
               selectedModel && (
                 <img
-                  src={selectedModel?.standard_template_image}
+                  src={`https://p16-oec-sg.ibyteimg.com/tos-alisg-i-aphluv4xwc-sg/222e18137df341fa8c13f16d6ebf2ab0~tplv-aphluv4xwc-origin-jpeg.jpeg?dr=15568&t=555f072d&ps=933b5bde&shp=a3dd9c4f&shcp=54477afb&idc=my2&from=2749209679`}
                   alt="express"
                   className="w-[297px] h-[418px] mx-auto"
                 />
