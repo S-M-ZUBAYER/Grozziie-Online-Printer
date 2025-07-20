@@ -39,7 +39,9 @@ const BatchPrinterModal = () => {
 
   // modal submit function
   const handleModalSubmit = (e) => {
+    console.log("modalllll");
     e.preventDefault();
+
     document.getElementById("my_modal_BatchPrint").close();
   };
 
