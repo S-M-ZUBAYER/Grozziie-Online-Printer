@@ -50,48 +50,34 @@ const BatchPrintTable = ({
         </p>
       ) : (
         <table className="table">
-          <thead>
+          <thead className="">
             <tr className="h-11 text-black text-opacity-80 capitalize text-center text-sm font-normal leading-4">
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-l-md">
-                <span className="mr-[10px]">
-                  {selectedLanguage === "zh-CN" ? "账户名称" : "account name"}
-                </span>
+                <span className="mr-[10px]">{t("AccountName")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                <span className="mr-[10px]">
-                  {selectedLanguage === "zh-CN" ? "客户名称" : "customer name"}
-                </span>
+                <span className="mr-[10px]">{t("ReceiverName")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                <span className="mr-[10px]">
-                  {selectedLanguage === "zh-CN" ? "地址" : "address"}
-                </span>
+                <span className="mr-[10px]">{t("Address")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                <span className="mr-[10px]">
-                  {selectedLanguage === "zh-CN" ? "客户标记" : "customer mark"}
-                </span>
+                <span className="mr-[10px]">{t("CustomerMark")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                <span className="mr-[10px]">
-                  {selectedLanguage === "zh-CN"
-                    ? "送货公司"
-                    : "delivery company"}
-                </span>
+                <span className="mr-[10px]">{t("DeliveryCompany")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                <span className="mr-[10px]">
-                  {selectedLanguage === "zh-CN" ? "送货代码" : "delivery code"}
-                </span>
+                <span className="mr-[10px]">{t("DeliveryCode")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-r-md">
-                {selectedLanguage === "zh-CN" ? "产品详情" : "product details"}
+                {t("ProductDetails")}
               </th>
             </tr>
           </thead>
