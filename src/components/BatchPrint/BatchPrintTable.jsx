@@ -103,41 +103,32 @@ const BatchPrintTable = ({
                         onChange={() => handleCheckboxChange(order)}
                       />
                       <p className="ml-[7px] text-black opacity-80 text-sm font-normal leading-4">
-                        {formatText(order.buyerEmail) ||
-                          (selectedLanguage === "zh-CN"
-                            ? "没有数据"
-                            : "No Data")}
+                        {formatText(order.buyerEmail) || t("NoData")}
                       </p>
                     </td>
-
                     {/* Customer Name */}
                     <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(address.name) ||
-                        (selectedLanguage === "zh-CN" ? "没有数据" : "No Data")}
+                      {formatText(address.name) || t("NoData")}
                     </td>
 
                     {/* Address */}
                     <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(address.fullAddress) ||
-                        (selectedLanguage === "zh-CN" ? "没有数据" : "No Data")}
+                      {formatText(address.fullAddress) || t("NoData")}
                     </td>
 
                     {/* Customer Mark */}
                     <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(order.sellerNote) ||
-                        (selectedLanguage === "zh-CN" ? "没有数据" : "No Data")}
+                      {formatText(order.sellerNote) || t("NoData")}
                     </td>
 
                     {/* Delivery Company */}
                     <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(order.shippingProvider) ||
-                        (selectedLanguage === "zh-CN" ? "没有数据" : "No Data")}
+                      {formatText(order.shippingProvider) || t("NoData")}
                     </td>
 
                     {/* Delivery Code / Tracking Number */}
                     <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(order.trackingNumber) ||
-                        (selectedLanguage === "zh-CN" ? "没有数据" : "No Data")}
+                      {formatText(order.trackingNumber) || t("NoData")}
                     </td>
 
                     {/* Product Details */}
@@ -153,16 +144,14 @@ const BatchPrintTable = ({
                         <span className="text-black opacity-80 text-xs font-normal capitalize ml-[6px] mr-6">
                           {formatText(item.productName)
                             ? item.productName.slice(0, 15) + "..."
-                            : selectedLanguage === "zh-CN"
-                            ? "没有数据"
-                            : "No Data"}
+                            : t("NoData")}
                         </span>
                       </div>
                       <p
-                        className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
+                        className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer whitespace-nowrap"
                         onClick={() => handleDetailsClick(order)}
                       >
-                        {selectedLanguage === "zh-CN" ? "细节" : "Details"}
+                        {t("Details")}
                       </p>
                       {/* You can reuse your modal here like before */}
                     </td>
