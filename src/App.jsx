@@ -290,7 +290,7 @@ function App() {
     <div className="bg-white app">
       <CallTheOrder />
       <Toaster position="top-right" />
-      <RouterProvider router={routes}></RouterProvider>
+      <RouterProvider router={routes} />
     </div>
   );
 }

@@ -61,6 +61,7 @@
   "DeliveryCompany": "บริษัทจัดส่ง",
   "DeliveryCode": "รหัสการจัดส่ง",
   "ProductDetails": "รายละเอียดสินค้า",
+  "Details": "รายละเอียด",
   "OrderAcceptedAndPrint": "คำสั่งซื้อได้รับการยืนยันและพิมพ์",
   "SelectCompanyName": "เลือกชื่อบริษัท",
   "ModelList": "รายการโมเดล",
