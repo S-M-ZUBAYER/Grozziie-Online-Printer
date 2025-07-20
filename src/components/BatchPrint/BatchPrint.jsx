@@ -32,6 +32,7 @@ import {
   fetchLogisticCompanies,
 } from "./BatchPrinterFunctions";
 import { shopDeliveryCompanyList } from "../../features/slice/shopDeliveryCompanySlice";
+import { t } from "i18next";
 
 const BatchPrint = () => {
   const [selectAll, setSelectAll] = useState(false);
@@ -859,12 +860,12 @@ const BatchPrint = () => {
                 for="selectAll"
                 className="text-black opacity-80 text-sm font-normal capitalize pl-2 pr-1"
               >
-                {selectedLanguage === "zh-CN" ? "全选" : "select all"}
+                {t("SelectAll")}
               </label>
               {/* this data coming from dynamic when items selected */}
 
               <span className="text-black opacity-80 text-xs font-light capitalize">
-                ({checkedItems?.length} selected)
+                ({checkedItems?.length} {t("Selected")})
               </span>
             </div>
 
@@ -874,17 +875,17 @@ const BatchPrint = () => {
                 {/* {selectedLanguage === "zh-CN"
                   ? "等待发货"
                   : "waiting for shipment"} */}
-                {refundStatusCheck}
+                {t(refundStatusCheck)}
               </p>
             </div>
 
             <div className="col-span-1 flex items-center justify-center">
               <p className="text-black opacity-40 text-sm font-medium capitalize">
-                500 {selectedLanguage === "zh-CN" ? "买家" : "buyers"}
+                500 {t("Buyers")}
               </p>
               <div className="w-[1px] h-8 bg-black opacity-40 mx-2"></div>
               <p className="text-black opacity-40 text-sm font-medium capitalize">
-                700 {selectedLanguage === "zh-CN" ? "订单" : "orders"}
+                700 {t("Orders")}
               </p>
             </div>
 
@@ -906,7 +907,7 @@ const BatchPrint = () => {
                 onClick={handleImportOrderClick}
                 className="text-[#004368] text-sm font-normal capitalize cursor-pointer"
               >
-                {selectedLanguage === "zh-CN" ? "导入订单" : "Import Order"}
+                {t("ImportOrder")}
               </p>
             </div>
 
@@ -996,7 +997,7 @@ const BatchPrint = () => {
                 className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[115px] h-10 px-8 py-2 rounded-md cursor-pointer"
               >
                 <p className="text-[15px] font-medium capitalize cursor-pointer">
-                  {selectedLanguage === "zh-CN" ? "导出" : "Export"}
+                  {t("Export")}
                 </p>
               </button>
             </div>
@@ -1055,21 +1056,10 @@ const BatchPrint = () => {
             onClick={handleToCheckItemsUpdate}
             className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto  h-10 px-4 gap-2 py-2 rounded-md cursor-pointer flex items-center justify-center"
           >
-<<<<<<< HEAD
-            // <span className=" h-10 flex items-center justify-center">
-            //   <MdOutlineLocalPrintshop className="w-[18px] h-[18px]" />
-            //   <span className="text-[15px] font-medium leading-normal capitalize pl-1">
-            //     {selectedLanguage === "zh-CN"
-            //       ? "订单已接受 & 打印"
-            //       : "Order Accepted & Print"}
-            //   </span>
-            // </span>
-=======
             <MdOutlineLocalPrintshop className="w-[18px] h-[18px]" />
             <p className="text-[15px] font-medium leading-normal capitalize pl-1">
               {t("OrderAcceptedAndPrint")}
             </p>
->>>>>>> 3b2872b247cb80f1c527a1817c2e0336275eb7e0
           </button>
           <ConfirmationModal
             isOpen={isConfirmModalOpen}
