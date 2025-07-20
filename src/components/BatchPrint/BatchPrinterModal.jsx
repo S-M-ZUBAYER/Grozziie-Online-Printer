@@ -461,18 +461,14 @@ const BatchPrinterModal = () => {
   return (
     <div>
       <button
-        className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[230px] h-10 px-8 py-2 rounded-md cursor-pointer text-center "
+        className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto flex items-center whitespace-nowrap h-10 px-8 py-2 rounded-md cursor-pointer text-center "
         // onClick={() =>
         //     document.getElementById("my_modal_BatchPrint").showModal()
         // }
         onClick={handleModalShow}
       >
-        <button className="text-[15px] font-medium capitalize flex items-center justify-between">
-          <FaPlus className="w-[14px] h-[14px]" />
-          <span className="pl-4 text-sm font-medium capitalize">
-            {t("AddNewTemplate")}
-          </span>
-        </button>
+        <FaPlus className="w-[14px] h-[14px]" />
+        <p className="pl-4">{t("AddNewTemplate")}</p>
       </button>
 
       <dialog id="my_modal_BatchPrint" className="modal">
