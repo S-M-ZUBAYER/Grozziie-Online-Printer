@@ -34,12 +34,13 @@ const TopNavbar = () => {
       dispatch(mainRouteStateChange());
     }
 
-    if (path.includes("settings")) setActiveLi(3);
-    else if (path.includes("utility")) setActiveLi(4);
+    if (path.includes("settings")) setActiveLi(4);
+    else if (path.includes("utility")) setActiveLi(5);
     else if (path.includes("batchprint")) setActiveLi(1);
-    else if (path.includes("singleprint")) setActiveLi(2);
-    else if (path.includes("manualOrder")) setActiveLi(5);
-    else if (path.includes("contact")) setActiveLi(6);
+    else if (path.includes("singleprint")) setActiveLi(3);
+    else if (path.includes("manualOrder")) setActiveLi(6);
+    else if (path.includes("packages")) setActiveLi(2);
+    else if (path.includes("contact")) setActiveLi(7);
     else setActiveLi(0);
   }, [location.pathname, dispatch]);
 
@@ -57,6 +58,7 @@ const TopNavbar = () => {
   const navItems = [
     { key: "home", path: "/home" },
     { key: "batchPrint", path: "/batchprint" },
+    { key: "packages", path: "/packages" },
     { key: "singlePrint", path: "/singleprint" },
     { key: "settings", path: "/settings/recipient information" },
     { key: "utility", path: "/utility/delivery record" },
