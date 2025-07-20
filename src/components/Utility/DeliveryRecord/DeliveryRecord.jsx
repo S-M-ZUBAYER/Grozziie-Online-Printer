@@ -132,7 +132,6 @@ const DeliveryRecord = () => {
     setEndDate(date.selection.endDate);
   };
 
-
   const selectionRange = {
     startDate: startDate,
     endDate: endDate,
@@ -504,9 +503,9 @@ const DeliveryRecord = () => {
                       )}
                       onChange={() => handleCheckboxChange(customerData)}
 
-                    // checked={selectedItems.includes(product.id)}
-                    // onChange={() => handleCheckboxChange(product.id)}
-                    // onClick={() => handleProductCheck(product)}
+                      // checked={selectedItems.includes(product.id)}
+                      // onChange={() => handleCheckboxChange(product.id)}
+                      // onClick={() => handleProductCheck(product)}
                     />
                     <p className="ml-[7px] text-black text-opacity-80 text-xs font-normal leading-normal capitalize">
                       {customerData.orderSource}
@@ -553,49 +552,49 @@ const DeliveryRecord = () => {
                                 <h2 className="card-title">
                                   Order Source:
                                   <span className="font-extrabold text-[#004368] text-3xl">
-                                    {selectedCustomer.orderSource}
+                                    {selectedCustomer?.orderSource}
                                   </span>
                                 </h2>
                                 <p className="text-sm font-light">
                                   Buyer Nickname:
                                   <span className="ml-1 text-base font-medium text-[#004368]">
-                                    {selectedCustomer.buyerNickname}
+                                    {selectedCustomer?.buyerNickname}
                                   </span>
                                 </p>
                                 <p className="text-sm font-light">
                                   Order Number:
                                   <span className="ml-1 text-base font-medium text-[#004368]">
-                                    {selectedCustomer.orderNumber}
+                                    {selectedCustomer?.orderNumber}
                                   </span>
                                 </p>
                                 <p className="text-sm font-light">
                                   Print Template:
                                   <span className="ml-1 text-base font-medium text-[#004368]">
-                                    {selectedCustomer.printTemplate}
+                                    {selectedCustomer?.printTemplate}
                                   </span>
                                 </p>
                                 <p className="text-sm font-light">
                                   Tracking Number:
                                   <span className="ml-1 text-base font-medium text-[#004368]">
-                                    {selectedCustomer.trackingNumber}
+                                    {selectedCustomer?.trackingNumber}
                                   </span>
                                 </p>
                                 <p className="text-sm font-light">
                                   Quantity:
                                   <span className="ml-1 text-base font-medium text-[#004368]">
-                                    {selectedCustomer.quantity} pieces
+                                    {selectedCustomer?.quantity} pieces
                                   </span>
                                 </p>
                                 <p className="text-sm font-light">
                                   Province:
                                   <span className="ml-1 text-base font-medium text-[#004368]">
-                                    {selectedCustomer.province}
+                                    {selectedCustomer?.province}
                                   </span>
                                 </p>
                                 <p className="text-sm font-light">
                                   Shipping Time:
                                   <span className="ml-1 text-base font-medium text-[#004368]">
-                                    {selectedCustomer.shippingTime}
+                                    {selectedCustomer?.shippingTime}
                                   </span>
                                 </p>
 

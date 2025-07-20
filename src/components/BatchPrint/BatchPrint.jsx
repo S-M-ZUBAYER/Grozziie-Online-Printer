@@ -32,7 +32,7 @@ import {
   fetchLogisticCompanies,
 } from "./BatchPrinterFunctions";
 import { shopDeliveryCompanyList } from "../../features/slice/shopDeliveryCompanySlice";
-import { useTranslation } from "react-i18next";
+import { t } from "i18next";
 
 const BatchPrint = () => {
   const [selectAll, setSelectAll] = useState(false);
@@ -44,8 +44,6 @@ const BatchPrint = () => {
   const [refundStatusCheck, setRefundStatusCheck] = useState(
     "Waiting For Shipment"
   );
-  const { t } = useTranslation();
-
   const [searchFields, setSearchFields] = useState({
     RecipientAddress: "",
     isActiveRecipientAddress: "",
@@ -67,6 +65,10 @@ const BatchPrint = () => {
   const [isActiveBtnProduct, setIsActiveBtnProduct] = useState(false);
   const [isActiveBtnAmount, setIsActiveBtnAmount] = useState(false);
   const [printedData, setPrintedData] = useState([]);
+  const [cipher, setCipher] = useState(() => {
+    const stored = localStorage.getItem("tiktokShopInfo");
+    return stored ? JSON.parse(stored) : [];
+  });
 
   const [postShippedDataToApi] = useSetShippedDataUsMutation();
 
@@ -347,7 +349,195 @@ const BatchPrint = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleDetailsClick = (customerData) => {
-    setSelectedCustomer(customerData);
+    setSelectedCustomer({
+      address:
+        "~AgAAAAKj5K0HdThr3gFHOLKf52dwPutKrkirs5ILD4dZQFc/tafwm7uUtIMmcBD3SaW/E/3onfp5KEeBtNg+ANmFNzDuUUy618YUbpATRkD83xEHnhObE/ZG+cpbYlFlYaOrROimNGg+xVOYQ2c3br71PFStRR3IWcc706LoXuQ=~aH70ycygYwmz9II8U9DunESCGzPhLqEnDs9gNfM8xbLbDWm6GmrCcrr769u45n7I7h7kBM8BMecpxcb+IgdhyzAgkOTtD56s5Tiwf06W~0~~",
+      address_mask: "广东省潮州市潮安区新安大道东北侧彩塘林迈村，王厝宫路*号",
+      after_sales_status: 0,
+      buyer_memo: "",
+      capital_free_discount: 0.0,
+      card_info_list: [],
+      cat_id_1: 2603,
+      cat_id_2: 2616,
+      cat_id_3: 4780,
+      cat_id_4: 0,
+      city: "潮州市",
+      city_id: 78,
+      confirm_status: 1,
+      confirm_time: "2024-03-18 17:13:01",
+      country: "中国",
+      country_id: 0,
+      created_time: "2024-03-18 17:12:59",
+      delivery_one_day: 0,
+      discount_amount: 10.0,
+      duo_duo_pay_reduction: 0.0,
+      duoduo_wholesale: 0,
+      free_sf: 0,
+      gift_list: [],
+      goods_amount: 198.0,
+      group_status: 1,
+      home_delivery_type: 0,
+      inner_transaction_id: "",
+      invoice_status: 0,
+      is_lucky_flag: 1,
+      is_pre_sale: 0,
+      is_stock_out: 0,
+      item_list: [
+        {
+          goods_count: 1,
+          goods_id: "3956183219",
+          goods_img:
+            "https://img.pddpic.com/mms-material-img/2021-09-29/0ad8763e-a358-40bd-8b71-3f5fa26a143d.jpeg.a.jpeg",
+          goods_name:
+            "格志M880考勤机纸卡式打卡机打卡钟员工上下班智能签到考勤机机器",
+          goods_price: 198.0,
+          goods_spec: "M880白色(插电款)+送50张纸卡",
+          outer_goods_id: "",
+          outer_id: "M880",
+          sku_id: "840777314605",
+        },
+      ],
+      last_ship_time: "2024-03-20 17:13:01",
+      logistics_id: 0,
+      mkt_biz_type: 0,
+      only_support_replace: 0,
+      order_change_amount: 0.0,
+      order_sn: "240318-422796379670125",
+      order_status: 1,
+      order_tag_list: [
+        {
+          name: "delivery_one_day",
+          value: 0,
+        },
+        {
+          name: "no_trace_delivery",
+          value: 0,
+        },
+        {
+          name: "self_contained",
+          value: 0,
+        },
+        {
+          name: "return_freight_payer",
+          value: 0,
+        },
+        {
+          name: "free_sf",
+          value: 0,
+        },
+        {
+          name: "duoduo_wholesale",
+          value: 0,
+        },
+        {
+          name: "support_nationwide_warranty",
+          value: 0,
+        },
+        {
+          name: "only_support_replace",
+          value: 0,
+        },
+        {
+          name: "oversea_tracing",
+          value: 0,
+        },
+        {
+          name: "distributional_sale",
+          value: 0,
+        },
+        {
+          name: "open_in_festival",
+          value: 0,
+        },
+        {
+          name: "same_city_distribution",
+          value: 0,
+        },
+        {
+          name: "region_black_delay_shipping",
+          value: 0,
+        },
+        {
+          name: "has_subsidy_postage",
+          value: 0,
+        },
+        {
+          name: "has_sf_express_service",
+          value: 0,
+        },
+        {
+          name: "community_group",
+          value: 0,
+        },
+        {
+          name: "has_ship_additional",
+          value: 0,
+        },
+        {
+          name: "ship_additional_order",
+          value: 0,
+        },
+        {
+          name: "conso_order",
+          value: 0,
+        },
+        {
+          name: "professional_appraisal",
+          value: 0,
+        },
+        {
+          name: "allergy_refund",
+          value: 0,
+        },
+        {
+          name: "ship_hold",
+          value: 0,
+        },
+        {
+          name: "home_delivery_door",
+          value: 0,
+        },
+      ],
+      pay_amount: 188.0,
+      pay_no: "",
+      pay_time: "2024-03-18 17:13:00",
+      pay_type: "",
+      platform_discount: 0.0,
+      postage: 0.0,
+      pre_sale_time: "",
+      promotion_detail_list: [],
+      province: "广东省",
+      province_id: 6,
+      receive_time: "",
+      receiver_address:
+        "~AgAAAAKj5K0IdThr3gHe+IB/CXj/g/s71hb4h+Lopn37lsI3cyT3+lLvLiyYcQ61F8QObkXFmrPu2ouDIKOm2GEI9J1gvPYK3C63pAb7tc5ubc9GasgT+ssRCqC4kDa1~NfM8xbLbDWm6GmrCcrr769u45n7I7h7kBM8BMecpxcb+IgdhyzAgkOTtD56s5Tiwf06W~0~~",
+      receiver_address_mask: "新安大道东北侧彩塘林迈村，王厝宫路*号",
+      receiver_name:
+        "~AgAAAAKj5K0FdThr3gCXEjX7VukfDJ4VXsxKOdZIGJk=~e3T2WeW7~0~~",
+      receiver_name_mask: "林*坤",
+      receiver_phone:
+        "$Y/YKpKSij9Re$AgAAAAKj5K0GdThr3gD91OwqU75VBWn0HBgJhtknQj0=$0$$",
+      receiver_phone_mask: "1*********5",
+      refund_status: 1,
+      remark: "",
+      return_freight_payer: 0,
+      risk_control_status: 0,
+      self_contained: 0,
+      seller_discount: 10.0,
+      service_fee_detail: [],
+      shipping_time: "",
+      shipping_type: 0,
+      stock_out_handle_status: -1,
+      support_nationwide_warranty: 0,
+      town: "潮安区",
+      town_id: 712,
+      tracking_number: "",
+      trade_type: 0,
+      updated_at: "2024-03-18 17:43:00",
+      urge_shipping_time: "",
+      yyps_date: "",
+      yyps_time: "",
+    });
     setIsModalOpen(true);
     // document.getElementById("my_modal_2").showModal();
   };
@@ -420,91 +610,95 @@ const BatchPrint = () => {
     }
   };
 
-  const handleConfirm = () => {
-    // Implement order update API logic here
-    dispatch(
-      checkedItemsChange({ items: checkedItems, from: refundStatusCheck })
-    );
-    navigate("/batchprintexpressdelivery");
+  // const handleConfirm = () => {
+  //   // Implement order update API logic here
+  //   dispatch(
+  //     checkedItemsChange({ items: checkedItems, from: refundStatusCheck })
+  //   );
+  //   navigate("/batchprintexpressdelivery");
+  // };
+  console.log(cipher, "cipher");
+
+  const createPackage = async () => {
+    const packageId = checkedItems[0]?.lineItems[0]?.packageId;
+    const cipherValue = cipher[0]?.cipher;
+
+    console.log({ packageId, cipher: cipherValue }, "ship package");
+
+    try {
+      const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package?cipher=${encodeURIComponent(
+        cipherValue
+      )}&packageId=${encodeURIComponent(packageId)}`;
+
+      const res = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const result = await res.json();
+      console.log("📦 Single Package creation result:", result);
+      return result;
+    } catch (error) {
+      console.error("🚨 Error creating package:", error);
+      throw error;
+    }
   };
 
-  // const handleToCheckItemsUpdate = () => {
-  //   // window.print();
-  //   if (checkedItems.length === 0) {
-  //     alert("No items selected.");
-  //     return;
-  //   } else {
-  //     const userConfirmed = window.confirm(
-  //       "Are you sure to accept this order?"
-  //     );
-  //     if (userConfirmed) {
-  //       //need to implement order update api in here
+  const markPackageAsShipped = async () => {
+    try {
+      const item = checkedItems[0];
+      const lineItemIds = item.lineItems.map((li) => li.id);
+      const trackingNumber = item.lineItems[0].trackingNumber || "";
+      const shippingProviderId = item.lineItems[0].shippingProviderId;
 
+      const body = {
+        cipher: cipher[0].cipher,
+        order_line_item_ids: lineItemIds,
+        setTrackingNumber: trackingNumber,
+        shippingProviderId: shippingProviderId,
+        orderNumber: item.id,
+      };
+
+      console.log("📦 Single Shipping Payload:", body);
+
+      const res = await fetch(
+        "https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/mark/shipped",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+        }
+      );
+
+      const result = await res.json();
+      console.log("✅ Marked as shipped result:", result);
+      return result;
+    } catch (error) {
+      console.error("🚨 Error marking package as shipped:", error);
+      throw error;
+    }
+  };
+
+  // const handleConfirm = async () => {
+  //   try {
+  //     await createPackage();
+  //     const markShippedResult = await markPackageAsShipped();
+
+  //     if (markShippedResult.code === 0) {
   //       dispatch(
   //         checkedItemsChange({ items: checkedItems, from: refundStatusCheck })
   //       );
   //       navigate("/batchprintexpressdelivery");
+  //     } else {
+  //       alert("❌ Failed to mark as shipped.");
   //     }
+  //   } catch (error) {
+  //     alert("Something went wrong during shipment confirmation.");
   //   }
-  // };
-
-  //make function for import data
-
-  // const handleFileChange = async (e) => {
-  //   const file = e.target.files[0];
-
-  //   if (!file) {
-  //     return;
-  //   }
-  //   const reader = new FileReader();
-  //   reader.onload = (e) => {
-  //     const data = new Uint8Array(e.target.result);
-  //     const workbook = XLSX.read(data, { type: "array" });
-
-  //     // Assuming the first sheet is the one you want to convert
-  //     const sheetName = workbook.SheetNames[0];
-  //     const sheet = workbook.Sheets[sheetName];
-
-  //     // Convert the sheet to an array of objects
-  //     const jsonData = XLSX.utils.sheet_to_json(sheet);
-
-  //     const updateJsonData = jsonData?.map((item, index) => {
-  //       if (item) {
-  //         item.item_list = [{
-  //           goods_id: item?.goods_id,
-  //           goods_count: item?.goods_count,
-  //           goods_img: item?.goods_img,
-  //           goods_name: item?.goods_name,
-  //           goods_price: item?.goods_price,
-  //           goods_spec: item?.goods_spec,
-  //           outer_goods_id: item?.outer_goods_id,
-  //           outer_id: item?.outer_id,
-  //           sku_id: item?.sku_id,
-  //         }];
-  //       }
-  //       const { goods_id, goods_count, goods_img, goods_name, goods_price, goods_spec, outer_goods_id, sku_id, ...updateDataWithoutGoodsId } = item; // Destructure 'goods_id' from 'item'
-  //       const updateData = { ...updateDataWithoutGoodsId };
-  //       return updateData;
-
-  //     })
-  //     // setTotalOrderData([...totalOrderData, ...jsonData]);
-  //     if (refundStatusCheck ==="Waiting For Shipment"){
-  //       dispatch(orderListData([...updateJsonData, ...customersData]));
-  //     }
-  //     if (refundStatusCheck ==="shipped"){
-  //       const response = await postShippedDataToApi(updatePrintedData);
-  //       if (response.error) {
-  //         console.error("Error storing data:", response.error);
-  //         toast.error("Failed To Store Printing Data");
-  //       } else {
-
-  //       }
-  //     }
-  //     setCustomersData([...updateJsonData, ...customersData]);
-  //     setTotalPart(Math.ceil((totalOrderData.length + jsonData?.length) / 5));
-  //   };
-
-  //   reader.readAsArrayBuffer(file);
   // };
 
   const handleFileChange = async (e) => {
