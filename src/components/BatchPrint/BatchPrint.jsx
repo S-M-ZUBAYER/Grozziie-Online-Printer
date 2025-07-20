@@ -860,14 +860,12 @@ const BatchPrint = () => {
           {/* <Link to="/batchprintexpressdelivery"> */}
           <button
             onClick={handleToCheckItemsUpdate}
-            className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[240px] h-10 px-2 py-2 rounded-md cursor-pointer flex items-center justify-center"
+            className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto  h-10 px-4 gap-2 py-2 rounded-md cursor-pointer flex items-center justify-center"
           >
-            <span className=" h-10 flex items-center justify-center">
-              <MdOutlineLocalPrintshop className="w-[18px] h-[18px]" />
-              <span className="text-[15px] font-medium leading-normal capitalize pl-1">
-                {t("OrderAcceptedAndPrint")}
-              </span>
-            </span>
+            <MdOutlineLocalPrintshop className="w-[18px] h-[18px]" />
+            <p className="text-[15px] font-medium leading-normal capitalize pl-1">
+              {t("OrderAcceptedAndPrint")}
+            </p>
           </button>
           <ConfirmationModal
             isOpen={isConfirmModalOpen}

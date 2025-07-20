@@ -223,7 +223,6 @@ const ShopSelector = () => {
       <NavigationMenu.Trigger
         className="group flex items-center justify-between gap-2 px-3 py-2 rounded text-[15px] font-medium hover:bg-violet3 outline-none"
         onMouseEnter={() => setOpenShop(id)}
-        onMouseLeave={() => setOpenShop(null)}
       >
         <Checkbox.Root
           className="flex size-[25px] appearance-none items-center justify-center rounded bg-white  outline-none hover:bg-violet3 focus:outline-none focus:shadow-none"
@@ -252,41 +251,43 @@ const ShopSelector = () => {
       </NavigationMenu.Trigger>
 
       {/* Dropdown content with framer motion */}
-      <AnimatePresence>
-        {openShop === id && (
-          <motion.div
-            className="absolute top-full mt-2 left-0 w-[300px] bg-white rounded-md shadow-lg z-50 p-4"
-            onMouseEnter={() => setOpenShop(id)}
-            onMouseLeave={() => setOpenShop(null)}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-          >
-            <ul className="flex flex-col gap-2">
-              {stores.map((store, idx) => (
-                <li key={idx} className="flex items-center gap-2">
-                  <Checkbox.Root
-                    className="flex size-[20px] appearance-none items-center justify-center rounded bg-white shadow-[0_2px_6px] shadow-blackA4 outline-none hover:bg-violet3 focus:outline-none focus:shadow-none"
-                    defaultChecked
-                    id={`${id}-${idx}`}
-                  >
-                    <Checkbox.Indicator className="text-violet11">
-                      <CheckIcon />
-                    </Checkbox.Indicator>
-                  </Checkbox.Root>
-                  <label
-                    className="text-[14px] text-[#004368] leading-none"
-                    htmlFor={`${id}-${idx}`}
-                  >
-                    {store}
-                  </label>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <NavigationMenu.Content>
+        <AnimatePresence>
+          {openShop === id && (
+            <motion.div
+              className="absolute top-full mt-2 left-0 w-[300px] bg-white rounded-md shadow-lg z-50 p-4"
+              onMouseEnter={() => setOpenShop(id)}
+              onMouseLeave={() => setOpenShop(null)}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ul className="flex flex-col gap-2">
+                {stores.map((store, idx) => (
+                  <li key={idx} className="flex items-center gap-2">
+                    <Checkbox.Root
+                      className="flex size-[20px] appearance-none items-center justify-center rounded bg-white shadow-[0_2px_6px] shadow-blackA4 outline-none hover:bg-violet3 focus:outline-none focus:shadow-none"
+                      defaultChecked
+                      id={`${id}-${idx}`}
+                    >
+                      <Checkbox.Indicator className="text-violet11">
+                        <CheckIcon />
+                      </Checkbox.Indicator>
+                    </Checkbox.Root>
+                    <label
+                      className="text-[14px] text-[#004368] leading-none"
+                      htmlFor={`${id}-${idx}`}
+                    >
+                      {store}
+                    </label>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </NavigationMenu.Content>
     </NavigationMenu.Item>
   );
 
