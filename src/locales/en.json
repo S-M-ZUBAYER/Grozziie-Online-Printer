@@ -1,6 +1,7 @@
 {
   "home": "Home",
   "batchPrint": "Batch Print",
+  "packages": "Packages",
   "singlePrint": "Single Print",
   "settings": "Settings",
   "utility": "Utility",
