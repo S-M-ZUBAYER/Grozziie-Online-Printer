@@ -924,7 +924,7 @@ const Package = () => {
                 onClick={handleBatchPrinterExcelClick}
                 className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[115px] h-10 px-8 py-2 rounded-md cursor-pointer"
               >
-                <p className="text-[15px] font-medium capitalize cursor-pointer">
+                <p className="text-[15px] font-medium capitalize cursor-pointer whitespace-nowrap">
                   {t("Export")}
                 </p>
               </button>
