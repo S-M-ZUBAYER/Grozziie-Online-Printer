@@ -83,81 +83,86 @@ const BatchPrintTable = ({
           </thead>
           <tbody>
             {filteredData &&
-              filteredData.map((order) => {
-                const item = order.lineItems?.[0] || {};
-                const address = order.recipientAddress || {};
+              filteredData
+                .filter(
+                  // (order) => order?.lineItems[0]?.packageStatus === "TO_FULFILL"
+                  (order) => order?.lineItems[0]?.packageStatus === "CANCELLED"
+                ) // 🔍 Only TO_FULFILL orders
+                .map((order) => {
+                  const item = order.lineItems?.[0] || {};
+                  const address = order.recipientAddress || {};
 
-                return (
-                  <tr
-                    key={order.id}
-                    className="capitalize hover:bg-[#0043681A] cursor-pointer"
-                  >
-                    {/* Account Name / Buyer Email */}
-                    <td className="flex items-center justify-start cursor-pointer">
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 rounded-[2px] text-black text-opacity-60 bg-[#004368] cursor-pointer"
-                        name="product"
-                        value={order.id}
-                        checked={checkedItems.some((i) => i.id === order.id)}
-                        onChange={() => handleCheckboxChange(order)}
-                      />
-                      <p className="ml-[7px] text-black opacity-80 text-sm font-normal leading-4">
-                        {formatText(order.buyerEmail) || t("NoData")}
-                      </p>
-                    </td>
-                    {/* Customer Name */}
-                    <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(address.name) || t("NoData")}
-                    </td>
-
-                    {/* Address */}
-                    <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(address.fullAddress) || t("NoData")}
-                    </td>
-
-                    {/* Customer Mark */}
-                    <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(order.sellerNote) || t("NoData")}
-                    </td>
-
-                    {/* Delivery Company */}
-                    <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(order.shippingProvider) || t("NoData")}
-                    </td>
-
-                    {/* Delivery Code / Tracking Number */}
-                    <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(order.trackingNumber) || t("NoData")}
-                    </td>
-
-                    {/* Product Details */}
-                    <td className="flex items-center justify-between cursor-pointer">
-                      <div className="flex">
-                        <img
-                          src={
-                            item.skuImage || "https://via.placeholder.com/40"
-                          }
-                          alt="Product"
-                          className="w-9 h-8"
+                  return (
+                    <tr
+                      key={order.id}
+                      className="capitalize hover:bg-[#0043681A] cursor-pointer"
+                    >
+                      {/* Account Name / Buyer Email */}
+                      <td className="flex items-center justify-start cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded-[2px] text-black text-opacity-60 bg-[#004368] cursor-pointer"
+                          name="product"
+                          value={order.id}
+                          checked={checkedItems.some((i) => i.id === order.id)}
+                          onChange={() => handleCheckboxChange(order)}
                         />
-                        <span className="text-black opacity-80 text-xs font-normal capitalize ml-[6px] mr-6">
-                          {formatText(item.productName)
-                            ? item.productName.slice(0, 15) + "..."
-                            : t("NoData")}
-                        </span>
-                      </div>
-                      <p
-                        className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer whitespace-nowrap"
-                        onClick={() => handleDetailsClick(order)}
-                      >
-                        {t("Details")}
-                      </p>
-                      {/* You can reuse your modal here like before */}
-                    </td>
-                  </tr>
-                );
-              })}
+                        <p className="ml-[7px] text-black opacity-80 text-sm font-normal leading-4">
+                          {formatText(order.buyerEmail) || t("NoData")}
+                        </p>
+                      </td>
+                      {/* Customer Name */}
+                      <td className="text-black opacity-80 text-sm font-normal leading-4">
+                        {formatText(address.name) || t("NoData")}
+                      </td>
+
+                      {/* Address */}
+                      <td className="text-black opacity-80 text-sm font-normal leading-4">
+                        {formatText(address.fullAddress) || t("NoData")}
+                      </td>
+
+                      {/* Customer Mark */}
+                      <td className="text-black opacity-80 text-sm font-normal leading-4">
+                        {formatText(order.sellerNote) || t("NoData")}
+                      </td>
+
+                      {/* Delivery Company */}
+                      <td className="text-black opacity-80 text-sm font-normal leading-4">
+                        {formatText(order.shippingProvider) || t("NoData")}
+                      </td>
+
+                      {/* Delivery Code / Tracking Number */}
+                      <td className="text-black opacity-80 text-sm font-normal leading-4">
+                        {formatText(order.trackingNumber) || t("NoData")}
+                      </td>
+
+                      {/* Product Details */}
+                      <td className="flex items-center justify-between cursor-pointer">
+                        <div className="flex">
+                          <img
+                            src={
+                              item.skuImage || "https://via.placeholder.com/40"
+                            }
+                            alt="Product"
+                            className="w-9 h-8"
+                          />
+                          <span className="text-black opacity-80 text-xs font-normal capitalize ml-[6px] mr-6">
+                            {formatText(item.productName)
+                              ? item.productName.slice(0, 15) + "..."
+                              : t("NoData")}
+                          </span>
+                        </div>
+                        <p
+                          className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer whitespace-nowrap"
+                          onClick={() => handleDetailsClick(order)}
+                        >
+                          {t("Details")}
+                        </p>
+                        {/* You can reuse your modal here like before */}
+                      </td>
+                    </tr>
+                  );
+                })}
           </tbody>
         </table>
       )}
