@@ -600,8 +600,8 @@ const BatchPrint = () => {
       setModalMessage(
         <p className="text-xl font-semibold">
           {selectedLanguage === "zh-CN"
-            ? "您确定接受这个订单吗？"
-            : "Are you sure to accept this order?"}
+            ? "您确定已经完成此订单的包装了吗？"
+            : "Are you sure you have completed packaging this order?"}
         </p>
       );
       setConfirmAction(() => handleConfirm);
@@ -619,11 +619,34 @@ const BatchPrint = () => {
   // };
   console.log(cipher, "cipher");
 
-  const createPackage = async () => {
+  const fetchOrderListData = async (id) => {
+    try {
+      const response = await loadOrderList({
+        tikTokShopCipher: cipher[0]?.cipher,
+      }).unwrap();
+
+      const orders = response?.data?.orders;
+
+      if (Array.isArray(orders) && orders.length > 0) {
+        const filteredOrderList = orders.filter((item) => item?.buyerEmail);
+
+        dispatch(orderListData(filteredOrderList));
+      } else {
+        console.warn("No valid orders received or unexpected format", response);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  const handleConfirm = async (id) => {
     const packageId = checkedItems[0]?.lineItems[0]?.packageId;
     const cipherValue = cipher[0]?.cipher;
 
-    console.log({ packageId, cipher: cipherValue }, "ship package");
+    if (!packageId || !cipherValue) {
+      console.warn("Missing packageId or cipher");
+      return;
+    }
 
     try {
       const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package?cipher=${encodeURIComponent(
@@ -638,48 +661,21 @@ const BatchPrint = () => {
       });
 
       const result = await res.json();
-      console.log("📦 Single Package creation result:", result);
+      console.log("📦 Package created:", result);
+
+      const restOfOrders = filteredData.filter(
+        (item) => item?.id !== checkedItems[0]?.id
+      );
+
+      fetchOrderListData();
+      setFilteredData(restOfOrders.slice(0, 5));
+
+      // ✅ Close modal if successful
+      setIsConfirmModalOpen(false); // <-- replace with your actual modal state control
+
       return result;
     } catch (error) {
       console.error("🚨 Error creating package:", error);
-      throw error;
-    }
-  };
-
-  const markPackageAsShipped = async () => {
-    try {
-      const item = checkedItems[0];
-      const lineItemIds = item.lineItems.map((li) => li.id);
-      const trackingNumber = item.lineItems[0].trackingNumber || "";
-      const shippingProviderId = item.lineItems[0].shippingProviderId;
-
-      const body = {
-        cipher: cipher[0].cipher,
-        order_line_item_ids: lineItemIds,
-        setTrackingNumber: trackingNumber,
-        shippingProviderId: shippingProviderId,
-        orderNumber: item.id,
-      };
-
-      console.log("📦 Single Shipping Payload:", body);
-
-      const res = await fetch(
-        "https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/mark/shipped",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(body),
-        }
-      );
-
-      const result = await res.json();
-      console.log("✅ Marked as shipped result:", result);
-      return result;
-    } catch (error) {
-      console.error("🚨 Error marking package as shipped:", error);
-      throw error;
     }
   };
 
@@ -1028,7 +1024,7 @@ const BatchPrint = () => {
       </div>
 
       {/* end section button */}
-      <div className="mt-4 mr-8">
+      <div className="mt-4 mr-8 mb-96">
         <div className="flex items-center justify-end">
           {/* <button className="w-52 h-10 bg-white text-[#004368] rounded-md border flex items-center hover:bg-[#004368] hover:text-white p-2">
             <FaEdit className="w-4 h-4" />

@@ -57,6 +57,7 @@ import PaymentPrivateRoute from "../components/Private/PaymentPrivateRoute";
 import PaymentAlipay from "../components/Pricing/PaymentAlipay";
 import VerifyEmailPage from "../components/Auth/VerifyEmailPage";
 import Package from "../components/Packages/Package";
+import BatchPrintPrinting from "../components/BatchPrintExpressDelivery/BatchPrintPrinting";
 
 export const routes = createBrowserRouter([
   {
@@ -201,6 +202,16 @@ export const routes = createBrowserRouter([
           // <PrivateRoute>
           // <PaymentPrivateRoute>
           <BatchPrintExpressDelivery />
+          // </PaymentPrivateRoute>
+          // </PrivateRoute>
+        ),
+      },
+      {
+        path: "/batchPrintPrinting",
+        element: (
+          // <PrivateRoute>
+          // <PaymentPrivateRoute>
+          <BatchPrintPrinting />
           // </PaymentPrivateRoute>
           // </PrivateRoute>
         ),
