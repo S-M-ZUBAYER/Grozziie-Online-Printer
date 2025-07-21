@@ -3,6 +3,7 @@ import { MdOutlineLocalPrintshop } from "react-icons/md";
 import { arrayToExcel } from "../../Share/Function/FunctionalComponent";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   checkedExpressChange,
   checkedItemsChange,
@@ -32,7 +33,6 @@ import {
   fetchLogisticCompanies,
 } from "./BatchPrinterFunctions";
 import { shopDeliveryCompanyList } from "../../features/slice/shopDeliveryCompanySlice";
-import { t } from "i18next";
 
 const BatchPrint = () => {
   const [selectAll, setSelectAll] = useState(false);
@@ -44,6 +44,7 @@ const BatchPrint = () => {
   const [refundStatusCheck, setRefundStatusCheck] = useState(
     "Waiting For Shipment"
   );
+
   const [searchFields, setSearchFields] = useState({
     RecipientAddress: "",
     isActiveRecipientAddress: "",
@@ -69,7 +70,7 @@ const BatchPrint = () => {
     const stored = localStorage.getItem("tiktokShopInfo");
     return stored ? JSON.parse(stored) : [];
   });
-
+  const { t } = useTranslation();
   const [postShippedDataToApi] = useSetShippedDataUsMutation();
 
   const dispatch = useDispatch();
@@ -116,25 +117,25 @@ const BatchPrint = () => {
     setIsActiveBtnAmount(false);
   };
 
-  // this is the part to store orderList into local storage temporary
-  function storeDecryptedOrderList(decryptedOrderList) {
-    try {
-      // Convert the decryptedOrderList to a JSON string
-      const serializedDecryptedOrderList = JSON.stringify(decryptedOrderList);
+  // // this is the part to store orderList into local storage temporary
+  // function storeDecryptedOrderList(decryptedOrderList) {
+  //   try {
+  //     // Convert the decryptedOrderList to a JSON string
+  //     const serializedDecryptedOrderList = JSON.stringify(decryptedOrderList);
 
-      // Store the serialized data in local storage under the key 'decryptedOrderList'
-      localStorage.setItem("decryptedOrderList", serializedDecryptedOrderList);
-    } catch (error) {
-      console.error(
-        "Error storing decrypted order list in local storage:",
-        error
-      );
-    }
-  }
-  useEffect(() => {
-    // Usage:
-    storeDecryptedOrderList(loadOrderList);
-  }, [loadOrderList]);
+  //     // Store the serialized data in local storage under the key 'decryptedOrderList'
+  //     localStorage.setItem("decryptedOrderList", serializedDecryptedOrderList);
+  //   } catch (error) {
+  //     console.error(
+  //       "Error storing decrypted order list in local storage:",
+  //       error
+  //     );
+  //   }
+  // }
+  // useEffect(() => {
+  //   // Usage:
+  //   storeDecryptedOrderList(loadOrderList);
+  // }, [loadOrderList]);
 
   // start the functionalities to get all express delivery company list
   // call the function with useEffect to get the the company name list
@@ -192,6 +193,36 @@ const BatchPrint = () => {
     }
   };
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await loadOrderList({
+          tikTokShopCipher: cipher[0]?.cipher,
+        }).unwrap();
+        const orders = response?.data?.orders;
+        if (Array.isArray(orders) && orders.length > 0) {
+          const filteredOrderList = orders.filter(
+            (item) =>
+              item?.buyerEmail &&
+              item?.lineItems?.[0]?.packageStatus === "CANCELLED"
+          );
+
+          dispatch(orderListData(filteredOrderList));
+          setTotalOrderData(filteredOrderList);
+        } else {
+          console.warn(
+            "No valid orders received or unexpected format",
+            response
+          );
+        }
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, [loadOrderList, cipher]);
+
   // Function to handle individual checkbox change
   const handleCheckboxChange = (customer) => {
     if (checkedItems.some((item) => item?.order_sn === customer?.order_sn)) {
@@ -211,31 +242,13 @@ const BatchPrint = () => {
     }
   };
 
-  // const filteredAllProduct = mallProduct.filter((request) =>
-  //   request?.productName.toLowerCase().includes(searchAllQuery.toLowerCase()) ||
-  //   request?.productCountryName.toLowerCase().includes(searchAllQuery.toLowerCase()) ||
-  //   request?.productPrice.toLowerCase().includes(searchAllQuery.toLowerCase()) ||
-  //   // request?.id.includes(searchAllQuery.toLowerCase()) ||
-  //   request?.modelNumber.toLowerCase().includes(searchAllQuery.toLowerCase())
-  //   // request?.printerColo.toLowerCase().includes(searchAllQuery.toLowerCase())
-  // );
-
   // pagination part
-  let data;
+  const data = totalOrderData;
   const [showPage, setShowPage] = useState(1);
   const [currentBar, setCurrentBar] = useState(1);
-  const [currentCustomerData, setCurrentCustomerData] = useState(
-    data?.slice(0, 5)
-  );
-
+  const [currentCustomerData, setCurrentCustomerData] = useState([]);
   const calculateTotalPart = () => {
-    data =
-      refundStatusCheck === "Waiting For Shipment"
-        ? totalOrderData
-        : refundStatusCheck === "shipped"
-        ? printedData
-        : [];
-    return Math.ceil((data || []).length / 5);
+    return Math.ceil(data.length / 5);
   };
   const [totalPart, setTotalPart] = useState(calculateTotalPart());
   const [customersData, setCustomersData] = useState([]);
@@ -244,10 +257,11 @@ const BatchPrint = () => {
   const [rightPaginationBtn, setRightPaginationBtn] = useState(true);
 
   useEffect(() => {
-    setTotalPart(calculateTotalPart());
-    setCurrentCustomerData(data?.slice(0, 5));
+    const firstPageData = data.slice(0, 5);
+    setTotalPart(Math.ceil(data.length / 5));
     setCustomersData(data);
-    setFilteredData(data);
+    setFilteredData(firstPageData);
+    setCurrentCustomerData(firstPageData);
   }, [refundStatusCheck, totalOrderData, printedData]);
 
   useEffect(() => {
@@ -270,47 +284,21 @@ const BatchPrint = () => {
   const handleToShowCurrentBarData = (count) => {
     // console.log(customersData, "currentShowBar");
     if (count <= totalPart) {
-      const data =
-        refundStatusCheck === "Waiting For Shipment"
-          ? totalOrderData
-          : refundStatusCheck === "shipped"
-          ? printedData
-          : [];
+      const data = totalOrderData;
       const currentData = count * 5;
-      // setCurrentCustomerData(data?.slice(currentData - 5, currentData));
-      // setFilteredData(customersData?.slice(currentData - 5, currentData));
       setFilteredData(data?.slice(currentData - 5, currentData));
       setCurrentBar(count);
     }
   };
 
-  // pagination next option
   const handleToNext = (count) => {
-    const data =
-      refundStatusCheck === "Waiting For Shipment"
-        ? totalOrderData
-        : refundStatusCheck === "shipped"
-        ? printedData
-        : [];
-
     if (count <= totalPart) {
-      if (count > 1) {
-        setLeftPaginationBtn(true);
-      } else {
-        setLeftPaginationBtn(false);
-      }
-
-      if (count === totalPart) {
-        setRightPaginationBtn(false);
-      } else {
-        setRightPaginationBtn(true);
-      }
-
       const currentDataIndex = count * 5;
-      setFilteredData(data.slice(currentDataIndex - 5, currentDataIndex));
+      const nextPageData = data.slice(currentDataIndex - 5, currentDataIndex);
+      setFilteredData(nextPageData);
       setCurrentBar(count);
-    } else {
-      setRightPaginationBtn(false);
+      setLeftPaginationBtn(count > 1);
+      setRightPaginationBtn(count < totalPart);
     }
   };
 
@@ -617,7 +605,7 @@ const BatchPrint = () => {
   //   );
   //   navigate("/batchprintexpressdelivery");
   // };
-  console.log(cipher, "cipher");
+  console.log(filteredData, "filtered Data from batch");
 
   const fetchOrderListData = async (id) => {
     try {
@@ -796,6 +784,8 @@ const BatchPrint = () => {
     );
     setFilteredData(filteredMultipleSearchingData);
   };
+
+  console.log(setFilteredData, loadOrderList, "filteredData");
 
   return (
     <div className="bg-[#004368] bg-opacity-5 w-full h-screen">
