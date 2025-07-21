@@ -83,92 +83,105 @@ const PackageTable = ({
           </thead>
           <tbody>
             {filteredData &&
-              filteredData.map((order) => {
-                const item = order.lineItems?.[0] || {};
-                const address = order.recipientAddress || {};
+              filteredData
+                .filter(
+                  (order) => order?.lineItems[0]?.packageStatus === "PROCESSING"
+                ) // 🔍 Only PROCESSING orders
+                .map((order) => {
+                  const item = order.lineItems?.[0] || {};
+                  const address = order.recipientAddress || {};
 
-                return (
-                  <tr
-                    key={order.id}
-                    className="capitalize hover:bg-[#0043681A] cursor-pointer"
-                  >
-                    {/* Account Name / Buyer Email */}
-                    <td className="flex items-center justify-start cursor-pointer">
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 rounded-[2px] text-black text-opacity-60 bg-[#004368] cursor-pointer"
-                        name="product"
-                        value={order.id}
-                        checked={checkedItems.some((i) => i.id === order.id)}
-                        onChange={() => handleCheckboxChange(order)}
-                      />
-                      <p className="ml-[7px] text-black opacity-80 text-sm font-normal leading-4">
-                        {formatText(order.buyerEmail) ||
+                  return (
+                    <tr
+                      key={order.id}
+                      className="capitalize hover:bg-[#0043681A] cursor-pointer"
+                    >
+                      {/* Account Name / Buyer Email */}
+                      <td className="flex items-center justify-start cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded-[2px] text-black text-opacity-60 bg-[#004368] cursor-pointer"
+                          name="product"
+                          value={order.id}
+                          checked={checkedItems.some((i) => i.id === order.id)}
+                          onChange={() => handleCheckboxChange(order)}
+                        />
+                        <p className="ml-[7px] text-black opacity-80 text-sm font-normal leading-4">
+                          {formatText(order.buyerEmail) ||
+                            (selectedLanguage === "zh-CN"
+                              ? "没有数据"
+                              : "No Data")}
+                        </p>
+                      </td>
+
+                      {/* Customer Name */}
+                      <td className="text-black opacity-80 text-sm font-normal leading-4">
+                        {formatText(address.name) ||
                           (selectedLanguage === "zh-CN"
                             ? "没有数据"
                             : "No Data")}
-                      </p>
-                    </td>
+                      </td>
 
-                    {/* Customer Name */}
-                    <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(address.name) ||
-                        (selectedLanguage === "zh-CN" ? "没有数据" : "No Data")}
-                    </td>
-
-                    {/* Address */}
-                    <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(address.fullAddress) ||
-                        (selectedLanguage === "zh-CN" ? "没有数据" : "No Data")}
-                    </td>
-
-                    {/* Customer Mark */}
-                    <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(order.sellerNote) ||
-                        (selectedLanguage === "zh-CN" ? "没有数据" : "No Data")}
-                    </td>
-
-                    {/* Delivery Company */}
-                    <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(order.shippingProvider) ||
-                        (selectedLanguage === "zh-CN" ? "没有数据" : "No Data")}
-                    </td>
-
-                    {/* Delivery Code / Tracking Number */}
-                    <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(order.trackingNumber) ||
-                        (selectedLanguage === "zh-CN" ? "没有数据" : "No Data")}
-                    </td>
-
-                    {/* Product Details */}
-                    <td className="flex items-center justify-between cursor-pointer">
-                      <div className="flex">
-                        <img
-                          src={
-                            item.skuImage || "https://via.placeholder.com/40"
-                          }
-                          alt="Product"
-                          className="w-9 h-8"
-                        />
-                        <span className="text-black opacity-80 text-xs font-normal capitalize ml-[6px] mr-6">
-                          {formatText(item.productName)
-                            ? item.productName.slice(0, 15) + "..."
-                            : selectedLanguage === "zh-CN"
+                      {/* Address */}
+                      <td className="text-black opacity-80 text-sm font-normal leading-4">
+                        {formatText(address.fullAddress) ||
+                          (selectedLanguage === "zh-CN"
                             ? "没有数据"
-                            : "No Data"}
-                        </span>
-                      </div>
-                      <p
-                        className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
-                        onClick={() => handleDetailsClick(order)}
-                      >
-                        {selectedLanguage === "zh-CN" ? "细节" : "Details"}
-                      </p>
-                      {/* You can reuse your modal here like before */}
-                    </td>
-                  </tr>
-                );
-              })}
+                            : "No Data")}
+                      </td>
+
+                      {/* Customer Mark */}
+                      <td className="text-black opacity-80 text-sm font-normal leading-4">
+                        {formatText(order.sellerNote) ||
+                          (selectedLanguage === "zh-CN"
+                            ? "没有数据"
+                            : "No Data")}
+                      </td>
+
+                      {/* Delivery Company */}
+                      <td className="text-black opacity-80 text-sm font-normal leading-4">
+                        {formatText(order.shippingProvider) ||
+                          (selectedLanguage === "zh-CN"
+                            ? "没有数据"
+                            : "No Data")}
+                      </td>
+
+                      {/* Delivery Code / Tracking Number */}
+                      <td className="text-black opacity-80 text-sm font-normal leading-4">
+                        {formatText(order.trackingNumber) ||
+                          (selectedLanguage === "zh-CN"
+                            ? "没有数据"
+                            : "No Data")}
+                      </td>
+
+                      {/* Product Details */}
+                      <td className="flex items-center justify-between cursor-pointer">
+                        <div className="flex">
+                          <img
+                            src={
+                              item.skuImage || "https://via.placeholder.com/40"
+                            }
+                            alt="Product"
+                            className="w-9 h-8"
+                          />
+                          <span className="text-black opacity-80 text-xs font-normal capitalize ml-[6px] mr-6">
+                            {formatText(item.productName)
+                              ? item.productName.slice(0, 15) + "..."
+                              : selectedLanguage === "zh-CN"
+                              ? "没有数据"
+                              : "No Data"}
+                          </span>
+                        </div>
+                        <p
+                          className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
+                          onClick={() => handleDetailsClick(order)}
+                        >
+                          {selectedLanguage === "zh-CN" ? "细节" : "Details"}
+                        </p>
+                      </td>
+                    </tr>
+                  );
+                })}
           </tbody>
         </table>
       )}
