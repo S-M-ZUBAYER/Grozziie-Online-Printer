@@ -204,7 +204,7 @@ const BatchPrint = () => {
           const filteredOrderList = orders.filter(
             (item) =>
               item?.buyerEmail &&
-              item?.lineItems?.[0]?.packageStatus === "CANCELLED"
+              item?.lineItems?.[0]?.packageStatus === "PROCESSING"
           );
 
           dispatch(orderListData(filteredOrderList));
@@ -224,17 +224,17 @@ const BatchPrint = () => {
   }, [loadOrderList, cipher]);
 
   // Function to handle individual checkbox change
-  const handleCheckboxChange = (customer) => {
-    if (checkedItems.some((item) => item?.order_sn === customer?.order_sn)) {
-      // If the customer id is already in the checkedItems, remove it
+  const handleCheckboxChange = (order) => {
+    if (checkedItems.some((item) => item?.id === order?.id)) {
+      // If the order id is already in the checkedItems, remove it
       const updatedItems = checkedItems.filter(
-        (item) => item?.order_sn !== customer?.order_sn
+        (item) => item?.id !== order?.id
       );
       setCheckedItems(updatedItems);
       setSelectAll(false);
     } else {
       // If the customer id is not in the checkedItems, add it
-      const updatedItems = [...checkedItems, customer];
+      const updatedItems = [...checkedItems, order];
       setCheckedItems(updatedItems);
       if (updatedItems.length === totalOrderData?.length) {
         setSelectAll(true);
@@ -627,63 +627,92 @@ const BatchPrint = () => {
     }
   };
 
-  const handleConfirm = async (id) => {
-    const packageId = checkedItems[0]?.lineItems[0]?.packageId;
+  // const handleConfirm = async (id) => {
+  //   const packageId = checkedItems[0]?.lineItems[0]?.packageId;
+  //   const cipherValue = cipher[0]?.cipher;
+
+  //   if (!packageId || !cipherValue) {
+  //     console.warn("Missing packageId or cipher");
+  //     return;
+  //   }
+
+  //   try {
+  //     const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package?cipher=${encodeURIComponent(
+  //       cipherValue
+  //     )}&packageId=${encodeURIComponent(packageId)}`;
+
+  //     const res = await fetch(url, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
+
+  //     const result = await res.json();
+  //     console.log("📦 Package created:", result);
+
+  //     const restOfOrders = filteredData.filter(
+  //       (item) => item?.id !== checkedItems[0]?.id
+  //     );
+
+  //     fetchOrderListData();
+  //     setFilteredData(restOfOrders.slice(0, 5));
+
+  //     // ✅ Close modal if successful
+  //     setIsConfirmModalOpen(false); // <-- replace with your actual modal state control
+
+  //     return result;
+  //   } catch (error) {
+  //     console.error("🚨 Error creating package:", error);
+  //   }
+  // };
+
+  const handleConfirm = async () => {
     const cipherValue = cipher[0]?.cipher;
 
-    if (!packageId || !cipherValue) {
-      console.warn("Missing packageId or cipher");
+    if (!cipherValue || checkedItems.length === 0) {
+      console.warn("Missing cipher or no checked items");
       return;
     }
 
     try {
-      const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package?cipher=${encodeURIComponent(
-        cipherValue
-      )}&packageId=${encodeURIComponent(packageId)}`;
+      const responses = await Promise.all(
+        checkedItems.map(async (item) => {
+          const packageId = item?.lineItems?.[0]?.packageId;
 
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+          if (!packageId) {
+            console.warn(`Missing packageId for item with id ${item?.id}`);
+            return null;
+          }
 
-      const result = await res.json();
-      console.log("📦 Package created:", result);
+          const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package?cipher=${encodeURIComponent(
+            cipherValue
+          )}&packageId=${encodeURIComponent(packageId)}`;
 
-      const restOfOrders = filteredData.filter(
-        (item) => item?.id !== checkedItems[0]?.id
+          const res = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          const result = await res.json();
+          console.log(`📦 Package created for order ${item?.id}:`, result);
+          return result;
+        })
       );
 
-      fetchOrderListData();
+      // Optional: Filter out successfully processed items
+      const successfulIds = checkedItems.map((item) => item.id);
+      const restOfOrders = filteredData.filter(
+        (item) => !successfulIds.includes(item?.id)
+      );
       setFilteredData(restOfOrders.slice(0, 5));
-
-      // ✅ Close modal if successful
-      setIsConfirmModalOpen(false); // <-- replace with your actual modal state control
-
-      return result;
+      setIsConfirmModalOpen(false); // close the modal
     } catch (error) {
-      console.error("🚨 Error creating package:", error);
+      console.error("🚨 Error creating packages:", error);
     }
   };
-
-  // const handleConfirm = async () => {
-  //   try {
-  //     await createPackage();
-  //     const markShippedResult = await markPackageAsShipped();
-
-  //     if (markShippedResult.code === 0) {
-  //       dispatch(
-  //         checkedItemsChange({ items: checkedItems, from: refundStatusCheck })
-  //       );
-  //       navigate("/batchprintexpressdelivery");
-  //     } else {
-  //       alert("❌ Failed to mark as shipped.");
-  //     }
-  //   } catch (error) {
-  //     alert("Something went wrong during shipment confirmation.");
-  //   }
-  // };
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -784,8 +813,6 @@ const BatchPrint = () => {
     );
     setFilteredData(filteredMultipleSearchingData);
   };
-
-  console.log(setFilteredData, loadOrderList, "filteredData");
 
   return (
     <div className="bg-[#004368] bg-opacity-5 w-full h-screen">

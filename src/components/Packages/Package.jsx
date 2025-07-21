@@ -145,17 +145,17 @@ const Package = () => {
   };
 
   // Function to handle individual checkbox change
-  const handleCheckboxChange = (customer) => {
-    if (checkedItems.some((item) => item?.order_sn === customer?.order_sn)) {
-      // If the customer id is already in the checkedItems, remove it
+  const handleCheckboxChange = (order) => {
+    if (checkedItems.some((item) => item?.id === order?.id)) {
+      // If the order id is already in the checkedItems, remove it
       const updatedItems = checkedItems.filter(
-        (item) => item?.order_sn !== customer?.order_sn
+        (item) => item?.id !== order?.id
       );
       setCheckedItems(updatedItems);
       setSelectAll(false);
     } else {
-      // If the customer id is not in the checkedItems, add it
-      const updatedItems = [...checkedItems, customer];
+      // If the order id is not in the checkedItems, add it
+      const updatedItems = [...checkedItems, order];
       setCheckedItems(updatedItems);
       if (updatedItems.length === totalOrderData?.length) {
         setSelectAll(true);
