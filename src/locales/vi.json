@@ -144,5 +144,19 @@
   "Operate": "Thao tác",
   "TypeOperate": "Nhập thao tác",
   "Save": "Lưu",
-  "PostCode": "Mã bưu chính"
+  "PostCode": "Mã bưu chính",
+  "TypeAddress": "Nhập địa chỉ",
+
+  "_comment_contact": "Liên hệ",
+
+  "LetsTalk": "Hãy cùng trò chuyện",
+  "HaveIdea": "Bạn có ý tưởng lớn hoặc thương hiệu cần phát triển và cần trợ giúp?",
+  "ReachOut": "Hãy liên hệ, chúng tôi rất mong được nghe về dự án của bạn và hỗ trợ bạn",
+  "SupportEmail": "Email hỗ trợ",
+  "EnterUserName": "Nhập tên người dùng",
+  "Email": "Email",
+  "EnterEmail": "Nhập email của bạn",
+  "SelectCountry": "Chọn quốc gia",
+  "YourMessage": "Tin nhắn của bạn",
+  "Submit": "Gửi"
 }

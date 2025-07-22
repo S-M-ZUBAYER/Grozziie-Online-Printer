@@ -144,5 +144,19 @@
   "Operate": "Operasi",
   "TypeOperate": "Taip Operasi",
   "Save": "Simpan",
-  "PostCode": "Poskod"
+  "PostCode": "Poskod",
+  "TypeAddress": "Taip Alamat",
+
+  "_comment_contact": "Contact",
+
+  "LetsTalk": "Mari Bercakap",
+  "HaveIdea": "Ada idea besar atau jenama untuk dibangunkan dan perlukan bantuan?",
+  "ReachOut": "Hubungi kami, kami ingin mendengar tentang projek anda dan memberikan bantuan",
+  "SupportEmail": "Emel Sokongan",
+  "EnterUserName": "Masukkan nama pengguna",
+  "Email": "Emel",
+  "EnterEmail": "Masukkan emel anda",
+  "SelectCountry": "Pilih Negara",
+  "YourMessage": "Mesej anda",
+  "Submit": "Hantar"
 }

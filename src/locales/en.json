@@ -144,5 +144,19 @@
   "Operate": "Operate",
   "TypeOperate": "Type Operate",
   "Save": "Save",
-  "PostCode": "Post Code"
+  "PostCode": "Post Code",
+  "TypeAddress": "Type Address",
+
+  "_comment_contact": "Contact",
+
+  "LetsTalk": "Let’s Talk",
+  "HaveIdea": "Have some big idea or brand to develop and need help?",
+  "ReachOut": "Then reach out we'd love to hear about your project and provide help",
+  "SupportEmail": "Support Email",
+  "EnterUserName": "Enter user name",
+  "Email": "Email",
+  "EnterEmail": "Enter your email",
+  "SelectCountry": "Select Country",
+  "YourMessage": "Your message",
+  "Submit": "Submit"
 }

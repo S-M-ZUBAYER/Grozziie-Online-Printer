@@ -144,5 +144,19 @@
   "Operate": "Gawin",
   "TypeOperate": "I-type ang Operasyon",
   "Save": "I-save",
-  "PostCode": "Postal Code"
+  "PostCode": "Postal Code",
+  "TypeAddress": "I-type ang Address",
+
+  "_comment_contact": "Makipag-ugnayan",
+
+  "LetsTalk": "Mag-usap Tayo",
+  "HaveIdea": "May malaki kang ideya o brand na kailangang paunlarin at kailangan ng tulong?",
+  "ReachOut": "Makipag-ugnayan ka sa amin, gusto naming marinig ang tungkol sa iyong proyekto at makatulong",
+  "SupportEmail": "Suportang Email",
+  "EnterUserName": "Ilagay ang username",
+  "Email": "Email",
+  "EnterEmail": "Ilagay ang iyong email",
+  "SelectCountry": "Pumili ng Bansa",
+  "YourMessage": "Iyong mensahe",
+  "Submit": "Isumite"
 }

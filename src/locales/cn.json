@@ -144,5 +144,19 @@
   "Operate": "操作",
   "TypeOperate": "输入操作",
   "Save": "保存",
-  "PostCode": "邮政编码"
+  "PostCode": "邮政编码",
+  "TypeAddress": "输入地址",
+
+  "_comment_contact": "Contact",
+
+  "LetsTalk": "让我们聊聊",
+  "HaveIdea": "有一个大创意或品牌想要开发并需要帮助？",
+  "ReachOut": "欢迎联系我们，我们很乐意了解您的项目并提供帮助",
+  "SupportEmail": "支持邮箱",
+  "EnterUserName": "输入用户名",
+  "Email": "邮箱",
+  "EnterEmail": "输入您的邮箱",
+  "SelectCountry": "选择国家",
+  "YourMessage": "您的留言",
+  "Submit": "提交"
 }
