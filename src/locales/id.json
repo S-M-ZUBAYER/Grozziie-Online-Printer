@@ -144,5 +144,19 @@
   "Operate": "Operasi",
   "TypeOperate": "Ketik Operasi",
   "Save": "Simpan",
-  "PostCode": "Kode Pos"
+  "PostCode": "Kode Pos",
+  "TypeAddress": "Ketik Alamat",
+
+  "_comment_contact": "Kontak",
+
+  "LetsTalk": "Ayo Bicara",
+  "HaveIdea": "Punya ide besar atau merek yang ingin dikembangkan dan butuh bantuan?",
+  "ReachOut": "Hubungi kami, kami ingin mendengar tentang proyek Anda dan memberikan bantuan",
+  "SupportEmail": "Email Dukungan",
+  "EnterUserName": "Masukkan nama pengguna",
+  "Email": "Email",
+  "EnterEmail": "Masukkan email Anda",
+  "SelectCountry": "Pilih Negara",
+  "YourMessage": "Pesan Anda",
+  "Submit": "Kirim"
 }
