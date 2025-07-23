@@ -171,11 +171,16 @@ const Package = () => {
         }).unwrap();
         const orders = response?.data?.orders;
         if (Array.isArray(orders) && orders.length > 0) {
+          console.log(orders, "orders from the package printer");
           const filteredOrderList = orders.filter((item) => item?.buyerEmail);
           console.log("Filtered Orders:", filteredOrderList);
 
           dispatch(orderListData(filteredOrderList));
-          setTotalOrderData(filteredOrderList);
+          setTotalOrderData(
+            filteredOrderList.filter(
+              (order) => order?.lineItems[0]?.packageStatus === "PROCESSING"
+            )
+          );
         } else {
           console.warn(
             "No valid orders received or unexpected format",

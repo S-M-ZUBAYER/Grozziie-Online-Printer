@@ -201,10 +201,10 @@ const BatchPrint = () => {
         }).unwrap();
         const orders = response?.data?.orders;
         if (Array.isArray(orders) && orders.length > 0) {
+          console.log(orders, "orders from the batch printer");
+
           const filteredOrderList = orders.filter(
-            (item) =>
-              item?.buyerEmail &&
-              item?.lineItems?.[0]?.packageStatus === "PROCESSING"
+            (item) => item?.buyerEmail && item?.status === "AWAITING_SHIPMENT"
           );
 
           dispatch(orderListData(filteredOrderList));

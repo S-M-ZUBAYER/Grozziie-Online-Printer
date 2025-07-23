@@ -4,7 +4,7 @@ const batchPrintApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     loadOrderList: builder.mutation({
       query: ({ tikTokShopCipher }) => ({
-        url: `/order/list?pageSize=10&cipher=${tikTokShopCipher}`,
+        url: `/order/list?pageSize=20&cipher=${tikTokShopCipher}`,
         method: "POST", // ✅ Use GET since you’re not sending any body data
         headers: {
           "Content-Type": "application/json",
