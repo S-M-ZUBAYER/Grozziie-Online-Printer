@@ -32,6 +32,7 @@ import ConfirmationModal from "../../Share/ConfirmationModal";
 import { TiInfoOutline } from "react-icons/ti";
 import { AiOutlineCheckCircle } from "react-icons/ai";
 import FadeLoader from "react-spinners/FadeLoader";
+import { useTranslation } from "react-i18next";
 
 const ManualOrder = () => {
   //   language change
@@ -52,6 +53,9 @@ const ManualOrder = () => {
   const [refundStatusCheck, setRefundStatusCheck] = useState(
     "Waiting For Shipment"
   );
+
+  const { t } = useTranslation();
+
   const [searchFields, setSearchFields] = useState({
     RecipientAddress: "",
     isActiveRecipientAddress: "",
@@ -904,12 +908,11 @@ const ManualOrder = () => {
                 for="selectAll"
                 className="text-black opacity-80 text-sm font-normal capitalize pl-2 pr-1"
               >
-                {selectedLanguage === "zh-CN" ? "全选" : "Select All"}
+                {t("SelectAll")}
               </label>
               {/* this data coming from dynamic when items selected */}
               <span className="text-black opacity-80 text-xs font-light capitalize">
-                ({checkedItems?.length}{" "}
-                {selectedLanguage === "zh-CN" ? "选择" : "selected"})
+                ({checkedItems?.length} {t("Selected")})
               </span>
             </div>
             {/* <div className="col-span-1">
@@ -1024,7 +1027,7 @@ const ManualOrder = () => {
                 className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[115px] h-10 px-8 py-2 rounded-md cursor-pointer"
               >
                 <p className="text-[15px] font-medium capitalize cursor-pointer">
-                  {selectedLanguage === "zh-CN" ? "出口" : "Export"}
+                  {t("Export")}
                 </p>
               </button>
             </div>
@@ -1036,49 +1039,31 @@ const ManualOrder = () => {
               <div className="flex flex-col items-center justify-center pt-10 text-center w-full mx-auto pb-60">
                 <FadeLoader color="#004368" size={25} />
                 <p className="text-2xl font-medium pt-10 text-[#004368]">
-                  {selectedLanguage === "zh-CN"
-                    ? "数据正在加载，请稍候..."
-                    : "Data is Loading. Please Wait..."}
+                  {t("DataLoading")}
                 </p>
               </div>
             ) : isError ? (
               <p className="text-center text-3xl text-red-500 font-medium py-20">
-                {selectedLanguage === "zh-CN"
-                  ? "未找到数据。请稍后再试..."
-                  : "Data Not Found. Please try again later...."}
+                {t("DataNotFound")}
               </p>
             ) : (
               <table className="table">
                 <thead className="">
                   <tr className="h-11 text-black text-opacity-80 capitalize text-center text-sm font-normal leading-4">
                     <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-l-md">
-                      <span className="mr-[10px]">
-                        {selectedLanguage === "zh-CN"
-                          ? "帐户名称"
-                          : "Account Name"}
-                      </span>
+                      <span className="mr-[10px]">{t("AccountName")}</span>
                       <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                     </th>
                     <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                      <span className="mr-[10px]">
-                        {selectedLanguage === "zh-CN"
-                          ? "帐户名称"
-                          : "Customer Name"}
-                      </span>
+                      <span className="mr-[10px]">{t("CustomerName")}</span>
                       <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                     </th>
                     <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                      <span className="mr-[10px]">
-                        {selectedLanguage === "zh-CN" ? "地址" : "Address"}
-                      </span>
+                      <span className="mr-[10px]">{t("Address")}</span>
                       <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                     </th>
                     <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                      <span className="mr-[10px]">
-                        {selectedLanguage === "zh-CN"
-                          ? "客户标记"
-                          : "Customer Mark"}
-                      </span>
+                      <span className="mr-[10px]">{t("CustomerMark")}</span>
                       <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                     </th>
                     <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
@@ -1166,7 +1151,7 @@ const ManualOrder = () => {
                           className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
                           onClick={() => handleDetailsClick(customerData)}
                         >
-                          {selectedLanguage === "zh-CN" ? "详" : "Details"}
+                          {t("Details")}
                         </p>
                         {selectedCustomer && isModalOpen && (
                           <dialog
@@ -1205,7 +1190,7 @@ const ManualOrder = () => {
                                             ?.goods_name
                                             ? selectedCustomer?.item_list[0]
                                                 ?.goods_name
-                                            : "No Data"}
+                                            : t("NoData")}
                                         </span>
                                       </h2>
                                       <h5 className="text-xl font-semibold text-black">
@@ -1215,18 +1200,15 @@ const ManualOrder = () => {
                                         <span className="font-light text-black text-opacity-90 text-sm ml-2">
                                           {selectedCustomer?.account_name
                                             ? selectedCustomer?.account_name
-                                            : "No Data"}
+                                            : t("NoData")}
                                         </span>
                                       </h5>
                                       <h5 className="text-xl font-semibold text-black">
-                                        {selectedLanguage === "zh-CN"
-                                          ? "客户标记："
-                                          : "Customer Mark:"}
-
+                                        {t("CustomerMark")}
                                         <span className="font-light text-black text-opacity-90 text-sm ml-2">
                                           {selectedCustomer?.remark
                                             ? selectedCustomer?.remark
-                                            : "No Data"}
+                                            : t("NoData")}
                                         </span>
                                       </h5>
                                       <h5 className="text-xl font-semibold text-black">
@@ -1237,7 +1219,7 @@ const ManualOrder = () => {
                                         <span className="font-light text-black text-opacity-90 text-sm ml-2">
                                           {selectedCustomer.company_name
                                             ? selectedCustomer.company_name
-                                            : "No Data"}
+                                            : t("NoData")}
                                         </span>
                                       </h5>
                                       <h5 className="text-xl font-semibold text-black">
@@ -1248,7 +1230,7 @@ const ManualOrder = () => {
                                         <span className="font-light text-black text-opacity-90 text-sm ml-2">
                                           {selectedCustomer.pay_amount
                                             ? `${selectedCustomer.pay_amount} `
-                                            : "No Data"}{" "}
+                                            : t("NoData")}{" "}
                                           ¥
                                         </span>
                                       </h5>
@@ -1257,9 +1239,7 @@ const ManualOrder = () => {
                                           className="bg-[#004368] bg-opacity-30 hover:bg-[#004368] text-black hover:text-white w-[100px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mt-5"
                                           onClick={closeModal}
                                         >
-                                          {selectedLanguage === "zh-CN"
-                                            ? "关闭"
-                                            : "Close"}
+                                          {t("Close")}
                                         </p>
                                       </div>
                                     </div>
