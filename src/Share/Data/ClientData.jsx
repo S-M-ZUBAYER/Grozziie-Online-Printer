@@ -44,6 +44,9 @@ export const printerModel = ["TP870", "TP850", "TP210A", "TP210B", "TP210C"];
 export const refundStatusOptions = [
   "Waiting For Shipment",
   "shipped",
+  "Delivered",
+  "Cancel & return",
+
   // "等待发货",
   // "已发货",
   // "shipped and awaiting signature",

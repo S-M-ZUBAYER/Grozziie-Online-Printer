@@ -78,11 +78,14 @@ const BatchPrintPrinting = () => {
         return;
       }
 
-      const mergeRes = await fetch("http://localhost:2000/tht/merge-pdfs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ urls: validUrls }),
-      });
+      const mergeRes = await fetch(
+        "https://grozziieget.zjweiting.com:8033/tht/merge-pdfs",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ urls: validUrls }),
+        }
+      );
 
       if (!mergeRes.ok) throw new Error("Failed to merge PDFs");
 
