@@ -1,61 +1,35 @@
 import React, { useEffect, useState } from "react";
-import { useGetStoreDeliveryCompaniesListQuery } from "../../features/allApis/storeDeliveryCompanyListApi";
 import { useDispatch, useSelector } from "react-redux";
 import {
   allAvailableExpressCompanyChange,
   checkedExpressChange,
 } from "../../features/slice/userSlice";
+import { setDeliveryCompanies } from "../../features/slice/allDeliveryCompanySlice";
 import PropagateLoader from "react-spinners/PropagateLoader";
+import { useGetShippingProvidersQuery } from "../../features/allApis/logisticCompaniesApi";
 
 const StoredDeliveryCompanyList = () => {
-  //   const [allDeliveryCompanyList, setAllDeliveryCompanyList] = useState([]);
-  const [selectedOption, setSelectedOption] = useState(0);
+  const [selectedOption, setSelectedOption] = useState("");
   const dispatch = useDispatch();
 
-  //   useEffect(() => {
-  //     const url =
-  //       "https://grozziieget.zjweiting.com:3091/GrozziiePrint-WebAPI/stdtemplates-store";
+  const deliveryCompanies = useSelector(
+    (state) => state.deliveryCompanies.data
+  );
 
-  //     fetch(url)
-  //       .then((response) => {
-  //         if (!response.ok) {
-  //           throw new Error(`HTTP error! Status: ${response.status}`);
-  //         }
-  //         return response.json();
-  //       })
-  //       .then((data) => {
-  //         console.log("Success:", data);
-  //         setAllDeliveryCompanyList(data);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error:", error);
-  //       });
-  //   }, []);
-  // console.log(allDeliveryCompanyList, "show the allDeliveryCompanyList");
-
-  // useEffect(() => {
-  //   const storedData = JSON.parse(
-  //     localStorage.getItem("DefaultExpressCompany")
-  //   );
-  //   if (allDeliveryCompanyList) {
-  //     if (storedData) {
-  //       allDeliveryCompanyList.filter((company, index) => {
-  //         if (company?.wp_code === storedData?.wp_code) {
-  //           setSelectedOption(index);
-  //           dispatch(checkedExpressChange(allDeliveryCompanyList[index]));
-  //         }
-  //       });
-  //     } else {
-  //       console.log(allDeliveryCompanyList);
-  //       dispatch(checkedExpressChange(allDeliveryCompanyList[0]));
-  //     }
-  //   }
-  // }, []);
-  const { data: allDeliveryCompanyList, isLoading } =
-    useGetStoreDeliveryCompaniesListQuery();
   const reduxAllAvailableExpressCompany = useSelector(
     (state) => state.user.allAvailableExpressCompany
   );
+
+  const { data, isLoading } = useGetShippingProvidersQuery({
+    deliveryOptionId: "7103480879472707330",
+    cipher: "ROW_nDrNqQAAAACxFwB-F8R_MJ9cFKQ9ui3m",
+  });
+
+  useEffect(() => {
+    if (data?.data?.shippingProviders) {
+      dispatch(setDeliveryCompanies(data.data.shippingProviders));
+    }
+  }, [data, dispatch]);
 
   useEffect(() => {
     const storedData = JSON.parse(
@@ -66,47 +40,37 @@ const StoredDeliveryCompanyList = () => {
       reduxAllAvailableExpressCompany &&
       reduxAllAvailableExpressCompany.length > 0
     ) {
-      console.log(
-        reduxAllAvailableExpressCompany,
-        storedData,
-        "all from redux"
+      const companyIndex = reduxAllAvailableExpressCompany.findIndex(
+        (company) => company?.wp_code === storedData?.wp_code
       );
-      if (storedData) {
-        const companyIndex = reduxAllAvailableExpressCompany.findIndex(
-          (company) => company?.wp_code === storedData?.wp_code
+      if (companyIndex !== -1) {
+        setSelectedOption(companyIndex);
+        dispatch(
+          checkedExpressChange(reduxAllAvailableExpressCompany[companyIndex])
         );
-        if (companyIndex !== -1) {
-          setSelectedOption(companyIndex);
-          dispatch(
-            checkedExpressChange(reduxAllAvailableExpressCompany[companyIndex])
-          );
-        }
       } else {
-        console.log(reduxAllAvailableExpressCompany);
         dispatch(checkedExpressChange(reduxAllAvailableExpressCompany[0]));
       }
-    } else if (allDeliveryCompanyList && allDeliveryCompanyList.length > 0) {
-      console.log(allDeliveryCompanyList, storedData, "all from server");
-      if (storedData) {
-        const companyIndex = allDeliveryCompanyList.findIndex(
-          (company) => company?.wp_code === storedData?.wp_code
-        );
-        if (companyIndex !== -1) {
-          setSelectedOption(companyIndex);
-          dispatch(checkedExpressChange(allDeliveryCompanyList[companyIndex]));
-          dispatch(allAvailableExpressCompanyChange(allDeliveryCompanyList));
-        }
+    } else if (deliveryCompanies && deliveryCompanies.length > 0) {
+      const companyIndex = deliveryCompanies.findIndex(
+        (company) => company?.wp_code === storedData?.wp_code
+      );
+      if (companyIndex !== -1) {
+        setSelectedOption(companyIndex);
+        dispatch(checkedExpressChange(deliveryCompanies[companyIndex]));
+        dispatch(allAvailableExpressCompanyChange(deliveryCompanies));
       } else {
-        console.log(allDeliveryCompanyList);
-        dispatch(checkedExpressChange(allDeliveryCompanyList[0]));
+        dispatch(checkedExpressChange(deliveryCompanies[0]));
       }
     }
-  }, [reduxAllAvailableExpressCompany, allDeliveryCompanyList, dispatch]);
+  }, [reduxAllAvailableExpressCompany, deliveryCompanies, dispatch]);
 
-  const handleOptionChange = async (company, index) => {
+  const handleOptionChange = (company, index) => {
     setSelectedOption(index);
     dispatch(checkedExpressChange(company));
   };
+
+  console.log(deliveryCompanies, "DeliveryCompany");
 
   return (
     <div className="flex items-center justify-evenly pl-4">
@@ -115,7 +79,7 @@ const StoredDeliveryCompanyList = () => {
           <PropagateLoader color="#004368" className="pt-3" />
         </div>
       ) : (
-        allDeliveryCompanyList?.map((company, index) => (
+        deliveryCompanies?.map((company, index) => (
           <div key={index} className="form-control">
             <label className="label cursor-pointer">
               <input
@@ -126,12 +90,13 @@ const StoredDeliveryCompanyList = () => {
                 onChange={() => handleOptionChange(company, index)}
               />
               <span
-                className={`text-[15px] font-medium ${selectedOption === index
+                className={`text-[15px] font-medium ${
+                  selectedOption === index
                     ? "text-[#004368]"
                     : "text-black text-opacity-40"
-                  } capitalize`}
+                } capitalize`}
               >
-                {company?.wp_code}
+                {company?.name}
               </span>
             </label>
           </div>

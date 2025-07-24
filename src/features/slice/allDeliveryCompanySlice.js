@@ -6,12 +6,12 @@ const deliveryCompaniesSlice = createSlice({
     data: [],
   },
   reducers: {
-    deliveryCompanies: (state, action) => {
+    setDeliveryCompanies: (state, action) => {
       state.data = action.payload;
     },
   },
 });
 
-export const { deliveryCompanies } = deliveryCompaniesSlice.actions;
+export const { setDeliveryCompanies } = deliveryCompaniesSlice.actions;
 
 export default deliveryCompaniesSlice.reducer;

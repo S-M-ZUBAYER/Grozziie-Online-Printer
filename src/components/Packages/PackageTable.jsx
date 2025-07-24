@@ -20,15 +20,47 @@ const PackageTable = ({
   refundStatusCheck,
   startDate,
   endDate,
+  cipher,
 }) => {
   const selectedLanguage = useSelector(
     (state) => state.user.selectedLanguageRedux
   );
   const { t } = useTranslation();
 
+  const [showModal, setShowModal] = useState(false);
+  const [trackingInfo, setTrackingInfo] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
   const formatText = (text) => {
-    if (!text) return "No Data";
+    if (!text) return t("No Data");
     return text.length > 25 ? `${text.slice(0, 25)}*****` : text;
+  };
+
+  const handleGetTracking = async (order) => {
+    setLoading(true);
+    setError("");
+    setTrackingInfo(null);
+    try {
+      const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/tracking?cipher=${encodeURIComponent(
+        cipher[0]?.cipher
+      )}&orderId=${encodeURIComponent(order?.id)}`;
+
+      const res = await fetch(url);
+      const json = await res.json();
+
+      if (json.code === 0 && json.data?.tracking?.length) {
+        setTrackingInfo(json.data.tracking);
+        setShowModal(true);
+      } else {
+        setError(t("No tracking data available."));
+      }
+    } catch (err) {
+      setError(t("Failed to fetch tracking data."));
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -65,10 +97,6 @@ const PackageTable = ({
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                <span className="mr-[10px]">{t("CustomerMark")}</span>
-                <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
-              </th>
-              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
                 <span className="mr-[10px]">{t("DeliveryCompany")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
@@ -78,6 +106,10 @@ const PackageTable = ({
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-r-md">
                 {t("ProductDetails")}
+              </th>
+              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
+                <span className="mr-[10px]">{t("Tracking")}</span>
+                <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
             </tr>
           </thead>
@@ -130,14 +162,6 @@ const PackageTable = ({
                             : "No Data")}
                       </td>
 
-                      {/* Customer Mark */}
-                      <td className="text-black opacity-80 text-sm font-normal leading-4">
-                        {formatText(order.sellerNote) ||
-                          (selectedLanguage === "zh-CN"
-                            ? "没有数据"
-                            : "No Data")}
-                      </td>
-
                       {/* Delivery Company */}
                       <td className="text-black opacity-80 text-sm font-normal leading-4">
                         {formatText(order.shippingProvider) ||
@@ -179,11 +203,46 @@ const PackageTable = ({
                           {selectedLanguage === "zh-CN" ? "细节" : "Details"}
                         </p>
                       </td>
+
+                      <td className="text-black opacity-80 text-sm font-normal leading-4">
+                        <p
+                          className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
+                          onClick={() => handleGetTracking(order)}
+                        >
+                          {selectedLanguage === "zh-CN" ? "细节" : "Tracking"}
+                        </p>
+                      </td>
                     </tr>
                   );
                 })}
           </tbody>
         </table>
+      )}
+      {/* MODAL */}
+      {showModal && trackingInfo && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white w-full max-w-md rounded-xl shadow-lg p-6 relative">
+            <h2 className="text-xl font-bold mb-4 text-gray-800">
+              {t("Tracking Updates")}
+            </h2>
+            <ul className="space-y-3 max-h-60 overflow-y-auto">
+              {trackingInfo.map((item, index) => (
+                <li key={index} className="text-gray-700">
+                  <span className="block font-medium">{item.description}</span>
+                  <span className="text-sm text-gray-500">
+                    {new Date(item.updateTimeMillis).toLocaleString()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+            <button
+              className="absolute top-2 right-2 text-gray-500 hover:text-black text-xl"
+              onClick={() => setShowModal(false)}
+            >
+              <RxCross1 />
+            </button>
+          </div>
+        </div>
       )}
     </div>
   );
