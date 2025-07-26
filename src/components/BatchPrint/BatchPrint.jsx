@@ -41,9 +41,8 @@ const BatchPrint = () => {
   const [totalOrderData, setTotalOrderData] = useState(orderListDataGet);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
-  const [refundStatusCheck, setRefundStatusCheck] = useState(
-    "Waiting For Shipment"
-  );
+  const [tikTokOrderStatusCheck, setTikTokOrderStatusCheck] =
+    useState("AWAITING_SHIPMENT");
 
   const [searchFields, setSearchFields] = useState({
     RecipientAddress: "",
@@ -193,37 +192,75 @@ const BatchPrint = () => {
     }
   };
 
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await loadOrderList({
+  //         tikTokShopCipher: cipher[0]?.cipher,
+  //       }).unwrap();
+  //       const orders = response?.data?.orders;
+  //       if (Array.isArray(orders) && orders.length > 0) {
+  //         console.log(orders, "orders from the batch printer");
+
+  //         const filteredOrderList = orders.filter(
+  //           (item) => item?.buyerEmail && item?.status === "AWAITING_SHIPMENT"
+  //         );
+
+  //         dispatch(orderListData(filteredOrderList));
+  //         setTotalOrderData(filteredOrderList);
+  //       } else {
+  //         console.warn(
+  //           "No valid orders received or unexpected format",
+  //           response
+  //         );
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, [loadOrderList, cipher]);
+
+  // Function to handle individual checkbox change
+
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const now = Math.floor(Date.now() / 1000);
+        const fiveDaysAgo = now - 5 * 24 * 60 * 60;
+        console.log(
+          tikTokOrderStatusCheck,
+          "status////////////////////////////////////"
+        );
+        console.log("response Start..................");
         const response = await loadOrderList({
-          tikTokShopCipher: cipher[0]?.cipher,
+          cipher: cipher[0]?.cipher,
+          createTimeGe: fiveDaysAgo,
+          createTimeLt: now,
+          updateTimeGe: fiveDaysAgo,
+          updateTimeLt: now,
+          orderStatus: tikTokOrderStatusCheck, // You can parameterize this too
+          pageSize: 100,
         }).unwrap();
-        const orders = response?.data?.orders;
-        if (Array.isArray(orders) && orders.length > 0) {
-          console.log(orders, "orders from the batch printer");
+        console.log("response..................", response);
 
-          const filteredOrderList = orders.filter(
-            (item) => item?.buyerEmail && item?.status === "AWAITING_SHIPMENT"
-          );
+        const orders = response?.data?.orders ?? [];
 
-          dispatch(orderListData(filteredOrderList));
-          setTotalOrderData(filteredOrderList);
-        } else {
-          console.warn(
-            "No valid orders received or unexpected format",
-            response
-          );
-        }
+        const filteredOrderList = orders.filter((item) => item?.buyerEmail);
+
+        dispatch(orderListData(filteredOrderList));
+        setTotalOrderData(filteredOrderList);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
-    fetchData();
-  }, [loadOrderList, cipher]);
+    if (cipher?.[0]?.cipher) {
+      fetchData();
+    }
+  }, [cipher, dispatch, loadOrderList, tikTokOrderStatusCheck]);
 
-  // Function to handle individual checkbox change
   const handleCheckboxChange = (order) => {
     if (checkedItems.some((item) => item?.id === order?.id)) {
       // If the order id is already in the checkedItems, remove it
@@ -262,7 +299,7 @@ const BatchPrint = () => {
     setCustomersData(data);
     setFilteredData(firstPageData);
     setCurrentCustomerData(firstPageData);
-  }, [refundStatusCheck, totalOrderData, printedData]);
+  }, [tikTokOrderStatusCheck, totalOrderData, printedData]);
 
   useEffect(() => {
     if (totalPart <= 1) {
@@ -305,9 +342,9 @@ const BatchPrint = () => {
   // pagination prev option
   const handleToPrevious = (count) => {
     const data =
-      refundStatusCheck === "Waiting For Shipment"
+      tikTokOrderStatusCheck === "Waiting For Shipment"
         ? totalOrderData
-        : refundStatusCheck === "shipped"
+        : tikTokOrderStatusCheck === "shipped"
         ? printedData
         : [];
 
@@ -331,6 +368,8 @@ const BatchPrint = () => {
       setLeftPaginationBtn(false);
     }
   };
+
+  console.log(fetchLogisticCompanies, "logistic company");
 
   // details modal functionality
   const [selectedCustomer, setSelectedCustomer] = useState(null);
@@ -601,7 +640,7 @@ const BatchPrint = () => {
   // const handleConfirm = () => {
   //   // Implement order update API logic here
   //   dispatch(
-  //     checkedItemsChange({ items: checkedItems, from: refundStatusCheck })
+  //     checkedItemsChange({ items: checkedItems, from: tikTokOrderStatusCheck })
   //   );
   //   navigate("/batchprintexpressdelivery");
   // };
@@ -765,8 +804,8 @@ const BatchPrint = () => {
       });
 
       // setTotalOrderData([...totalOrderData, ...jsonData]);
-      // console.log(refundStatusCheck, "check status")
-      if (refundStatusCheck === "Waiting For Shipment") {
+      // console.log(tikTokOrderStatusCheck, "check status")
+      if (tikTokOrderStatusCheck === "Waiting For Shipment") {
         // console.log(
         //   [...updateJsonData, ...customersData],
         //   "waiting for shipment"
@@ -778,7 +817,7 @@ const BatchPrint = () => {
           "Import file Store as Awaiting for Shipment Data Successfully"
         );
       }
-      if (refundStatusCheck === "shipped") {
+      if (tikTokOrderStatusCheck === "shipped") {
         // console.log(updateJsonData, "jsonData");
 
         const response = await postShippedDataToApi(updateJsonData[0]);
@@ -823,7 +862,7 @@ const BatchPrint = () => {
           startDate={startDate}
           endDate={endDate}
           setEndDate={setEndDate}
-          setRefundStatusCheck={setRefundStatusCheck}
+          setTikTokOrderStatusCheck={setTikTokOrderStatusCheck}
           handleToSearch={handleToSearch}
           handleToReset={handleToReset}
           searchFields={searchFields}
@@ -888,7 +927,7 @@ const BatchPrint = () => {
                 {/* {selectedLanguage === "zh-CN"
                   ? "等待发货"
                   : "waiting for shipment"} */}
-                {t(refundStatusCheck)}
+                {t(tikTokOrderStatusCheck)}
               </p>
             </div>
 
@@ -1019,7 +1058,7 @@ const BatchPrint = () => {
           {/* table */}
           {loadOrderList && (
             <BatchPrintTable
-              // loadOrderList={refundStatusCheck === "Waiting For Shipment" ? totalOrderData?.slice(0, 5) : refundStatusCheck === "shipped" ? printedData?.slice(0, 5) : null}
+              // loadOrderList={tikTokOrderStatusCheck === "Waiting For Shipment" ? totalOrderData?.slice(0, 5) : tikTokOrderStatusCheck === "shipped" ? printedData?.slice(0, 5) : null}
               // loadOrderList={currentCustomerData}
               filteredData={filteredData}
               isError={isError}
@@ -1032,7 +1071,7 @@ const BatchPrint = () => {
               checkedItems={checkedItems}
               handleCheckboxChange={handleCheckboxChange}
               data={printedData}
-              refundStatusCheck={refundStatusCheck}
+              tikTokOrderStatusCheck={tikTokOrderStatusCheck}
               startDate={startDate}
               endDate={endDate}
             />

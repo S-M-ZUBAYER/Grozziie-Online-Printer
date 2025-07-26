@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { RxCross1 } from "react-icons/rx";
 import PacmanLoader from "react-spinners/PacmanLoader";
-import FadeLoader from "react-spinners/FadeLoader";
 import { useTranslation } from "react-i18next";
+import FadeLoader from "react-spinners/FadeLoader";
 
 const BatchPrintTable = ({
   filteredData,
@@ -17,7 +17,7 @@ const BatchPrintTable = ({
   checkedItems,
   handleCheckboxChange,
   data,
-  refundStatusCheck,
+  tikTokOrderStatusCheck,
   startDate,
   endDate,
 }) => {
@@ -33,7 +33,7 @@ const BatchPrintTable = ({
 
   return (
     <div className="mt-6">
-      {refundStatusCheck === "shipped" && isPrintedLoading ? (
+      {isLoading ? (
         <div className="flex flex-col items-center justify-center pt-10 text-center w-full mx-auto pb-60">
           <FadeLoader color="#004368" size={25} />
           <p className="text-2xl font-medium pt-10 text-[#004368]">
@@ -42,11 +42,17 @@ const BatchPrintTable = ({
               : "Data is Loading. Please Wait..."}
           </p>
         </div>
-      ) : refundStatusCheck === "shipped" && isError ? (
+      ) : isError ? (
         <p className="text-center text-3xl text-red-500 font-medium py-20">
           {selectedLanguage === "zh-CN"
             ? "未找到数据。请稍后再试..."
             : "Data Not Found. Please try again later...."}
+        </p>
+      ) : filteredData?.length === 0 ? (
+        <p className="text-center text-3xl text-red-500 font-medium py-20">
+          {selectedLanguage === "zh-CN"
+            ? "未找到数据。请稍后再试..."
+            : "No Available orders. Please try again later...."}
         </p>
       ) : (
         <table className="table">

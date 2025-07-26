@@ -2,16 +2,57 @@ import { baseApi } from "../api/baseApi";
 
 const batchPrintApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
+    // loadOrderList: builder.mutation({
+    //   query: ({ tikTokShopCipher }) => ({
+    //     url: `/order/list?pageSize=100&cipher=${tikTokShopCipher}`,
+    //     method: "POST", // ✅ Use GET since you’re not sending any body data
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //   }),
+    //   invalidatesTags: ["users"], // 📝 Use appropriate tags for cache invalidation
+    // }),
+    // ✅ Proper POST with query parameters and no body
     loadOrderList: builder.mutation({
-      query: ({ tikTokShopCipher }) => ({
-        url: `/order/list?pageSize=20&cipher=${tikTokShopCipher}`,
-        method: "POST", // ✅ Use GET since you’re not sending any body data
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }),
-      invalidatesTags: ["users"], // 📝 Use appropriate tags for cache invalidation
+      query: ({
+        pageSize = 100,
+        cipher,
+        createTimeGe,
+        createTimeLt,
+        updateTimeGe,
+        updateTimeLt,
+        orderStatus,
+        isBuyerRequestCancel = false,
+        shippingType = "TIKTOK",
+        sortField = "create_time",
+        sortOrder = "ASC",
+      }) => {
+        const queryParams = new URLSearchParams({
+          pageSize: pageSize.toString(),
+          cipher,
+          createTimeGe: createTimeGe.toString(),
+          createTimeLt: createTimeLt.toString(),
+          updateTimeGe: updateTimeGe.toString(),
+          updateTimeLt: updateTimeLt.toString(),
+          orderStatus,
+          isBuyerRequestCancel: isBuyerRequestCancel.toString(),
+          shippingType,
+          sortField,
+          sortOrder,
+        });
+
+        return {
+          url: `/order/list/filter?${queryParams.toString()}`,
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        };
+      },
+      invalidatesTags: ["orders"],
     }),
+
+
 
     getBatchPrint: builder.query({
       query: () => ({
