@@ -37,8 +37,8 @@ const Package = () => {
   const [totalOrderData, setTotalOrderData] = useState(orderListDataGet);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
-  const [refundStatusCheck, setRefundStatusCheck] = useState(
-    "Waiting For Shipment"
+  const [tikTokOrderStatusCheck, setTikTokOrderStatusCheck] = useState(
+    "AWAITING_COLLECTION"
   );
   const [searchFields, setSearchFields] = useState({
     RecipientAddress: "",
@@ -163,39 +163,73 @@ const Package = () => {
     }
   };
 
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await loadOrderList({
+  //         tikTokShopCipher: cipher[0]?.cipher,
+  //       }).unwrap();
+  //       const orders = response?.data?.orders;
+  //       if (Array.isArray(orders) && orders.length > 0) {
+  //         console.log(orders, "orders from the package printer");
+  //         const filteredOrderList = orders.filter((item) => item?.buyerEmail);
+  //         console.log("Filtered Orders:", filteredOrderList);
+
+  //         dispatch(orderListData(filteredOrderList));
+  //         setTotalOrderData(
+  //           filteredOrderList.filter(
+  //             (order) => order?.lineItems[0]?.packageStatus === "PROCESSING"
+  //           )
+  //         );
+  //       } else {
+  //         console.warn(
+  //           "No valid orders received or unexpected format",
+  //           response
+  //         );
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //     }
+  //   };
+
+  //   fetchData();
+  // }, [loadOrderList, cipher]);
+
+  // pagination part
+
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const now = Math.floor(Date.now() / 1000);
+        const fiveDaysAgo = now - 5 * 24 * 60 * 60;
+        console.log("response Start..................");
         const response = await loadOrderList({
-          tikTokShopCipher: cipher[0]?.cipher,
+          cipher: cipher[0]?.cipher,
+          createTimeGe: fiveDaysAgo,
+          createTimeLt: now,
+          updateTimeGe: fiveDaysAgo,
+          updateTimeLt: now,
+          orderStatus: tikTokOrderStatusCheck, // You can parameterize this too
+          pageSize: 100,
         }).unwrap();
-        const orders = response?.data?.orders;
-        if (Array.isArray(orders) && orders.length > 0) {
-          console.log(orders, "orders from the package printer");
-          const filteredOrderList = orders.filter((item) => item?.buyerEmail);
-          console.log("Filtered Orders:", filteredOrderList);
+        console.log(response, "response..................");
 
-          dispatch(orderListData(filteredOrderList));
-          setTotalOrderData(
-            filteredOrderList.filter(
-              (order) => order?.lineItems[0]?.packageStatus === "PROCESSING"
-            )
-          );
-        } else {
-          console.warn(
-            "No valid orders received or unexpected format",
-            response
-          );
-        }
+        const orders = response?.data?.orders ?? [];
+
+        const filteredOrderList = orders.filter((item) => item?.buyerEmail);
+
+        dispatch(orderListData(filteredOrderList));
+        setTotalOrderData(filteredOrderList);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
     };
 
-    fetchData();
-  }, [loadOrderList, cipher]);
+    if (cipher?.[0]?.cipher) {
+      fetchData();
+    }
+  }, [cipher, dispatch, loadOrderList, tikTokOrderStatusCheck]);
 
-  // pagination part
   const data = totalOrderData;
   const [showPage, setShowPage] = useState(1);
   const [currentBar, setCurrentBar] = useState(1);
@@ -215,7 +249,7 @@ const Package = () => {
     setCustomersData(data);
     setFilteredData(firstPageData);
     setCurrentCustomerData(firstPageData);
-  }, [refundStatusCheck, totalOrderData, printedData]);
+  }, [tikTokOrderStatusCheck, totalOrderData, printedData]);
 
   useEffect(() => {
     if (totalPart <= 1) {
@@ -257,9 +291,9 @@ const Package = () => {
   // pagination prev option
   const handleToPrevious = (count) => {
     const data =
-      refundStatusCheck === "Waiting For Shipment"
+      tikTokOrderStatusCheck === "Waiting For Shipment"
         ? totalOrderData
-        : refundStatusCheck === "shipped"
+        : tikTokOrderStatusCheck === "shipped"
         ? printedData
         : [];
 
@@ -553,7 +587,7 @@ const Package = () => {
   // const handleConfirm = () => {
   //   // Implement order update API logic here
   //   dispatch(
-  //     checkedItemsChange({ items: checkedItems, from: refundStatusCheck })
+  //     checkedItemsChange({ items: checkedItems, from: tikTokOrderStatusCheck })
   //   );
   //   navigate("/batchprintexpressdelivery");
   // };
@@ -588,7 +622,7 @@ const Package = () => {
 
   const handleConfirm = async () => {
     dispatch(
-      checkedItemsChange({ items: checkedItems, from: refundStatusCheck })
+      checkedItemsChange({ items: checkedItems, from: tikTokOrderStatusCheck })
     );
     navigate("/batchPrintPrinting");
     return;
@@ -634,7 +668,7 @@ const Package = () => {
 
   //     if (markShippedResult.code === 0) {
   //       dispatch(
-  //         checkedItemsChange({ items: checkedItems, from: refundStatusCheck })
+  //         checkedItemsChange({ items: checkedItems, from: tikTokOrderStatusCheck })
   //       );
   //       navigate("/batchprintexpressdelivery");
   //     } else {
@@ -696,8 +730,8 @@ const Package = () => {
       });
 
       // setTotalOrderData([...totalOrderData, ...jsonData]);
-      // console.log(refundStatusCheck, "check status")
-      if (refundStatusCheck === "Waiting For Shipment") {
+      // console.log(tikTokOrderStatusCheck, "check status")
+      if (tikTokOrderStatusCheck === "Waiting For Shipment") {
         // console.log(
         //   [...updateJsonData, ...customersData],
         //   "waiting for shipment"
@@ -709,7 +743,7 @@ const Package = () => {
           "Import file Store as Awaiting for Shipment Data Successfully"
         );
       }
-      if (refundStatusCheck === "shipped") {
+      if (tikTokOrderStatusCheck === "shipped") {
         // console.log(updateJsonData, "jsonData");
 
         const response = await postShippedDataToApi(updateJsonData[0]);
@@ -754,7 +788,7 @@ const Package = () => {
           startDate={startDate}
           endDate={endDate}
           setEndDate={setEndDate}
-          setRefundStatusCheck={setRefundStatusCheck}
+          setTikTokOrderStatusCheck={setTikTokOrderStatusCheck}
           handleToSearch={handleToSearch}
           handleToReset={handleToReset}
           searchFields={searchFields}
@@ -808,7 +842,7 @@ const Package = () => {
                 {/* {selectedLanguage === "zh-CN"
                   ? "等待发货"
                   : "waiting for shipment"} */}
-                {t(refundStatusCheck)}
+                {t(tikTokOrderStatusCheck)}
               </p>
             </div>
 
@@ -939,7 +973,7 @@ const Package = () => {
           {/* table */}
           {loadOrderList && (
             <PackageTable
-              // loadOrderList={refundStatusCheck === "Waiting For Shipment" ? totalOrderData?.slice(0, 5) : refundStatusCheck === "shipped" ? printedData?.slice(0, 5) : null}
+              // loadOrderList={tikTokOrderStatusCheck === "Waiting For Shipment" ? totalOrderData?.slice(0, 5) : tikTokOrderStatusCheck === "shipped" ? printedData?.slice(0, 5) : null}
               // loadOrderList={currentCustomerData}
               filteredData={filteredData}
               isError={isError}
@@ -952,7 +986,7 @@ const Package = () => {
               checkedItems={checkedItems}
               handleCheckboxChange={handleCheckboxChange}
               data={printedData}
-              refundStatusCheck={refundStatusCheck}
+              tikTokOrderStatusCheck={tikTokOrderStatusCheck}
               startDate={startDate}
               endDate={endDate}
               cipher={cipher}

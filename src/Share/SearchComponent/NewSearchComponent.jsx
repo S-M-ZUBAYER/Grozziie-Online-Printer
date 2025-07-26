@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { refundStatusOptions } from "../../Share/Data/ClientData";
+import { tikTokOrderStatusOptions } from "../../Share/Data/ClientData";
 import { useSelector } from "react-redux";
 import { MdDateRange } from "react-icons/md";
 import { format } from "date-fns";
@@ -10,7 +10,7 @@ import { filterDataByDateRange } from "./SearchComponentFunction";
 import { useTranslation } from "react-i18next";
 
 const NewSearchComponent = ({
-  setRefundStatusCheck,
+  setTikTokOrderStatusCheck,
   setStartDate,
   setEndDate,
   startDate,
@@ -180,7 +180,7 @@ const NewSearchComponent = ({
   //   refund status function working
   const handleRefundStatusChange = (event) => {
     setRefundStatus(event.target.value);
-    setRefundStatusCheck(event.target.value);
+    setTikTokOrderStatusCheck(event.target.value);
   };
 
   const selectionRange = {
@@ -372,13 +372,13 @@ const NewSearchComponent = ({
               {/* <option disabled selected>
                 selectedLanguage === "zh-CN" ? "没有数据" : "No Data"
               </option> */}
-              {refundStatusOptions.map((status, index) => (
+              {tikTokOrderStatusOptions.map((status, index) => (
                 <option
                   key={index}
-                  value={status}
+                  value={status?.value}
                   className="text-base font-light"
                 >
-                  {t(status)}
+                  {t(status?.status)}
                 </option>
               ))}
             </select>

@@ -35,9 +35,8 @@ const SinglePrint = () => {
 
   const { t } = useTranslation();
 
-  const [refundStatusCheck, setRefundStatusCheck] = useState(
-    "Waiting For Shipment"
-  );
+  const [tikTokOrderStatusCheck, setTikTokOrderStatusCheck] =
+    useState("AWAITING_SHIPMENT");
 
   const selectedLanguage = useSelector(
     (state) => state.user.selectedLanguageRedux
@@ -53,14 +52,17 @@ const SinglePrint = () => {
   let currentClient;
   const handleToShowClients = () => {
     const data =
-      refundStatusCheck === "Waiting For Shipment"
+      tikTokOrderStatusCheck === "Waiting For Shipment"
         ? orderListDataGet
-        : refundStatusCheck === "shipped"
+        : tikTokOrderStatusCheck === "shipped"
         ? printedData
         : [];
     currentClient = data && data[0]?.order_sn;
     dispatch(
-      checkedItemsChange({ items: data && [data[0]], from: refundStatusCheck })
+      checkedItemsChange({
+        items: data && [data[0]],
+        from: tikTokOrderStatusCheck,
+      })
     );
     return data;
   };
@@ -73,16 +75,16 @@ const SinglePrint = () => {
     setClients(currentOrder);
     setSelectedClient(currentOrder && currentOrder[0]);
     setActive(currentClient);
-  }, [refundStatusCheck, printedData]);
+  }, [tikTokOrderStatusCheck, printedData]);
 
   useEffect(() => {
     dispatch(
       checkedItemsChange({
         items: clients && [clients[0]],
-        from: refundStatusCheck,
+        from: tikTokOrderStatusCheck,
       })
     );
-  }, [refundStatusCheck]);
+  }, [tikTokOrderStatusCheck]);
 
   // const [range, setRange] = useState([
   //   {
@@ -114,7 +116,9 @@ const SinglePrint = () => {
 
   // date range functionality end
   const handleToSelectCustomer = (client) => {
-    dispatch(checkedItemsChange({ items: [client], from: refundStatusCheck }));
+    dispatch(
+      checkedItemsChange({ items: [client], from: tikTokOrderStatusCheck })
+    );
     setSelectedClient(client);
     setActive(client?.order_sn);
   };
@@ -257,9 +261,9 @@ const SinglePrint = () => {
       });
 
       // setTotalOrderData([...totalOrderData, ...jsonData]);
-      console.log(refundStatusCheck, "check status");
+      console.log(tikTokOrderStatusCheck, "check status");
       setClients([...clients, ...jsonData]);
-      if (refundStatusCheck === "Waiting For Shipment") {
+      if (tikTokOrderStatusCheck === "Waiting For Shipment") {
         console.log(
           [...updateJsonData, ...customersData],
           "waiting for shipment"
@@ -270,7 +274,7 @@ const SinglePrint = () => {
           "Import file Store as Awaiting for Shipment Data Successfully"
         );
       }
-      if (refundStatusCheck === "shipped") {
+      if (tikTokOrderStatusCheck === "shipped") {
         console.log(updateJsonData, "jsonData");
 
         const response = await postShippedDataToApi(updateJsonData[0]);
@@ -325,7 +329,7 @@ const SinglePrint = () => {
   useEffect(() => {
     setCustomersData(handleToShowClients());
     setFilteredData(handleToShowClients());
-  }, [refundStatusCheck, printedData]);
+  }, [tikTokOrderStatusCheck, printedData]);
 
   const handleToSearch = () => {
     document.getElementById("searchInput").value = "";
@@ -371,7 +375,7 @@ const SinglePrint = () => {
           startDate={startDate}
           endDate={endDate}
           setEndDate={setEndDate}
-          setRefundStatusCheck={setRefundStatusCheck}
+          setTikTokOrderStatusCheck={setTikTokOrderStatusCheck}
           handleToSearch={handleToSearch}
           handleToReset={handleToReset}
           searchFields={searchFields}
@@ -414,7 +418,7 @@ const SinglePrint = () => {
               <ul className="ml-8 mt-3 max-h-[590px] overflow-y-auto">
                 {/* {clients?.map((client, index) => ( */}
 
-                {refundStatusCheck === "shipped" && isLoading ? (
+                {tikTokOrderStatusCheck === "shipped" && isLoading ? (
                   <div className="flex flex-col items-center justify-center py-28">
                     <FadeLoader color="#004368" size={25} />
                     <p className="text-xs font-medium pt-10 text-[#004368]">
@@ -448,7 +452,7 @@ const SinglePrint = () => {
               <div className="col-span-1">
                 <p className="text-[#004368] text-sm font-medium capitalize">
                   {/* waiting for shipment */}
-                  {t(refundStatusCheck)}
+                  {t(tikTokOrderStatusCheck)}
                 </p>
               </div>
               {/* this data coming from server and data dynamic */}

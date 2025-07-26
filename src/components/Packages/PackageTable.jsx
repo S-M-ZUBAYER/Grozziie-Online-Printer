@@ -17,7 +17,7 @@ const PackageTable = ({
   checkedItems,
   handleCheckboxChange,
   data,
-  refundStatusCheck,
+  tikTokOrderStatusCheck,
   startDate,
   endDate,
   cipher,
@@ -65,7 +65,7 @@ const PackageTable = ({
 
   return (
     <div className="mt-6">
-      {refundStatusCheck === "shipped" && isPrintedLoading ? (
+      {isLoading ? (
         <div className="flex flex-col items-center justify-center pt-10 text-center w-full mx-auto pb-60">
           <FadeLoader color="#004368" size={25} />
           <p className="text-2xl font-medium pt-10 text-[#004368]">
@@ -74,11 +74,17 @@ const PackageTable = ({
               : "Data is Loading. Please Wait..."}
           </p>
         </div>
-      ) : refundStatusCheck === "shipped" && isError ? (
+      ) : isError ? (
         <p className="text-center text-3xl text-red-500 font-medium py-20">
           {selectedLanguage === "zh-CN"
             ? "未找到数据。请稍后再试..."
             : "Data Not Found. Please try again later...."}
+        </p>
+      ) : filteredData?.length === 0 ? (
+        <p className="text-center text-3xl text-red-500 font-medium py-20">
+          {selectedLanguage === "zh-CN"
+            ? "未找到数据。请稍后再试..."
+            : "No Available Order. Please try again later...."}
         </p>
       ) : (
         <table className="table">
@@ -116,9 +122,9 @@ const PackageTable = ({
           <tbody>
             {filteredData &&
               filteredData
-                .filter(
-                  (order) => order?.lineItems[0]?.packageStatus === "PROCESSING"
-                ) // 🔍 Only PROCESSING orders
+                // .filter(
+                //   (order) => order?.lineItems[0]?.packageStatus === "PROCESSING"
+                // )
                 .map((order) => {
                   const item = order.lineItems?.[0] || {};
                   const address = order.recipientAddress || {};
