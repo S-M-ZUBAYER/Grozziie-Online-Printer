@@ -133,11 +133,11 @@ export const routes = createBrowserRouter([
       {
         path: "/批量打印",
         element: (
-          // <PrivateRoute>
-          // <PaymentPrivateRoute>
-          <BatchPrint />
-          // </PaymentPrivateRoute>
-          // </PrivateRoute>
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <BatchPrint />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
         ),
       },
       {
@@ -168,9 +168,9 @@ export const routes = createBrowserRouter([
         path: "/manualOrder",
         element: (
           // <PrivateRoute>
-          // <PaymentPrivateRoute>
-          <ManualOrder />
-          // </PaymentPrivateRoute>
+          <PaymentPrivateRoute>
+            <ManualOrder />
+          </PaymentPrivateRoute>
           // </PrivateRoute>
         ),
       },

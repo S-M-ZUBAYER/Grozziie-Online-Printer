@@ -51,8 +51,12 @@ export const tikTokOrderStatusOptions = [
     value: "AWAITING_SHIPMENT",
   },
   {
-    status: "shipped",
+    status: "shipping",
     value: "AWAITING_COLLECTION",
+  },
+  {
+    status: "Printed",
+    value: "AWAITING_COLLECTION_PRINTED",
   },
   {
     status: "Delivered",

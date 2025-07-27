@@ -48,6 +48,58 @@ const BatchPrintPrinting = () => {
     }
   };
 
+  // const handleMergeAndPrint = async () => {
+  //   try {
+  //     setIsLoading(true);
+
+  //     if (!cipher?.[0]?.cipher || !checkedItems?.items?.length) {
+  //       alert("Missing cipher or no items selected.");
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     const docUrls = await Promise.all(
+  //       checkedItems.items.map(async (item) => {
+  //         const packageId = item.lineItems?.[0]?.packageId;
+  //         const res = await fetch(
+  //           `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-doc?cipher=${encodeURIComponent(
+  //             cipher[0].cipher
+  //           )}&packageId=${encodeURIComponent(packageId)}`
+  //         );
+  //         const data = await res.json();
+  //         return data?.data?.docUrl;
+  //       })
+  //     );
+
+  //     const validUrls = docUrls.filter(Boolean);
+  //     if (validUrls.length === 0) {
+  //       alert("No valid shipping labels found.");
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     const mergeRes = await fetch(
+  //       "https://grozziieget.zjweiting.com:8033/tht/merge-pdfs",
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ urls: validUrls }),
+  //       }
+  //     );
+
+  //     if (!mergeRes.ok) throw new Error("Failed to merge PDFs");
+
+  //     const blob = await mergeRes.blob();
+  //     const pdfUrl = URL.createObjectURL(blob);
+  //     setTikTokPdf(pdfUrl);
+  //   } catch (err) {
+  //     console.error("❌ Merge print failed:", err);
+  //     alert("Something went wrong while generating the merged PDF.");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const handleMergeAndPrint = async () => {
     try {
       setIsLoading(true);
@@ -61,13 +113,34 @@ const BatchPrintPrinting = () => {
       const docUrls = await Promise.all(
         checkedItems.items.map(async (item) => {
           const packageId = item.lineItems?.[0]?.packageId;
-          const res = await fetch(
-            `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-doc?cipher=${encodeURIComponent(
-              cipher[0].cipher
-            )}&packageId=${encodeURIComponent(packageId)}`
-          );
-          const data = await res.json();
-          return data?.data?.docUrl;
+          const itemId = item.id;
+
+          try {
+            const res = await fetch(
+              `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-doc?cipher=${encodeURIComponent(
+                cipher[0].cipher
+              )}&packageId=${encodeURIComponent(packageId)}`
+            );
+            const data = await res.json();
+            const docUrl = data?.data?.docUrl;
+
+            // ✅ Save printedId if docUrl exists
+            if (docUrl && itemId) {
+              await fetch(
+                "http://localhost:2000/tht/grozziiePrinter/printedIdS/add",
+                {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ tikTokPrintedId: itemId }),
+                }
+              );
+            }
+
+            return docUrl || null;
+          } catch (err) {
+            console.error(`❌ Failed for packageId: ${packageId}`, err);
+            return null;
+          }
         })
       );
 
