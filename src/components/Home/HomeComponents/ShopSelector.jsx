@@ -1,36 +1,57 @@
 // import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 // import * as Checkbox from "@radix-ui/react-checkbox";
 // import { CheckIcon, CaretDownIcon, PlusIcon } from "@radix-ui/react-icons";
-// import { useState } from "react";
+// import { useEffect, useState } from "react";
 // import { motion, AnimatePresence } from "framer-motion";
 // import { useTranslation } from "react-i18next";
 // import AddShopeModal from "./AddShopeModal";
 // import { useSelector } from "react-redux";
 
-// const shops = [
-//   {
-//     id: "shopee",
-//     label: "Shopee",
-//     stores: ["Shopee Store A", "Shopee Store B", "Shopee Express"],
-//   },
-//   {
-//     id: "lazada",
-//     label: "Lazada",
-//     stores: ["Lazada Supermart", "Lazada Xpress", "Lazada Deals"],
-//   },
-//   {
-//     id: "tiktok",
-//     label: "TikTok",
-//     stores: ["Tiktok Store 1", "Tiktok Pro", "Tiktok Mall"],
-//   },
-// ];
-
 // const ShopSelector = () => {
 //   const { t } = useTranslation();
+//   const TikTokShopList = useSelector((state) => state.allShopList.data);
+
+//   // Base shops (hardcoded)
+//   const baseShops = [
+//     {
+//       id: "shopee",
+//       label: "Shopee",
+//       stores: ["Shopee Store A", "Shopee Store B", "Shopee Express"],
+//     },
+//     {
+//       id: "lazada",
+//       label: "Lazada",
+//       stores: ["Lazada Supermart", "Lazada Xpress", "Lazada Deals"],
+//     },
+//   ];
+
+//   // Final shops with dynamic TikTok added
+//   const shops = [
+//     ...baseShops,
+//     {
+//       id: "tiktok",
+//       label: "TikTok",
+//       stores: TikTokShopList?.map((shop) => shop.name) || [],
+//     },
+//   ];
+
 //   const [checkedShops, setCheckedShops] = useState(
 //     shops.reduce((acc, shop) => ({ ...acc, [shop.id]: true }), {})
 //   );
+
+//   // Sync checked state if TikTokShopList updates
+//   useEffect(() => {
+//     setCheckedShops((prev) =>
+//       shops.reduce((acc, shop) => {
+//         if (prev.hasOwnProperty(shop.id)) return acc;
+//         return { ...acc, [shop.id]: true };
+//       }, prev)
+//     );
+//   }, [TikTokShopList]);
+
 //   const [allShops, setAllShops] = useState(false);
+//   const [openShop, setOpenShop] = useState(null);
+
 //   const toggleShop = (shopId) => {
 //     setCheckedShops((prev) => ({
 //       ...prev,
@@ -38,16 +59,11 @@
 //     }));
 //   };
 
-//   const [openShop, setOpenShop] = useState(null);
-//   const TikTokShopList = useSelector((state) => state.allShopList.data);
-//   console.log(TikTokShopList, "TikTokShopList");
-
 //   const renderShopItem = ({ id, label, stores }) => (
 //     <NavigationMenu.Item className="relative" key={id}>
 //       <NavigationMenu.Trigger
 //         className="group flex items-center justify-between gap-2 px-3 py-2 rounded text-[15px] font-medium hover:bg-violet3 outline-none"
 //         onMouseEnter={() => setOpenShop(id)}
-//         onMouseLeave={() => setOpenShop(null)}
 //       >
 //         <Checkbox.Root
 //           className="flex size-[25px] appearance-none items-center justify-center rounded bg-white  outline-none hover:bg-violet3 focus:outline-none focus:shadow-none"
@@ -76,41 +92,43 @@
 //       </NavigationMenu.Trigger>
 
 //       {/* Dropdown content with framer motion */}
-//       <AnimatePresence>
-//         {openShop === id && (
-//           <motion.div
-//             className="absolute top-full mt-2 left-0 w-[200px] bg-white rounded-md shadow-lg z-50 p-4"
-//             onMouseEnter={() => setOpenShop(id)}
-//             onMouseLeave={() => setOpenShop(null)}
-//             initial={{ opacity: 0, y: -10 }}
-//             animate={{ opacity: 1, y: 0 }}
-//             exit={{ opacity: 0, y: -10 }}
-//             transition={{ duration: 0.2 }}
-//           >
-//             <ul className="flex flex-col gap-2">
-//               {stores.map((store, idx) => (
-//                 <li key={idx} className="flex items-center gap-2">
-//                   <Checkbox.Root
-//                     className="flex size-[20px] appearance-none items-center justify-center rounded bg-white shadow-[0_2px_6px] shadow-blackA4 outline-none hover:bg-violet3 focus:outline-none focus:shadow-none"
-//                     defaultChecked
-//                     id={`${id}-${idx}`}
-//                   >
-//                     <Checkbox.Indicator className="text-violet11">
-//                       <CheckIcon />
-//                     </Checkbox.Indicator>
-//                   </Checkbox.Root>
-//                   <label
-//                     className="text-[14px] text-[#004368] leading-none"
-//                     htmlFor={`${id}-${idx}`}
-//                   >
-//                     {store}
-//                   </label>
-//                 </li>
-//               ))}
-//             </ul>
-//           </motion.div>
-//         )}
-//       </AnimatePresence>
+//       <NavigationMenu.Content>
+//         <AnimatePresence>
+//           {openShop === id && (
+//             <motion.div
+//               className="absolute top-full mt-2 left-0 w-[300px] bg-white rounded-md shadow-lg z-50 p-4"
+//               onMouseEnter={() => setOpenShop(id)}
+//               onMouseLeave={() => setOpenShop(null)}
+//               initial={{ opacity: 0, y: -10 }}
+//               animate={{ opacity: 1, y: 0 }}
+//               exit={{ opacity: 0, y: -10 }}
+//               transition={{ duration: 0.2 }}
+//             >
+//               <ul className="flex flex-col gap-2">
+//                 {stores.map((store, idx) => (
+//                   <li key={idx} className="flex items-center gap-2">
+//                     <Checkbox.Root
+//                       className="flex size-[20px] appearance-none items-center justify-center rounded bg-white shadow-[0_2px_6px] shadow-blackA4 outline-none hover:bg-violet3 focus:outline-none focus:shadow-none"
+//                       defaultChecked
+//                       id={`${id}-${idx}`}
+//                     >
+//                       <Checkbox.Indicator className="text-violet11">
+//                         <CheckIcon />
+//                       </Checkbox.Indicator>
+//                     </Checkbox.Root>
+//                     <label
+//                       className="text-[14px] text-[#004368] leading-none"
+//                       htmlFor={`${id}-${idx}`}
+//                     >
+//                       {store}
+//                     </label>
+//                   </li>
+//                 ))}
+//               </ul>
+//             </motion.div>
+//           )}
+//         </AnimatePresence>
+//       </NavigationMenu.Content>
 //     </NavigationMenu.Item>
 //   );
 
@@ -157,9 +175,174 @@
 
 // export default ShopSelector;
 
+// import * as NavigationMenu from "@radix-ui/react-navigation-menu";
+// import * as Checkbox from "@radix-ui/react-checkbox";
+// import { CheckIcon, CaretDownIcon, PlusIcon } from "@radix-ui/react-icons";
+// import { useEffect, useState } from "react";
+// import { motion, AnimatePresence } from "framer-motion";
+// import { useTranslation } from "react-i18next";
+// import AddShopeModal from "./AddShopeModal";
+// import { useSelector } from "react-redux";
+
+// const ShopSelector = () => {
+//   const { t } = useTranslation();
+//   const TikTokShopList = useSelector((state) => state.allShopList.data);
+
+//   const baseShops = [
+//     {
+//       id: "shopee",
+//       label: "Shopee",
+//       stores: ["Shopee Store A", "Shopee Store B", "Shopee Express"],
+//     },
+//     {
+//       id: "lazada",
+//       label: "Lazada",
+//       stores: ["Lazada Supermart", "Lazada Xpress", "Lazada Deals"],
+//     },
+//   ];
+
+//   const shops = [
+//     ...baseShops,
+//     {
+//       id: "tiktok",
+//       label: "TikTok",
+//       stores: TikTokShopList?.map((shop) => shop.name) || [],
+//     },
+//   ];
+
+//   // ✅ Selected platform (only one at a time)
+//   const [selectedPlatform, setSelectedPlatform] = useState("tiktok");
+
+//   // ✅ Selected store of a platform
+//   const [selectedStore, setSelectedStore] = useState({
+//     platform: "tiktok",
+//     store: TikTokShopList?.[0]?.name || null,
+//   });
+
+//   // Update when TikTok list loads
+//   useEffect(() => {
+//     if (TikTokShopList?.length > 0) {
+//       setSelectedStore({
+//         platform: "tiktok",
+//         store: TikTokShopList[0].name,
+//       });
+//     }
+//   }, [TikTokShopList]);
+
+//   const [openShop, setOpenShop] = useState(null);
+
+//   const handlePlatformToggle = (shopId) => {
+//     setSelectedPlatform(shopId);
+//   };
+
+//   const handleStoreSelect = (platformId, storeName) => {
+//     console.log(platformId, storeName, "shop...............");
+
+//     setSelectedPlatform(platformId);
+//     setSelectedStore({ platform: platformId, store: storeName });
+//   };
+
+//   const renderShopItem = ({ id, label, stores }) => (
+//     <NavigationMenu.Item className="relative" key={id}>
+//       <NavigationMenu.Trigger
+//         className="group flex items-center justify-between gap-2 px-3 py-2 rounded text-[15px] font-medium hover:bg-violet3 outline-none"
+//         onMouseEnter={() => setOpenShop(id)}
+//       >
+//         <Checkbox.Root
+//           className="flex size-[25px] appearance-none items-center justify-center rounded bg-white outline-none hover:bg-violet3"
+//           checked={selectedPlatform === id}
+//           onCheckedChange={() => handlePlatformToggle(id)}
+//           id={id}
+//         >
+//           <Checkbox.Indicator className="text-violet11">
+//             <CheckIcon />
+//           </Checkbox.Indicator>
+//         </Checkbox.Root>
+
+//         <label
+//           className={`pl-[15px] text-[15px] leading-none ${
+//             selectedPlatform === id ? "text-[#004368]" : "text-[#00436866]"
+//           }`}
+//           htmlFor={id}
+//         >
+//           {t(label)}
+//         </label>
+
+//         <CaretDownIcon
+//           className="text-violet10 transition-transform duration-[250ms] ease-in group-data-[state=open]:-rotate-180"
+//           aria-hidden
+//         />
+//       </NavigationMenu.Trigger>
+
+//       <NavigationMenu.Content>
+//         <AnimatePresence>
+//           {openShop === id && (
+//             <motion.div
+//               className="absolute top-full mt-2 left-0 w-[300px] bg-white rounded-md shadow-lg z-50 p-4"
+//               onMouseEnter={() => setOpenShop(id)}
+//               onMouseLeave={() => setOpenShop(null)}
+//               initial={{ opacity: 0, y: -10 }}
+//               animate={{ opacity: 1, y: 0 }}
+//               exit={{ opacity: 0, y: -10 }}
+//               transition={{ duration: 0.2 }}
+//             >
+//               <ul className="flex flex-col gap-2">
+//                 {stores.map((store, idx) => (
+//                   <li key={idx} className="flex items-center gap-2">
+//                     <Checkbox.Root
+//                       className="flex size-[20px] appearance-none items-center justify-center rounded bg-white shadow-[0_2px_6px] shadow-blackA4 outline-none hover:bg-violet3"
+//                       checked={
+//                         selectedStore.platform === id &&
+//                         selectedStore.store === store
+//                       }
+//                       onCheckedChange={() => handleStoreSelect(id, store)}
+//                       id={`${id}-${idx}`}
+//                       disabled={selectedPlatform !== id} // Only enable store selection if platform is selected
+//                     >
+//                       <Checkbox.Indicator className="text-violet11">
+//                         <CheckIcon />
+//                       </Checkbox.Indicator>
+//                     </Checkbox.Root>
+//                     <label
+//                       className="text-[14px] text-[#004368] leading-none"
+//                       htmlFor={`${id}-${idx}`}
+//                     >
+//                       {store}
+//                     </label>
+//                   </li>
+//                 ))}
+//               </ul>
+//             </motion.div>
+//           )}
+//         </AnimatePresence>
+//       </NavigationMenu.Content>
+//     </NavigationMenu.Item>
+//   );
+
+//   return (
+//     <div>
+//       <p className="text-[#004368] text-[25px] font-[500] capitalize mb-4">
+//         {t("Select Shop")}
+//       </p>
+
+//       <div className="flex justify-between items-center mr-[3.5vw]">
+//         <NavigationMenu.Root className="flex w-screen relative z-50">
+//           <NavigationMenu.List className="flex list-none rounded-md bg-transparent gap-4">
+//             {shops.map(renderShopItem)}
+//           </NavigationMenu.List>
+//         </NavigationMenu.Root>
+
+//         <AddShopeModal />
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default ShopSelector;
+
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import * as Checkbox from "@radix-ui/react-checkbox";
-import { CheckIcon, CaretDownIcon, PlusIcon } from "@radix-ui/react-icons";
+import { CheckIcon, CaretDownIcon } from "@radix-ui/react-icons";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTranslation } from "react-i18next";
@@ -170,64 +353,109 @@ const ShopSelector = () => {
   const { t } = useTranslation();
   const TikTokShopList = useSelector((state) => state.allShopList.data);
 
-  // Base shops (hardcoded)
-  const baseShops = [
+  // Full dummy shop data for Shopee and Lazada — modeled like TikTok shop data
+  const shopeeShops = [
     {
-      id: "shopee",
-      label: "Shopee",
-      stores: ["Shopee Store A", "Shopee Store B", "Shopee Express"],
+      cipher: "ROW_shopeeCipher1",
+      code: "SHOPEE001",
+      id: "shp001",
+      name: "Shopee Store A",
+      region: "MY",
+      sellerType: "LOCAL",
     },
     {
-      id: "lazada",
-      label: "Lazada",
-      stores: ["Lazada Supermart", "Lazada Xpress", "Lazada Deals"],
+      cipher: "ROW_shopeeCipher2",
+      code: "SHOPEE002",
+      id: "shp002",
+      name: "Shopee Store B",
+      region: "MY",
+      sellerType: "LOCAL",
     },
   ];
 
-  // Final shops with dynamic TikTok added
+  const lazadaShops = [
+    {
+      cipher: "ROW_lazadaCipher1",
+      code: "LAZADA001",
+      id: "lzd001",
+      name: "Lazada Supermart",
+      region: "MY",
+      sellerType: "LOCAL",
+    },
+    {
+      cipher: "ROW_lazadaCipher2",
+      code: "LAZADA002",
+      id: "lzd002",
+      name: "Lazada Xpress",
+      region: "MY",
+      sellerType: "LOCAL",
+    },
+  ];
+
   const shops = [
-    ...baseShops,
+    { id: "shopee", label: "Shopee", stores: shopeeShops },
+    { id: "lazada", label: "Lazada", stores: lazadaShops },
     {
       id: "tiktok",
       label: "TikTok",
-      stores: TikTokShopList?.map((shop) => shop.name) || [],
+      stores: TikTokShopList || [],
     },
   ];
 
-  const [checkedShops, setCheckedShops] = useState(
-    shops.reduce((acc, shop) => ({ ...acc, [shop.id]: true }), {})
-  );
-
-  // Sync checked state if TikTokShopList updates
-  useEffect(() => {
-    setCheckedShops((prev) =>
-      shops.reduce((acc, shop) => {
-        if (prev.hasOwnProperty(shop.id)) return acc;
-        return { ...acc, [shop.id]: true };
-      }, prev)
-    );
-  }, [TikTokShopList]);
-
-  const [allShops, setAllShops] = useState(false);
+  const [selectedPlatform, setSelectedPlatform] = useState("tiktok");
+  const [selectedStore, setSelectedStore] = useState(null);
   const [openShop, setOpenShop] = useState(null);
 
-  const toggleShop = (shopId) => {
-    setCheckedShops((prev) => ({
-      ...prev,
-      [shopId]: !prev[shopId],
-    }));
+  // Initialize with first TikTok shop if available
+  useEffect(() => {
+    if (TikTokShopList?.length > 0) {
+      setSelectedPlatform("tiktok");
+      setSelectedStore(TikTokShopList[0].name);
+      saveShopToLocalStorage("tiktok", [TikTokShopList[0]]);
+    }
+  }, [TikTokShopList]);
+
+  // Save full shop array with only one selected shop object for each platform
+  const saveShopToLocalStorage = (platformId, shopArray) => {
+    const key = `${platformId}ShopInfo`;
+    localStorage.setItem(key, JSON.stringify(shopArray));
+  };
+
+  // When selecting platform, reset selected store
+  const handlePlatformSelect = (platformId) => {
+    setSelectedPlatform(platformId);
+    setSelectedStore(null);
+  };
+
+  // Select a store under platform — save full object array with 1 selected object
+  const handleStoreSelect = (platformId, storeName) => {
+    setSelectedPlatform(platformId);
+    setSelectedStore(storeName);
+
+    // Find the full shop object for that store name
+    const platformObj = shops.find((shop) => shop.id === platformId);
+    if (!platformObj) return;
+
+    const fullShopObj = platformObj.stores.find(
+      (shop) => shop.name === storeName
+    );
+
+    if (fullShopObj) {
+      saveShopToLocalStorage(platformId, [fullShopObj]);
+    }
   };
 
   const renderShopItem = ({ id, label, stores }) => (
     <NavigationMenu.Item className="relative" key={id}>
       <NavigationMenu.Trigger
         className="group flex items-center justify-between gap-2 px-3 py-2 rounded text-[15px] font-medium hover:bg-violet3 outline-none"
+        onClick={() => handlePlatformSelect(id)}
         onMouseEnter={() => setOpenShop(id)}
       >
         <Checkbox.Root
-          className="flex size-[25px] appearance-none items-center justify-center rounded bg-white  outline-none hover:bg-violet3 focus:outline-none focus:shadow-none"
-          checked={checkedShops[id]}
-          onCheckedChange={() => toggleShop(id)}
+          className="flex size-[25px] appearance-none items-center justify-center rounded bg-white outline-none hover:bg-violet3"
+          checked={selectedPlatform === id}
+          onCheckedChange={() => handlePlatformSelect(id)}
           id={id}
         >
           <Checkbox.Indicator className="text-violet11">
@@ -237,7 +465,7 @@ const ShopSelector = () => {
 
         <label
           className={`pl-[15px] text-[15px] leading-none ${
-            checkedShops[id] ? "text-[#004368]" : "text-[#00436866]"
+            selectedPlatform === id ? "text-[#004368]" : "text-[#00436866]"
           }`}
           htmlFor={id}
         >
@@ -250,7 +478,6 @@ const ShopSelector = () => {
         />
       </NavigationMenu.Trigger>
 
-      {/* Dropdown content with framer motion */}
       <NavigationMenu.Content>
         <AnimatePresence>
           {openShop === id && (
@@ -263,12 +490,15 @@ const ShopSelector = () => {
               exit={{ opacity: 0, y: -10 }}
               transition={{ duration: 0.2 }}
             >
-              <ul className="flex flex-col gap-2">
+              <ul className="flex flex-col gap-2 max-h-[300px] overflow-auto">
                 {stores.map((store, idx) => (
                   <li key={idx} className="flex items-center gap-2">
                     <Checkbox.Root
-                      className="flex size-[20px] appearance-none items-center justify-center rounded bg-white shadow-[0_2px_6px] shadow-blackA4 outline-none hover:bg-violet3 focus:outline-none focus:shadow-none"
-                      defaultChecked
+                      className="flex size-[20px] appearance-none items-center justify-center rounded bg-white shadow-[0_2px_6px] shadow-blackA4 outline-none hover:bg-violet3"
+                      checked={
+                        selectedPlatform === id && selectedStore === store.name
+                      }
+                      onCheckedChange={() => handleStoreSelect(id, store.name)}
                       id={`${id}-${idx}`}
                     >
                       <Checkbox.Indicator className="text-violet11">
@@ -278,8 +508,9 @@ const ShopSelector = () => {
                     <label
                       className="text-[14px] text-[#004368] leading-none"
                       htmlFor={`${id}-${idx}`}
+                      title={JSON.stringify(store)}
                     >
-                      {store}
+                      {store.name}
                     </label>
                   </li>
                 ))}
@@ -300,28 +531,6 @@ const ShopSelector = () => {
       <div className="flex justify-between items-center mr-[3.5vw]">
         <NavigationMenu.Root className="flex w-screen relative z-50">
           <NavigationMenu.List className="flex list-none rounded-md bg-transparent gap-4">
-            <div className="flex items-center">
-              <Checkbox.Root
-                className="flex size-[25px] appearance-none items-center justify-center rounded bg-white outline-none hover:bg-violet3 focus:outline-none focus:shadow-none"
-                checked={allShops}
-                onCheckedChange={(value) => setAllShops(value)}
-              >
-                <Checkbox.Indicator className="text-violet11">
-                  <CheckIcon />
-                </Checkbox.Indicator>
-              </Checkbox.Root>
-
-              <label
-                className={`pl-[15px] text-[15px] leading-none ${
-                  allShops
-                    ? "text-[#004368] font-[500]"
-                    : "text-[#00436866] font-[500]"
-                }`}
-                htmlFor={"All Shops"}
-              >
-                {t("All Shops")}
-              </label>
-            </div>
             {shops.map(renderShopItem)}
           </NavigationMenu.List>
         </NavigationMenu.Root>

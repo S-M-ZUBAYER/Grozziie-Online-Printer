@@ -34,7 +34,7 @@ const PackageTable = ({
 
   const formatText = (text) => {
     if (!text) return t("No Data");
-    return text.length > 25 ? `${text.slice(0, 25)}*****` : text;
+    return text.length > 20 ? `${text.slice(0, 20)}***` : text;
   };
 
   const handleGetTracking = async (order) => {
@@ -110,13 +110,16 @@ const PackageTable = ({
                 <span className="mr-[10px]">{t("DeliveryCode")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
-              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-r-md">
+              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
+                <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                 {t("ProductDetails")}
               </th>
-              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                <span className="mr-[10px]">{t("Tracking")}</span>
-                <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
-              </th>
+              {(tikTokOrderStatusCheck === "AWAITING_COLLECTION" ||
+                tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") && (
+                <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-r-md">
+                  <span className="mr-[10px]">{t("Tracking")}</span>
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -209,15 +212,18 @@ const PackageTable = ({
                           {selectedLanguage === "zh-CN" ? "细节" : "Details"}
                         </p>
                       </td>
-
-                      <td className="text-black opacity-80 text-sm font-normal leading-4">
-                        <p
-                          className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
-                          onClick={() => handleGetTracking(order)}
-                        >
-                          {selectedLanguage === "zh-CN" ? "细节" : "Tracking"}
-                        </p>
-                      </td>
+                      {(tikTokOrderStatusCheck === "AWAITING_COLLECTION" ||
+                        tikTokOrderStatusCheck ===
+                          "AWAITING_COLLECTION_PRINTED") && (
+                        <td className="text-black opacity-80 text-sm font-normal leading-4">
+                          <p
+                            className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
+                            onClick={() => handleGetTracking(order)}
+                          >
+                            {selectedLanguage === "zh-CN" ? "细节" : "Tracking"}
+                          </p>
+                        </td>
+                      )}
                     </tr>
                   );
                 })}
@@ -226,27 +232,45 @@ const PackageTable = ({
       )}
       {/* MODAL */}
       {showModal && trackingInfo && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white w-full max-w-md rounded-xl shadow-lg p-6 relative">
-            <h2 className="text-xl font-bold mb-4 text-gray-800">
-              {t("Tracking Updates")}
-            </h2>
-            <ul className="space-y-3 max-h-60 overflow-y-auto">
-              {trackingInfo.map((item, index) => (
-                <li key={index} className="text-gray-700">
-                  <span className="block font-medium">{item.description}</span>
-                  <span className="text-sm text-gray-500">
-                    {new Date(item.updateTimeMillis).toLocaleString()}
-                  </span>
-                </li>
-              ))}
-            </ul>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6 relative">
+            {/* Close Button */}
             <button
-              className="absolute top-2 right-2 text-gray-500 hover:text-black text-xl"
+              className="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-2xl"
               onClick={() => setShowModal(false)}
+              aria-label="Close"
             >
               <RxCross1 />
             </button>
+
+            {/* Header */}
+            <h2 className="text-2xl font-bold mb-6 text-[#004368] text-center">
+              {t("Tracking Updates")}
+            </h2>
+
+            {/* Timeline List */}
+            <ul className="space-y-4 max-h-72 overflow-y-auto pr-1">
+              {trackingInfo.map((item, index) => (
+                <li key={index} className="border-l-4 border-[#004368] pl-4">
+                  <p className="text-sm font-semibold text-gray-800">
+                    {item.description}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(item.updateTimeMillis).toLocaleString()}
+                  </p>
+                </li>
+              ))}
+            </ul>
+
+            {/* Footer */}
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => setShowModal(false)}
+                className="bg-[#004368] hover:bg-[#00324d] text-white font-medium py-2 px-6 rounded-lg transition"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

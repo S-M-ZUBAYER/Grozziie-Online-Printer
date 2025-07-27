@@ -28,7 +28,7 @@ const BatchPrintTable = ({
 
   const formatText = (text) => {
     if (!text) return "No Data";
-    return text.length > 25 ? `${text.slice(0, 25)}*****` : text;
+    return text.length > 20 ? `${text.slice(0, 20)}***` : text;
   };
 
   return (
@@ -71,10 +71,6 @@ const BatchPrintTable = ({
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                <span className="mr-[10px]">{t("CustomerMark")}</span>
-                <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
-              </th>
-              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
                 <span className="mr-[10px]">{t("DeliveryCompany")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
@@ -82,9 +78,16 @@ const BatchPrintTable = ({
                 <span className="mr-[10px]">{t("DeliveryCode")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
-              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-r-md">
+              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 ">
+                <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                 {t("ProductDetails")}
               </th>
+              {(tikTokOrderStatusCheck === "AWAITING_COLLECTION" ||
+                tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") && (
+                <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-r-md">
+                  <span className="mr-[10px]">{t("Tracking")}</span>
+                </th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -122,11 +125,6 @@ const BatchPrintTable = ({
                       {formatText(address.fullAddress) || t("NoData")}
                     </td>
 
-                    {/* Customer Mark */}
-                    <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(order.sellerNote) || t("NoData")}
-                    </td>
-
                     {/* Delivery Company */}
                     <td className="text-black opacity-80 text-sm font-normal leading-4">
                       {formatText(order.shippingProvider) || t("NoData")}
@@ -161,6 +159,18 @@ const BatchPrintTable = ({
                       </p>
                       {/* You can reuse your modal here like before */}
                     </td>
+                    {(tikTokOrderStatusCheck === "AWAITING_COLLECTION" ||
+                      tikTokOrderStatusCheck ===
+                        "AWAITING_COLLECTION_PRINTED") && (
+                      <td className="text-black opacity-80 text-sm font-normal leading-4">
+                        <p
+                          className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
+                          onClick={() => handleGetTracking(order)}
+                        >
+                          {selectedLanguage === "zh-CN" ? "细节" : "Tracking"}
+                        </p>
+                      </td>
+                    )}
                   </tr>
                 );
               })}

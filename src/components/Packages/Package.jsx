@@ -40,6 +40,8 @@ const Package = () => {
   const [tikTokOrderStatusCheck, setTikTokOrderStatusCheck] = useState(
     "AWAITING_COLLECTION"
   );
+  const [tikTokPrintedIds, setTikTokPrintedIds] = useState([]);
+
   const [searchFields, setSearchFields] = useState({
     RecipientAddress: "",
     isActiveRecipientAddress: "",
@@ -197,26 +199,141 @@ const Package = () => {
 
   // pagination part
 
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const now = Math.floor(Date.now() / 1000);
+  //       const fiveDaysAgo = now - 5 * 24 * 60 * 60;
+  //       console.log("response Start..................");
+  //       const response = await loadOrderList({
+  //         cipher: cipher[0]?.cipher,
+  //         createTimeGe: fiveDaysAgo,
+  //         createTimeLt: now,
+  //         updateTimeGe: fiveDaysAgo,
+  //         updateTimeLt: now,
+  //         orderStatus: tikTokOrderStatusCheck, // You can parameterize this too
+  //         pageSize: 100,
+  //       }).unwrap();
+  //       console.log(response, "response..................");
+
+  //       const orders = response?.data?.orders ?? [];
+
+  //       const filteredOrderList = orders.filter((item) => item?.buyerEmail);
+
+  //       dispatch(orderListData(filteredOrderList));
+  //       setTotalOrderData(filteredOrderList);
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //     }
+  //   };
+
+  //   if (cipher?.[0]?.cipher) {
+  //     fetchData();
+  //   }
+  // }, [cipher, dispatch, loadOrderList, tikTokOrderStatusCheck]);
+
+  useEffect(() => {
+    const fetchPrintedIds = async () => {
+      try {
+        const res = await fetch(
+          "http://localhost:2000/tht/grozziiePrinter/printedIdS"
+        );
+        const data = await res.json();
+
+        if (data?.code === 200 && Array.isArray(data.result)) {
+          setTikTokPrintedIds(data.result);
+        } else {
+          throw new Error("Invalid response format");
+        }
+      } catch (err) {
+        console.error("❌ Failed to fetch printed IDs:", err);
+      }
+    };
+
+    fetchPrintedIds();
+  }, [tikTokOrderStatusCheck]);
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const now = Math.floor(Date.now() / 1000);
+  //       const fiveDaysAgo = now - 5 * 24 * 60 * 60;
+  //       console.log(
+  //         tikTokOrderStatusCheck,
+  //         "status////////////////////////////////////"
+  //       );
+  //       console.log("response Start..................");
+  //       const response = await loadOrderList({
+  //         cipher: cipher[0]?.cipher,
+  //         createTimeGe: fiveDaysAgo,
+  //         createTimeLt: now,
+  //         updateTimeGe: fiveDaysAgo,
+  //         updateTimeLt: now,
+  //         orderStatus: tikTokOrderStatusCheck, // You can parameterize this too
+  //         pageSize: 100,
+  //       }).unwrap();
+  //       console.log("response..................", response);
+
+  //       const orders = response?.data?.orders ?? [];
+
+  //       if(tikTokOrderStatusCheck==="AWAITING_COLLECTION"){
+  //         const filteredOrderList = orders.filter((item) => item?.buyerEmail);
+  //       }
+
+  //       const filteredOrderList = orders.filter((item) => item?.buyerEmail);
+
+  //       dispatch(orderListData(filteredOrderList));
+  //       setTotalOrderData(filteredOrderList);
+  //     } catch (error) {
+  //       console.error("Error fetching data:", error);
+  //     }
+  //   };
+
+  //   if (cipher?.[0]?.cipher) {
+  //     fetchData();
+  //   }
+  // }, [cipher, dispatch, loadOrderList, tikTokOrderStatusCheck]);
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         const now = Math.floor(Date.now() / 1000);
         const fiveDaysAgo = now - 5 * 24 * 60 * 60;
-        console.log("response Start..................");
+
         const response = await loadOrderList({
           cipher: cipher[0]?.cipher,
           createTimeGe: fiveDaysAgo,
           createTimeLt: now,
           updateTimeGe: fiveDaysAgo,
           updateTimeLt: now,
-          orderStatus: tikTokOrderStatusCheck, // You can parameterize this too
+          orderStatus:
+            tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED"
+              ? "AWAITING_COLLECTION"
+              : tikTokOrderStatusCheck,
           pageSize: 100,
         }).unwrap();
-        console.log(response, "response..................");
 
         const orders = response?.data?.orders ?? [];
 
-        const filteredOrderList = orders.filter((item) => item?.buyerEmail);
+        // Extract only the IDs that have already been printed
+        const printedIdSet = new Set(
+          tikTokPrintedIds.map((item) => item.tikTokPrintedId)
+        );
+
+        let filteredOrderList = orders.filter((item) => item?.buyerEmail);
+
+        // If status is AWAITING_COLLECTION, filter out printed IDs
+        if (tikTokOrderStatusCheck === "AWAITING_COLLECTION") {
+          filteredOrderList = filteredOrderList.filter(
+            (item) => !printedIdSet.has(item.id)
+          );
+        }
+        // If status is AWAITING_COLLECTION, filter out printed IDs
+        if (tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") {
+          filteredOrderList = filteredOrderList.filter((item) =>
+            printedIdSet.has(item.id)
+          );
+        }
 
         dispatch(orderListData(filteredOrderList));
         setTotalOrderData(filteredOrderList);
@@ -225,10 +342,16 @@ const Package = () => {
       }
     };
 
-    if (cipher?.[0]?.cipher) {
+    if (cipher?.[0]?.cipher && tikTokPrintedIds) {
       fetchData();
     }
-  }, [cipher, dispatch, loadOrderList, tikTokOrderStatusCheck]);
+  }, [
+    cipher,
+    dispatch,
+    loadOrderList,
+    tikTokOrderStatusCheck,
+    tikTokPrintedIds,
+  ]);
 
   const data = totalOrderData;
   const [showPage, setShowPage] = useState(1);
@@ -249,7 +372,13 @@ const Package = () => {
     setCustomersData(data);
     setFilteredData(firstPageData);
     setCurrentCustomerData(firstPageData);
-  }, [tikTokOrderStatusCheck, totalOrderData, printedData]);
+    setCurrentBar(1);
+  }, [
+    tikTokOrderStatusCheck,
+    totalOrderData,
+    printedData,
+    tikTokOrderStatusCheck,
+  ]);
 
   useEffect(() => {
     if (totalPart <= 1) {
@@ -290,13 +419,6 @@ const Package = () => {
   };
   // pagination prev option
   const handleToPrevious = (count) => {
-    const data =
-      tikTokOrderStatusCheck === "Waiting For Shipment"
-        ? totalOrderData
-        : tikTokOrderStatusCheck === "shipped"
-        ? printedData
-        : [];
-
     if (count > 0) {
       if (count === 1) {
         setLeftPaginationBtn(false);
@@ -322,196 +444,8 @@ const Package = () => {
   const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const handleDetailsClick = (customerData) => {
-    setSelectedCustomer({
-      address:
-        "~AgAAAAKj5K0HdThr3gFHOLKf52dwPutKrkirs5ILD4dZQFc/tafwm7uUtIMmcBD3SaW/E/3onfp5KEeBtNg+ANmFNzDuUUy618YUbpATRkD83xEHnhObE/ZG+cpbYlFlYaOrROimNGg+xVOYQ2c3br71PFStRR3IWcc706LoXuQ=~aH70ycygYwmz9II8U9DunESCGzPhLqEnDs9gNfM8xbLbDWm6GmrCcrr769u45n7I7h7kBM8BMecpxcb+IgdhyzAgkOTtD56s5Tiwf06W~0~~",
-      address_mask: "广东省潮州市潮安区新安大道东北侧彩塘林迈村，王厝宫路*号",
-      after_sales_status: 0,
-      buyer_memo: "",
-      capital_free_discount: 0.0,
-      card_info_list: [],
-      cat_id_1: 2603,
-      cat_id_2: 2616,
-      cat_id_3: 4780,
-      cat_id_4: 0,
-      city: "潮州市",
-      city_id: 78,
-      confirm_status: 1,
-      confirm_time: "2024-03-18 17:13:01",
-      country: "中国",
-      country_id: 0,
-      created_time: "2024-03-18 17:12:59",
-      delivery_one_day: 0,
-      discount_amount: 10.0,
-      duo_duo_pay_reduction: 0.0,
-      duoduo_wholesale: 0,
-      free_sf: 0,
-      gift_list: [],
-      goods_amount: 198.0,
-      group_status: 1,
-      home_delivery_type: 0,
-      inner_transaction_id: "",
-      invoice_status: 0,
-      is_lucky_flag: 1,
-      is_pre_sale: 0,
-      is_stock_out: 0,
-      item_list: [
-        {
-          goods_count: 1,
-          goods_id: "3956183219",
-          goods_img:
-            "https://img.pddpic.com/mms-material-img/2021-09-29/0ad8763e-a358-40bd-8b71-3f5fa26a143d.jpeg.a.jpeg",
-          goods_name:
-            "格志M880考勤机纸卡式打卡机打卡钟员工上下班智能签到考勤机机器",
-          goods_price: 198.0,
-          goods_spec: "M880白色(插电款)+送50张纸卡",
-          outer_goods_id: "",
-          outer_id: "M880",
-          sku_id: "840777314605",
-        },
-      ],
-      last_ship_time: "2024-03-20 17:13:01",
-      logistics_id: 0,
-      mkt_biz_type: 0,
-      only_support_replace: 0,
-      order_change_amount: 0.0,
-      order_sn: "240318-422796379670125",
-      order_status: 1,
-      order_tag_list: [
-        {
-          name: "delivery_one_day",
-          value: 0,
-        },
-        {
-          name: "no_trace_delivery",
-          value: 0,
-        },
-        {
-          name: "self_contained",
-          value: 0,
-        },
-        {
-          name: "return_freight_payer",
-          value: 0,
-        },
-        {
-          name: "free_sf",
-          value: 0,
-        },
-        {
-          name: "duoduo_wholesale",
-          value: 0,
-        },
-        {
-          name: "support_nationwide_warranty",
-          value: 0,
-        },
-        {
-          name: "only_support_replace",
-          value: 0,
-        },
-        {
-          name: "oversea_tracing",
-          value: 0,
-        },
-        {
-          name: "distributional_sale",
-          value: 0,
-        },
-        {
-          name: "open_in_festival",
-          value: 0,
-        },
-        {
-          name: "same_city_distribution",
-          value: 0,
-        },
-        {
-          name: "region_black_delay_shipping",
-          value: 0,
-        },
-        {
-          name: "has_subsidy_postage",
-          value: 0,
-        },
-        {
-          name: "has_sf_express_service",
-          value: 0,
-        },
-        {
-          name: "community_group",
-          value: 0,
-        },
-        {
-          name: "has_ship_additional",
-          value: 0,
-        },
-        {
-          name: "ship_additional_order",
-          value: 0,
-        },
-        {
-          name: "conso_order",
-          value: 0,
-        },
-        {
-          name: "professional_appraisal",
-          value: 0,
-        },
-        {
-          name: "allergy_refund",
-          value: 0,
-        },
-        {
-          name: "ship_hold",
-          value: 0,
-        },
-        {
-          name: "home_delivery_door",
-          value: 0,
-        },
-      ],
-      pay_amount: 188.0,
-      pay_no: "",
-      pay_time: "2024-03-18 17:13:00",
-      pay_type: "",
-      platform_discount: 0.0,
-      postage: 0.0,
-      pre_sale_time: "",
-      promotion_detail_list: [],
-      province: "广东省",
-      province_id: 6,
-      receive_time: "",
-      receiver_address:
-        "~AgAAAAKj5K0IdThr3gHe+IB/CXj/g/s71hb4h+Lopn37lsI3cyT3+lLvLiyYcQ61F8QObkXFmrPu2ouDIKOm2GEI9J1gvPYK3C63pAb7tc5ubc9GasgT+ssRCqC4kDa1~NfM8xbLbDWm6GmrCcrr769u45n7I7h7kBM8BMecpxcb+IgdhyzAgkOTtD56s5Tiwf06W~0~~",
-      receiver_address_mask: "新安大道东北侧彩塘林迈村，王厝宫路*号",
-      receiver_name:
-        "~AgAAAAKj5K0FdThr3gCXEjX7VukfDJ4VXsxKOdZIGJk=~e3T2WeW7~0~~",
-      receiver_name_mask: "林*坤",
-      receiver_phone:
-        "$Y/YKpKSij9Re$AgAAAAKj5K0GdThr3gD91OwqU75VBWn0HBgJhtknQj0=$0$$",
-      receiver_phone_mask: "1*********5",
-      refund_status: 1,
-      remark: "",
-      return_freight_payer: 0,
-      risk_control_status: 0,
-      self_contained: 0,
-      seller_discount: 10.0,
-      service_fee_detail: [],
-      shipping_time: "",
-      shipping_type: 0,
-      stock_out_handle_status: -1,
-      support_nationwide_warranty: 0,
-      town: "潮安区",
-      town_id: 712,
-      tracking_number: "",
-      trade_type: 0,
-      updated_at: "2024-03-18 17:43:00",
-      urge_shipping_time: "",
-      yyps_date: "",
-      yyps_time: "",
-    });
+  const handleDetailsClick = (orderData) => {
+    setSelectedCustomer(orderData);
     setIsModalOpen(true);
     // document.getElementById("my_modal_2").showModal();
   };
@@ -538,7 +472,7 @@ const Package = () => {
   //make array to excel
 
   const handleBatchPrinterExcelClick = () => {
-    arrayToExcel(checkedItems, "BatchPrinterCustomerList");
+    arrayToExcel(checkedItems, "BatchPrinterOrderList");
   };
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -789,6 +723,7 @@ const Package = () => {
           endDate={endDate}
           setEndDate={setEndDate}
           setTikTokOrderStatusCheck={setTikTokOrderStatusCheck}
+          tikTokOrderStatusCheck={tikTokOrderStatusCheck}
           handleToSearch={handleToSearch}
           handleToReset={handleToReset}
           searchFields={searchFields}
@@ -1020,15 +955,19 @@ const Package = () => {
           </button> */}
 
           {/* <Link to="/batchprintexpressdelivery"> */}
-          <button
-            onClick={handleToCheckItemsUpdate}
-            className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto  h-10 px-4 gap-2 py-2 rounded-md cursor-pointer flex items-center justify-center"
-          >
-            <MdOutlineLocalPrintshop className="w-[18px] h-[18px]" />
-            <p className="text-[15px] font-medium leading-normal capitalize pl-1">
-              {t("OrderAcceptedAndPrint")}
-            </p>
-          </button>
+          {(tikTokOrderStatusCheck === "AWAITING_COLLECTION" ||
+            tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") && (
+            <button
+              onClick={handleToCheckItemsUpdate}
+              className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto  h-10 px-4 gap-2 py-2 rounded-md cursor-pointer flex items-center justify-center"
+            >
+              <MdOutlineLocalPrintshop className="w-[18px] h-[18px]" />
+              <p className="text-[15px] font-medium leading-normal capitalize pl-1">
+                {t("OrderShippingAndPrint")}
+              </p>
+            </button>
+          )}
+
           <ConfirmationModal
             isOpen={isConfirmModalOpen}
             title={modalTitle}
@@ -1039,6 +978,151 @@ const Package = () => {
             selectedLanguage={selectedLanguage}
           />
           {/* </Link> */}
+          {selectedCustomer && isModalOpen && (
+            <dialog
+              id="my_modal_2"
+              className="modal backdrop-blur-sm bg-black/10 fixed inset-0 z-50 flex items-center justify-center"
+              open={isModalOpen}
+            >
+              <div className="modal-box w-[800px] max-w-full bg-white shadow-xl rounded-2xl p-8 overflow-y-auto max-h-[90vh]">
+                {/* Header */}
+                <div className="flex justify-between items-center mb-6">
+                  <h2 className="text-3xl font-bold text-[#004368]">
+                    TikTok Order Details
+                  </h2>
+                </div>
+
+                {/* Info Grid */}
+                <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+                  <div>
+                    <strong>Order Source:</strong>{" "}
+                    {selectedCustomer?.commercePlatform}
+                  </div>
+                  <div>
+                    <strong>Buyer Nickname:</strong>{" "}
+                    {selectedCustomer?.recipientAddress?.name}
+                  </div>
+
+                  <div>
+                    <strong>Buyer Email:</strong> {selectedCustomer?.buyerEmail}
+                  </div>
+                  <div>
+                    <strong>Order ID:</strong> {selectedCustomer?.id}
+                  </div>
+
+                  <div>
+                    <strong>Status:</strong>{" "}
+                    <span className="text-blue-700 font-semibold">
+                      {selectedCustomer?.status}
+                    </span>
+                  </div>
+                  <div>
+                    <strong>Package ID:</strong>{" "}
+                    {selectedCustomer?.lineItems?.[0]?.packageId}
+                  </div>
+
+                  <div>
+                    <strong>Tracking Number:</strong>{" "}
+                    {selectedCustomer?.trackingNumber}
+                  </div>
+                  <div>
+                    <strong>Shipping Provider:</strong>{" "}
+                    {selectedCustomer?.shippingProvider}
+                  </div>
+
+                  <div>
+                    <strong>Delivery Type:</strong>{" "}
+                    {selectedCustomer?.deliveryType}
+                  </div>
+                  <div>
+                    <strong>Delivery Option:</strong>{" "}
+                    {selectedCustomer?.deliveryOptionName}
+                  </div>
+
+                  <div>
+                    <strong>SKU:</strong>{" "}
+                    {selectedCustomer?.lineItems?.[0]?.skuName}
+                  </div>
+                  <div>
+                    <strong>SKU Price:</strong>{" "}
+                    {selectedCustomer?.lineItems?.[0]?.salePrice}{" "}
+                    {selectedCustomer?.payment?.currency}
+                  </div>
+
+                  <div>
+                    <strong>Quantity:</strong>{" "}
+                    {selectedCustomer?.lineItems?.length}
+                  </div>
+                  <div>
+                    <strong>Shipping Fee:</strong>{" "}
+                    {selectedCustomer?.payment?.shippingFee}
+                  </div>
+
+                  <div>
+                    <strong>Total Amount:</strong>{" "}
+                    {selectedCustomer?.payment?.totalAmount}{" "}
+                    {selectedCustomer?.payment?.currency}
+                  </div>
+                  <div>
+                    <strong>Payment Method:</strong>{" "}
+                    {selectedCustomer?.paymentMethodName}
+                  </div>
+
+                  <div>
+                    <strong>Paid Time:</strong>{" "}
+                    {new Date(
+                      selectedCustomer?.paidTime * 1000
+                    ).toLocaleString()}
+                  </div>
+                  <div>
+                    <strong>Region:</strong>{" "}
+                    {selectedCustomer?.recipientAddress?.regionCode}
+                  </div>
+                </div>
+
+                {/* Product & Image */}
+                <div className="mt-6 flex items-start gap-4">
+                  <img
+                    src={selectedCustomer?.lineItems?.[0]?.skuImage}
+                    alt="SKU"
+                    className="w-28 h-28 object-cover rounded-lg border"
+                  />
+                  <div>
+                    <p>
+                      <strong>Product:</strong>{" "}
+                      {selectedCustomer?.lineItems?.[0]?.productName}
+                    </p>
+                    <p>
+                      <strong>Seller SKU:</strong>{" "}
+                      {selectedCustomer?.lineItems?.[0]?.sellerSku}
+                    </p>
+                    <p>
+                      <strong>Currency:</strong>{" "}
+                      {selectedCustomer?.lineItems?.[0]?.currency}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Address */}
+                <div className="mt-6">
+                  <strong>Shipping Address:</strong>
+                  <p className="text-gray-600 mt-1">
+                    {selectedCustomer?.recipientAddress?.fullAddress}
+                  </p>
+                </div>
+
+                {/* Footer */}
+                <div className="mt-8 text-center">
+                  <button
+                    onClick={closeModal}
+                    className="bg-[#004368] hover:bg-[#00324d] text-white font-semibold px-8 py-2 rounded-lg transition"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            </dialog>
+          )}
         </div>
       </div>
     </div>
