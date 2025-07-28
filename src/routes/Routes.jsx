@@ -50,6 +50,7 @@ import ProductApplication from "../components/Marketing/ProductApplication/Produ
 import Registration from "../components/Auth/Registration";
 import Login from "../components/Auth/Login";
 import Pricing from "../components/Pricing/Pricing";
+import PaymentSystem from "../components/Pricing/PaymentSystem";
 import ForgotPassword from "../components/Auth/ForgotPassword";
 import ResetPassword from "../components/Auth/ResetPassword";
 import PrivateRoute from "../components/Private/PrivateRoute";
@@ -59,6 +60,7 @@ import VerifyEmailPage from "../components/Auth/VerifyEmailPage";
 import Package from "../components/Packages/Package";
 import BatchPrintPrinting from "../components/BatchPrintExpressDelivery/BatchPrintPrinting";
 import WrappedPaymentPage from "../components/Pricing/PaymentPage";
+import SuccessPage from "../components/Pricing/SuccessPage";
 
 export const routes = createBrowserRouter([
   {
@@ -69,10 +71,10 @@ export const routes = createBrowserRouter([
     path: "/register",
     element: <Registration />,
   },
-  {
-    path: "/payment",
-    element: <WrappedPaymentPage />,
-  },
+  // {
+  //   path: "/payment",
+  //   element: <WrappedPaymentPage />,
+  // },
   {
     path: "/login",
     element: <Login />,
@@ -508,6 +510,10 @@ export const routes = createBrowserRouter([
   },
   {
     path: "/payment",
-    element: <PaymentAlipay />,
+    element: <PaymentSystem />,
+  },
+  {
+    path: "/success",
+    element: <SuccessPage />,
   },
 ]);
