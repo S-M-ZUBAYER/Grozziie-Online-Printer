@@ -10,7 +10,10 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
-*.local
+# Environment files
+.env
+.env.*       # ignore .env.local, .env.development, etc.
+*.local      # covers things like .local, .env.local
 
 # Editor directories and files
 .vscode/*
