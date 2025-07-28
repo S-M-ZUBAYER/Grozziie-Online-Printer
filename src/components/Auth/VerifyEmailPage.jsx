@@ -31,7 +31,8 @@ const VerifyEmailPage = () => {
     console.log(verifyCode);
     try {
       const response = await fetch(
-        `https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/verify?code=${verifyCode}`,
+        // `https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/verify?code=${verifyCode}`,
+        `http://192.168.1.13:8888/user/verify?code=${verifyCode}`,
         {
           method: "GET",
           headers: {

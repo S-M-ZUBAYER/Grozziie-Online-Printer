@@ -45,9 +45,15 @@ const Home = () => {
   const [deliveryCompanyName, setDeliveryCompanyName] = useState([]);
 
   useEffect(() => {
-    const userEmail = localStorage.getItem("printerUser");
-    if (userEmail) {
-      dispatch(accountUserChange(userEmail));
+    const storedUser = localStorage.getItem("printerUser");
+
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        dispatch(accountUserChange(user?.email));
+      } catch (err) {
+        console.error("Failed to parse user from localStorage", err);
+      }
     }
 
     const storedCompanyString = localStorage.getItem("DefaultExpressCompany");

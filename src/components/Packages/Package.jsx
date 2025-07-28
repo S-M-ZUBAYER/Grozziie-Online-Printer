@@ -298,7 +298,7 @@ const Package = () => {
     const fetchData = async () => {
       try {
         const now = Math.floor(Date.now() / 1000);
-        const fiveDaysAgo = now - 5 * 24 * 60 * 60;
+        const fiveDaysAgo = now - 10 * 24 * 60 * 60;
 
         const response = await loadOrderList({
           cipher: cipher[0]?.cipher,

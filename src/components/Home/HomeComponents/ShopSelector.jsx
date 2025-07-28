@@ -494,7 +494,7 @@ const ShopSelector = () => {
                 {stores.map((store, idx) => (
                   <li key={idx} className="flex items-center gap-2">
                     <Checkbox.Root
-                      className="flex size-[20px] appearance-none items-center justify-center rounded bg-white shadow-[0_2px_6px] shadow-blackA4 outline-none hover:bg-violet3"
+                      className="flex size-[20px] appearance-none items-center justify-center rounded shadow-[0_2px_6px] shadow-blackA4 outline-none hover:bg-violet3"
                       checked={
                         selectedPlatform === id && selectedStore === store.name
                       }
