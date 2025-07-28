@@ -41,9 +41,31 @@ export const orderTypes = ["Homer", "Marge", "Bart", "Lisa", "Maggie"];
 export const orderIDs = ["Homer", "Marge", "Bart", "Lisa", "Maggie"];
 export const printerModel = ["TP870", "TP850", "TP210A", "TP210B", "TP210C"];
 
-export const refundStatusOptions = [
-  "Waiting For Shipment",
-  "shipped",
+export const tikTokOrderStatusOptions = [
+  // "Waiting For Shipment",
+  // "shipped",
+  // "Delivered",
+  // "Cancel & return",
+  {
+    status: "Waiting For Shipment",
+    value: "AWAITING_SHIPMENT",
+  },
+  {
+    status: "shipping",
+    value: "AWAITING_COLLECTION",
+  },
+  {
+    status: "Printed",
+    value: "AWAITING_COLLECTION_PRINTED",
+  },
+  {
+    status: "Delivered",
+    value: "DELIVERED",
+  },
+  {
+    status: "Cancel & return",
+    value: "CANCELLED",
+  },
   // "等待发货",
   // "已发货",
   // "shipped and awaiting signature",

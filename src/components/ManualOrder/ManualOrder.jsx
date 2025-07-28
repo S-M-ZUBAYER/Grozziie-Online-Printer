@@ -50,9 +50,8 @@ const ManualOrder = () => {
   const [deliveryCompanyName, setDeliveryCompanyName] = useState(
     deliveryCompanyNames[0]
   );
-  const [refundStatusCheck, setRefundStatusCheck] = useState(
-    "Waiting For Shipment"
-  );
+  const [tikTokOrderStatusCheck, setTikTokOrderStatusCheck] =
+    useState("AWAITING_SHIPMENT");
 
   const { t } = useTranslation();
 
@@ -829,7 +828,7 @@ const ManualOrder = () => {
       <div className="px-[30px] pt-6 pb-4">
         {/* top section */}
         <NewSearchComponent
-          setRefundStatusCheck={setRefundStatusCheck}
+          setTikTokOrderStatusCheck={setTikTokOrderStatusCheck}
           startDate={startDate}
           setStartDate={setStartDate}
           endDate={endDate}

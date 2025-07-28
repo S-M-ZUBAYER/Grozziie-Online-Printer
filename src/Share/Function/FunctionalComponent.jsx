@@ -5,29 +5,76 @@ import { decryptArrayData } from "./OrderListFunctions";
 import { orderList } from "../Data/ClientData";
 import { orderListData } from "../../features/slice/orderListSlice";
 
+//pindoudou
+// export const arrayToExcel = (data, fileName) => {
+//   const updateData = data?.map((item, index) => {
+//     if (item.item_list) {
+//       const newData = {
+//         ...item,
+//         goods_count: item?.item_list[0]?.goods_count,
+//         goods_id: item?.item_list[0]?.goods_id,
+//         goods_img: item?.item_list[0]?.goods_img,
+//         goods_name: item?.item_list[0]?.goods_name,
+//         goods_price: item?.item_list[0]?.goods_price,
+//         goods_spec: item?.item_list[0]?.goods_spec,
+//         outer_goods_id: item?.item_list[0]?.outer_goods_id,
+//         outer_id: item?.item_list[0]?.outer_id,
+//         sku_id: item?.item_list[0]?.sku_id,
+//       };
+//       return newData;
+//     }
+//     return item;
+//   });
+//   const ws = XLSX.utils.json_to_sheet(updateData);
+//   const wb = XLSX.utils.book_new();
+//   XLSX.utils.book_append_sheet(wb, ws, "Sheet 1");
+//   XLSX.writeFile(wb, fileName + ".xlsx");
+// };
+
 export const arrayToExcel = (data, fileName) => {
-  const updateData = data?.map((item, index) => {
-    if (item.item_list) {
-      const newData = {
-        ...item,
-        goods_count: item?.item_list[0]?.goods_count,
-        goods_id: item?.item_list[0]?.goods_id,
-        goods_img: item?.item_list[0]?.goods_img,
-        goods_name: item?.item_list[0]?.goods_name,
-        goods_price: item?.item_list[0]?.goods_price,
-        goods_spec: item?.item_list[0]?.goods_spec,
-        outer_goods_id: item?.item_list[0]?.outer_goods_id,
-        outer_id: item?.item_list[0]?.outer_id,
-        sku_id: item?.item_list[0]?.sku_id,
-      };
-      return newData;
-    }
-    return item;
+  const updateData = data?.map((item) => {
+    const lineItem = item?.lineItems?.[0] || {};
+
+    return {
+      // Order-level fields
+      orderId: item.id,
+      buyerEmail: item.buyerEmail,
+      commercePlatform: item.commercePlatform,
+      createTime: item.createTime,
+      paidTime: item.paidTime,
+      paymentMethod: item.paymentMethodName,
+      fulfillmentType: item.fulfillmentType,
+      deliveryType: item.deliveryType,
+      status: item.status,
+      trackingNumber: item.trackingNumber,
+      shippingProvider: item.shippingProvider,
+      shippingFee: item.payment?.shippingFee,
+      totalAmount: item.payment?.totalAmount,
+
+      // Address details
+      recipientName: item.recipientAddress?.name,
+      phoneNumber: item.recipientAddress?.phoneNumber,
+      address: item.recipientAddress?.fullAddress,
+      postalCode: item.recipientAddress?.postalCode,
+
+      // Line item fields (first item only)
+      productId: lineItem.productId,
+      productName: lineItem.productName,
+      skuName: lineItem.skuName,
+      skuId: lineItem.skuId,
+      skuImage: lineItem.skuImage,
+      salePrice: lineItem.salePrice,
+      sellerSku: lineItem.sellerSku,
+      currency: lineItem.currency,
+      displayStatus: lineItem.displayStatus,
+      packageId: lineItem.packageId,
+    };
   });
+
   const ws = XLSX.utils.json_to_sheet(updateData);
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Sheet 1");
-  XLSX.writeFile(wb, fileName + ".xlsx");
+  XLSX.writeFile(wb, `${fileName}.xlsx`);
 };
 
 export const generateRandomNumberWithTime = () => {
