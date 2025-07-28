@@ -20,15 +20,46 @@ const BatchPrintTable = ({
   tikTokOrderStatusCheck,
   startDate,
   endDate,
+  cipher,
 }) => {
   const selectedLanguage = useSelector(
     (state) => state.user.selectedLanguageRedux
   );
+  const [showModal, setShowModal] = useState(false);
+  const [trackingInfo, setTrackingInfo] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
   const { t } = useTranslation();
 
   const formatText = (text) => {
     if (!text) return "No Data";
     return text.length > 20 ? `${text.slice(0, 20)}***` : text;
+  };
+
+  const handleGetTracking = async (order) => {
+    setLoading(true);
+    setError("");
+    setTrackingInfo(null);
+    try {
+      const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/tracking?cipher=${encodeURIComponent(
+        cipher[0]?.cipher
+      )}&orderId=${encodeURIComponent(order?.id)}`;
+
+      const res = await fetch(url);
+      const json = await res.json();
+
+      if (json.code === 0 && json.data?.tracking?.length) {
+        setTrackingInfo(json.data.tracking);
+        setShowModal(true);
+      } else {
+        setError(t("No tracking data available."));
+      }
+    } catch (err) {
+      setError(t("Failed to fetch tracking data."));
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -176,6 +207,50 @@ const BatchPrintTable = ({
               })}
           </tbody>
         </table>
+      )}
+      {/* MODAL */}
+      {showModal && trackingInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6 relative">
+            {/* Close Button */}
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-2xl"
+              onClick={() => setShowModal(false)}
+              aria-label="Close"
+            >
+              <RxCross1 />
+            </button>
+
+            {/* Header */}
+            <h2 className="text-2xl font-bold mb-6 text-[#004368] text-center">
+              {t("Tracking Updates")}
+            </h2>
+
+            {/* Timeline List */}
+            <ul className="space-y-4 max-h-72 overflow-y-auto pr-1">
+              {trackingInfo.map((item, index) => (
+                <li key={index} className="border-l-4 border-[#004368] pl-4">
+                  <p className="text-sm font-semibold text-gray-800">
+                    {item.description}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(item.updateTimeMillis).toLocaleString()}
+                  </p>
+                </li>
+              ))}
+            </ul>
+
+            {/* Footer */}
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => setShowModal(false)}
+                className="bg-[#004368] hover:bg-[#00324d] text-white font-medium py-2 px-6 rounded-lg transition"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

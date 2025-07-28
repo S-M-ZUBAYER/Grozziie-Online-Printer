@@ -1061,6 +1061,7 @@ const BatchPrint = () => {
               tikTokOrderStatusCheck={tikTokOrderStatusCheck}
               startDate={startDate}
               endDate={endDate}
+              cipher={cipher}
             />
           )}
         </div>

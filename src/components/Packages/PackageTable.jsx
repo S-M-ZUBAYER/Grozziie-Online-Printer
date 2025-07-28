@@ -69,16 +69,12 @@ const PackageTable = ({
         <div className="flex flex-col items-center justify-center pt-10 text-center w-full mx-auto pb-60">
           <FadeLoader color="#004368" size={25} />
           <p className="text-2xl font-medium pt-10 text-[#004368]">
-            {selectedLanguage === "zh-CN"
-              ? "数据正在加载，请稍候..."
-              : "Data is Loading. Please Wait..."}
+            {t("DataLoading")}
           </p>
         </div>
       ) : isError ? (
         <p className="text-center text-3xl text-red-500 font-medium py-20">
-          {selectedLanguage === "zh-CN"
-            ? "未找到数据。请稍后再试..."
-            : "Data Not Found. Please try again later...."}
+          {t("DataNotFound")}
         </p>
       ) : filteredData?.length === 0 ? (
         <p className="text-center text-3xl text-red-500 font-medium py-20">
@@ -148,43 +144,28 @@ const PackageTable = ({
                           onChange={() => handleCheckboxChange(order)}
                         />
                         <p className="ml-[7px] text-black opacity-80 text-sm font-normal leading-4">
-                          {formatText(order.buyerEmail) ||
-                            (selectedLanguage === "zh-CN"
-                              ? "没有数据"
-                              : "No Data")}
+                          {formatText(order.buyerEmail) || t("NoData")}
                         </p>
                       </td>
 
                       {/* Customer Name */}
                       <td className="text-black opacity-80 text-sm font-normal leading-4">
-                        {formatText(address.name) ||
-                          (selectedLanguage === "zh-CN"
-                            ? "没有数据"
-                            : "No Data")}
+                        {formatText(address.name) || t("NoData")}
                       </td>
 
                       {/* Address */}
                       <td className="text-black opacity-80 text-sm font-normal leading-4">
-                        {formatText(address.fullAddress) ||
-                          (selectedLanguage === "zh-CN"
-                            ? "没有数据"
-                            : "No Data")}
+                        {formatText(address.fullAddress) || t("NoData")}
                       </td>
 
                       {/* Delivery Company */}
                       <td className="text-black opacity-80 text-sm font-normal leading-4">
-                        {formatText(order.shippingProvider) ||
-                          (selectedLanguage === "zh-CN"
-                            ? "没有数据"
-                            : "No Data")}
+                        {formatText(order.shippingProvider) || t("NoData")}
                       </td>
 
                       {/* Delivery Code / Tracking Number */}
                       <td className="text-black opacity-80 text-sm font-normal leading-4">
-                        {formatText(order.trackingNumber) ||
-                          (selectedLanguage === "zh-CN"
-                            ? "没有数据"
-                            : "No Data")}
+                        {formatText(order.trackingNumber) || t("NoData")}
                       </td>
 
                       {/* Product Details */}
@@ -200,16 +181,14 @@ const PackageTable = ({
                           <span className="text-black opacity-80 text-xs font-normal capitalize ml-[6px] mr-6">
                             {formatText(item.productName)
                               ? item.productName.slice(0, 15) + "..."
-                              : selectedLanguage === "zh-CN"
-                              ? "没有数据"
-                              : "No Data"}
+                              : t("NoData")}
                           </span>
                         </div>
                         <p
                           className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
                           onClick={() => handleDetailsClick(order)}
                         >
-                          {selectedLanguage === "zh-CN" ? "细节" : "Details"}
+                          {t("Details")}
                         </p>
                       </td>
                       {(tikTokOrderStatusCheck === "AWAITING_COLLECTION" ||
