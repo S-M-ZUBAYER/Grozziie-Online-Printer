@@ -17,41 +17,42 @@ import { BsFilter } from "react-icons/bs";
 import { MdOutlineImageAspectRatio } from "react-icons/md";
 import { LiaShippingFastSolid } from "react-icons/lia";
 import { CiLocationOn } from "react-icons/ci";
+import { useTranslation } from "react-i18next";
 
 const settingsInfo = [
   {
     id: 1,
-    name: "recipient information",
+    name: "RecipientInformation",
     image: <CgNotes />,
   },
   {
     id: 2,
-    name: "sender information",
+    name: "SenderInformation",
     image: <AiOutlineIdcard />,
   },
   {
     id: 3,
-    name: "display order",
+    name: "DisplayOrder",
     image: <AiOutlineUnorderedList />,
   },
   {
     id: 4,
-    name: "order print filter",
+    name: "OrderPrintFilter",
     image: <BsFilter />,
   },
   {
     id: 5,
-    name: "automatic shipping settings",
+    name: "AutomaticShippingSettings",
     image: <MdOutlineImageAspectRatio />,
   },
   {
     id: 6,
-    name: "logistic machine settings",
+    name: "LogisticMachineSettings",
     image: <LiaShippingFastSolid />,
   },
   {
     id: 7,
-    name: "express unreachable area",
+    name: "ExpressUnreachableArea",
     image: <CiLocationOn />,
   },
 ];
@@ -126,6 +127,8 @@ const SettingLayout = () => {
   const [selectAll, setSelectAll] = useState(false);
   const [checkedItems, setCheckedItems] = useState([]);
   const [active, setActive] = useState(settingsInfo[0]);
+
+  const { t } = useTranslation();
   // console.log(settingsInfo[0]);
 
   // Function to handle the master checkbox change
@@ -175,16 +178,28 @@ const SettingLayout = () => {
                   <Link to={`${setting.name}`} key={setting.id}>
                     <li
                       className="flex items-center mb-10 capitalize"
-                      onClick={() => handleToSelectSideNav(setting)}>
+                      onClick={() => handleToSelectSideNav(setting)}
+                    >
                       <p
-                        className={`pl-4 text-black text-[15px] font-normal leading-normal capitalize cursor-pointer flex items-center justify-center gap-4`}>
-                        <span className={`w-[18px] h-[18px] ${active?.id === setting?.id
-                          ? "text-[#004368] font-bold text-[15px]" : ""}`}>
+                        className={`pl-4 text-black text-[15px] font-normal leading-normal capitalize cursor-pointer flex items-center justify-center gap-4`}
+                      >
+                        <span
+                          className={`w-[18px] h-[18px] ${
+                            active?.id === setting?.id
+                              ? "text-[#004368] font-bold text-[15px]"
+                              : ""
+                          }`}
+                        >
                           {setting.image}
-                        </span >
-                        <span className={` ${active?.id === setting?.id
-                          ? "text-[#004368] font-semibold text-[15px]" : ""}`}>
-                          {setting.name}
+                        </span>
+                        <span
+                          className={` ${
+                            active?.id === setting?.id
+                              ? "text-[#004368] font-semibold text-[15px]"
+                              : ""
+                          }`}
+                        >
+                          {t(`${setting.name}`)}
                         </span>
                       </p>
                     </li>

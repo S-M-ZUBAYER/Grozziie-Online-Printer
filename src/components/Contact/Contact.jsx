@@ -10,6 +10,7 @@ import { orderListParameter } from "../BatchPrint/OrderListParameter";
 import { useLoadOrderListMutation } from "../../features/allApis/batchPrintApi";
 import world from "../../assets/world.png";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 
 const Contact = () => {
   const [pddAccessToken, setPddAccessToken] = useState(
@@ -24,6 +25,7 @@ const Contact = () => {
     country: "",
     message: "",
   });
+  const { t } = useTranslation();
   const [orderListDataEncrypt, setOrderListDataEncrypt] = useState([]);
   const [loadOrderList, { isLoading, isError }] = useLoadOrderListMutation();
   const dispatch = useDispatch();
@@ -143,25 +145,14 @@ const Contact = () => {
         <div className="col-span-3 flex flex-col">
           <div className="flex flex-col px-20 mb-3">
             <h1 className="text-[#004368] text-5xl font-bold leading-tight">
-              {selectedLanguage === "zh-CN" ? "让我们谈谈" : "Let’s Talk"}
+              {t("LetsTalk")}
             </h1>
-            {selectedLanguage === "zh-CN" ? (
-              <p className="mt-3 mb-6 text-xl">
-                有大想法或品牌要开发并需要帮助吗？
-                <br /> 那么请联系我们，我们很愿意听取您的
-                <br /> 项目并提供帮助。
-              </p>
-            ) : (
-              <p className="mt-3 mb-6 text-xl">
-                Have some big idea or brand to develop and need <br /> help?
-                Then reach out we'd love to hear about your <br /> project and
-                provide help
-              </p>
-            )}
+            <p className="mt-3 mb-6 text-xl">
+              {t("HaveIdea")}
+              {t("ReachOut")}
+            </p>
 
-            <h3 className="text-xl mb-2 font-bold">
-              {selectedLanguage === "zh-CN" ? "客户服务" : "Support Email"}
-            </h3>
+            <h3 className="text-xl mb-2 font-bold">{t("SupportEmail")}</h3>
             <p className="text-[#004368]">support.grozziie@gmail.com</p>
           </div>
           <div className="mt-6">
@@ -175,7 +166,7 @@ const Contact = () => {
             <div className="mb-10">
               <label className="form-control w-full">
                 <span className="text-[#004368] text-sm font-medium mb-3">
-                  {selectedLanguage === "zh-CN" ? "名字" : "Name"}
+                  {t("Name")}
                 </span>
                 <input
                   type="test"
@@ -183,11 +174,7 @@ const Contact = () => {
                   required
                   value={formData.userName}
                   onChange={handleChange}
-                  placeholder={
-                    selectedLanguage === "zh-CN"
-                      ? "输入用户名"
-                      : "enter user name"
-                  }
+                  placeholder={t("EnterUserName")}
                   className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded"
                 />
               </label>
@@ -197,7 +184,7 @@ const Contact = () => {
             <div className="mb-10">
               <label className="form-control w-full">
                 <span className="text-[#004368] text-sm font-medium mb-3">
-                  {selectedLanguage === "zh-CN" ? "电子邮件" : "Email"}
+                  {t("Email")}
                 </span>
                 <input
                   type="email"
@@ -205,11 +192,7 @@ const Contact = () => {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder={
-                    selectedLanguage === "zh-CN"
-                      ? "输入你的电子邮箱"
-                      : "enter your email"
-                  }
+                  placeholder={t("EnterEmail")}
                   className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded"
                 />
               </label>
@@ -219,7 +202,7 @@ const Contact = () => {
             <div className="mb-10">
               <label className="form-control w-full">
                 <span className="text-[#004368] text-sm font-medium mb-3">
-                  {selectedLanguage === "zh-CN" ? "国家" : "Country"}
+                  {t("Country")}
                 </span>
                 <select
                   name="country"
@@ -229,9 +212,7 @@ const Contact = () => {
                   className="select select-bordered focus:outline-none text-black text-opacity-55 text-[15px] font-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-1 rounded"
                 >
                   <option disabled selected>
-                    {selectedLanguage === "zh-CN"
-                      ? "选择国家"
-                      : "Select Country"}
+                    {t("SelectCountry")}
                   </option>
                   <option>中国</option>
                 </select>
@@ -242,7 +223,7 @@ const Contact = () => {
             <div className="mb-8">
               <label className="form-control w-full">
                 <span className="text-[#004368] text-sm font-medium mb-3">
-                  {selectedLanguage === "zh-CN" ? "信息" : "Message"}
+                  {t("Message")}
                 </span>
                 <textarea
                   name="message"
@@ -250,7 +231,7 @@ const Contact = () => {
                   required
                   onChange={handleChange}
                   className="bg-white textarea textarea-bordered focus:outline-none h-32"
-                  placeholder="请提供您的反馈"
+                  placeholder={t("YourMessage")}
                 ></textarea>
               </label>
             </div>
@@ -260,7 +241,7 @@ const Contact = () => {
                 className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-full h-10 px-2 py-2 rounded-md cursor-pointer text-center"
                 type="submit"
               >
-                {selectedLanguage === "zh-CN" ? "提交" : "Submit"}
+                {t("Submit")}
               </button>
             </div>
           </form>

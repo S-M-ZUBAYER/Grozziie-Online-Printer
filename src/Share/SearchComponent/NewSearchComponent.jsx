@@ -362,7 +362,7 @@ const NewSearchComponent = ({
               value={"manualOrder"}
               className="text-base font-light bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[220px] h-12 px-8 py-3 rounded-md cursor-pointer"
             >
-              {t("ManualOrder")}
+              {t("manualOrder")}
             </button>
           ) : (
             <select
