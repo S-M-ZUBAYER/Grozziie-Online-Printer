@@ -12,12 +12,12 @@ const PaymentPrivateRoute = ({ children }) => {
   const selectedLanguage = useSelector(
     (state) => state.user.selectedLanguageRedux
   );
-  const isPaymentUser = useSelector((state) => state.user.isPaymentUser);
+  const isPaymentUser = useSelector((state) => state.user.accountUser);
   const navigate = useNavigate();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUserValid, setIsUserValid] = useState(false);
   const [token, setToken] = useState("");
-  const currentUser = useSelector((state) => state.user.isPaymentUser);
+  const currentUser = useSelector((state) => state.user.accountUser);
   const dispatch = useDispatch();
 
   const [cipher, setCipher] = useState(() => {
@@ -98,6 +98,7 @@ const PaymentPrivateRoute = ({ children }) => {
 
         const result = res.data?.result?.TikTok;
         const currentShopName = cipher[0]?.name;
+        console.log(currentShopName, ",,,,,,,,,,,,,,,,,,,,,,,,,,shop", result);
 
         const matched = result?.find(
           (entry) => entry.shopName === currentShopName
