@@ -58,20 +58,25 @@ import PaymentAlipay from "../components/Pricing/PaymentAlipay";
 import VerifyEmailPage from "../components/Auth/VerifyEmailPage";
 import Package from "../components/Packages/Package";
 import BatchPrintPrinting from "../components/BatchPrintExpressDelivery/BatchPrintPrinting";
+import WrappedPaymentPage from "../components/Pricing/PaymentPage";
 
 export const routes = createBrowserRouter([
   {
     path: "/error",
     element: <ErrorPage />,
   },
-  // {
-  //   path: "/register",
-  //   element: <Registration />,
-  // },
-  // {
-  //   path: "/login",
-  //   element: <Login />,
-  // },
+  {
+    path: "/register",
+    element: <Registration />,
+  },
+  {
+    path: "/payment",
+    element: <WrappedPaymentPage />,
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
   {
     path: "/forgotpassword",
     element: <ForgotPassword />,
@@ -133,11 +138,11 @@ export const routes = createBrowserRouter([
       {
         path: "/批量打印",
         element: (
-          // <PrivateRoute>
-          // <PaymentPrivateRoute>
-          <BatchPrint />
-          // </PaymentPrivateRoute>
-          // </PrivateRoute>
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <BatchPrint />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
         ),
       },
       {
@@ -168,9 +173,9 @@ export const routes = createBrowserRouter([
         path: "/manualOrder",
         element: (
           // <PrivateRoute>
-          // <PaymentPrivateRoute>
-          <ManualOrder />
-          // </PaymentPrivateRoute>
+          <PaymentPrivateRoute>
+            <ManualOrder />
+          </PaymentPrivateRoute>
           // </PrivateRoute>
         ),
       },
