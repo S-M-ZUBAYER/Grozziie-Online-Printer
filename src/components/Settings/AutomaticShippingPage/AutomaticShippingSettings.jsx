@@ -4,12 +4,13 @@ import { checkedDefaultExpressChange } from "../../../features/slice/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import ConfirmationModal from "../../../Share/ConfirmationModal";
 import FadeLoader from "react-spinners/FadeLoader";
+import { useTranslation } from "react-i18next";
 
 const AutomaticShippingSettings = () => {
   const [selectedOption, setSelectedOption] = useState();
   const [selectedCompany, setSelectedCompany] = useState({});
   const [isModalOpen, setIsModalOpen] = useState(false);
-
+  const { t } = useTranslation();
   //   language change
   const selectedLanguage = useSelector(
     (state) => state.user.selectedLanguageRedux
@@ -94,16 +95,12 @@ const AutomaticShippingSettings = () => {
           <div className="flex flex-col items-center justify-center py-28">
             <FadeLoader color="#004368" size={25} />
             <p className="text-2xl font-medium pt-10 text-[#004368]">
-              {selectedLanguage === "zh-CN"
-                ? "数据正在加载，请稍候..."
-                : "Data is Loading. Please Wait..."}
+              {t("DataLoading")}
             </p>
           </div>
         ) : isError ? (
           <p className="text-center text-3xl text-red-500 font-medium py-20">
-            {selectedLanguage === "zh-CN"
-              ? "未找到数据。请稍后再试..."
-              : "Data Not Found. Please try again later...."}
+            {t("DataNotFound")}
           </p>
         ) : (
           allDeliveryCompanyList?.map((company, index) => (
@@ -138,7 +135,7 @@ const AutomaticShippingSettings = () => {
           onClick={handleToStoreInLocalStorage}
           className="bg-[#004368] absolute bottom-0 right-0 hover:bg-opacity-30 text-white hover:text-black w-[200px] h-12 px-8 py-3 rounded-md cursor-pointer text-[15px] font-medium leading-normal capitalize"
         >
-          {selectedLanguage === "zh-CN" ? "设为默认" : "Set As Default"}
+          {t("SetAsDefault")}
         </button>
       </div>
       <ConfirmationModal

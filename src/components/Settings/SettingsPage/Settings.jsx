@@ -17,6 +17,7 @@ import ConfirmationModal from "../../../Share/ConfirmationModal";
 import { AiOutlineCheckCircle, AiOutlineDelete } from "react-icons/ai";
 import { TiInfoOutline } from "react-icons/ti";
 import FadeLoader from "react-spinners/FadeLoader";
+import { useTranslation } from "react-i18next";
 
 const Settings = () => {
   const [showModal, setShowModal] = useState(false);
@@ -28,6 +29,8 @@ const Settings = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [userEmail, setUserEmail] = useState("");
+
+  const { t } = useTranslation();
 
   //   language change
   const selectedLanguage = useSelector(
@@ -563,9 +566,9 @@ const Settings = () => {
             </div>
           </div>
 
-          <button className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[115px] h-12 px-8 py-3 rounded-md cursor-pointer">
-            <p className="text-[15px] font-medium leading-normal capitalize">
-              {selectedLanguage === "zh-CN" ? "搜索" : "Search"}
+          <button className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto h-12 px-8 py-3 rounded-md cursor-pointer">
+            <p className="text-[15px] font-medium leading-normal capitalize whitespace-nowrap">
+              {t("Search")}
             </p>
           </button>
         </div>
@@ -579,7 +582,7 @@ const Settings = () => {
                 {checkedItems?.length}
               </span>
               <span className="text-black text-[15px] font-light leading-normal capitalize">
-                {selectedLanguage === "zh-CN" ? "已选择项目" : "item selected"}
+                {t("ItemSelected")}
               </span>
             </p>
             <button
@@ -589,7 +592,7 @@ const Settings = () => {
             >
               <AiOutlineDelete className="w-4 h-4 fill-[#004368] mr-2" />
               <span className="text-[#004368] text-[15px] font-normal leading-normal">
-                {selectedLanguage === "zh-CN" ? "删除" : "Delete"}
+                {t("Delete")}
               </span>
             </button>
 
@@ -600,27 +603,21 @@ const Settings = () => {
                     <AiOutlineCheckCircle className="w-10 h-10 text-green-600" />
                   </div>
                   <h2 className="text-2xl font-semibold text-center text-red-600">
-                    {selectedLanguage === "zh-CN"
-                      ? "确认删除"
-                      : "Confirm Delete"}
+                    {t("ConfirmDelete")}
                   </h2>
-                  <p className="text-center">
-                    {selectedLanguage === "zh-CN"
-                      ? "您确实要删除所选的项目吗？"
-                      : "Are you sure you want to delete the selected items?"}
-                  </p>
+                  <p className="text-center">{t("ConfirmDeleteMessage")}</p>
                   <div className="flex justify-end space-x-4">
                     <button
                       onClick={handleClose}
                       className="bg-[#004368] bg-opacity-30 text-black hover:bg-opacity-100 hover:text-white px-4 py-1 rounded h-8"
                     >
-                      {selectedLanguage === "zh-CN" ? "取消" : "Cancel"}
+                      {t("Cancel")}
                     </button>
                     <button
                       onClick={confirmDelete}
                       className="bg-[#004368] text-white px-4 py-1 rounded hover:bg-opacity-30 hover:text-black h-8"
                     >
-                      {selectedLanguage === "zh-CN" ? "确认" : "Confirm"}
+                      {t("Confirm")}
                     </button>
                   </div>
                 </div>
@@ -639,7 +636,7 @@ const Settings = () => {
                       onClick={handleMessageModalClose}
                       className="bg-[#004368] bg-opacity-30 text-black hover:bg-opacity-100 hover:text-white px-4 py-1 rounded h-8"
                     >
-                      {selectedLanguage === "zh-CN" ? "关闭" : "Close"}
+                      {t("Close")}
                     </button>
                   </div>
                 </div>
@@ -656,19 +653,17 @@ const Settings = () => {
                   document.getElementById("my_modal_settings").showModal()
                 }
               >
-                <button className="flex items-center w-[126px] h-10 py-2 ">
+                <button className="flex items-center w-auto px-4 h-10 py-2 ">
                   <FaPlus className="w-[14px] h-[14px]  ml-3 mr-2 " />
-                  <span className=" text-[15px] font-medium capitalize leading-normal ">
-                    {selectedLanguage === "zh-CN" ? "新增" : "Add New"}
+                  <span className=" text-[15px] font-medium capitalize leading-normal whitespace-nowrap ">
+                    {t("AddNew")}
                   </span>
                 </button>
               </div>
               <dialog id="my_modal_settings" className="modal">
                 <div className="bg-white w-[750px] h-[640px] rounded-md pt-10">
                   <h3 className="font-bold text-lg pl-5 text-center">
-                    {selectedLanguage === "zh-CN"
-                      ? "新增收件人"
-                      : "Add New Recipient"}
+                    {t("AddNewRecipient")}
                   </h3>
                   <p className="text-xs pt-1 text-red-500 font-bold text-center">
                     {error ? error : ""}
@@ -684,19 +679,13 @@ const Settings = () => {
                         <div>
                           <label className="form-control w-full">
                             <span className="text-[#004368] text-base font-semibold">
-                              {selectedLanguage === "zh-CN"
-                                ? "收件人姓名"
-                                : "Recipient Name"}
+                              {t("RecipientName")}
                             </span>
                             <input
                               type="text"
                               name="receiver_name"
                               required
-                              placeholder={
-                                selectedLanguage === "zh-CN"
-                                  ? "输入收件人姓名"
-                                  : "Type Recipient Name"
-                              }
+                              placeholder={t("TypeRecipientName")}
                               className="input input-bordered w-[300px] bg-transparent"
                               value={formData.receiver_name}
                               onChange={handleInputChange}
@@ -708,19 +697,13 @@ const Settings = () => {
                         <div>
                           <label className="form-control w-full">
                             <span className="text-[#004368] text-base font-semibold">
-                              {selectedLanguage === "zh-CN"
-                                ? "用户电子邮件"
-                                : "User Email"}
+                              {t("UserEmail")}
                             </span>
                             <input
                               type="text"
                               name="userName"
                               readOnly
-                              placeholder={
-                                selectedLanguage === "zh-CN"
-                                  ? "输入用户名"
-                                  : "Type User Name"
-                              }
+                              placeholder={t("TypeUserName")}
                               className="input input-bordered w-[300px] bg-transparent"
                               value={userEmail}
                               // onChange={handleInputChange}
@@ -732,19 +715,13 @@ const Settings = () => {
                         <div>
                           <label className="form-control w-full">
                             <span className="text-[#004368] text-base font-semibold">
-                              {selectedLanguage === "zh-CN"
-                                ? "公司名称"
-                                : "Company Name"}
+                              {t("CompanyName")}
                             </span>
                             <input
                               type="text"
                               name="company_name"
                               required
-                              placeholder={
-                                selectedLanguage === "zh-CN"
-                                  ? "输入公司名称"
-                                  : "Type Company Name"
-                              }
+                              placeholder={t("TypeCompanyName")}
                               className="input input-bordered w-[300px] bg-transparent"
                               value={formData.company_name}
                               onChange={handleInputChange}
@@ -756,15 +733,13 @@ const Settings = () => {
                         <div>
                           <label className="form-control w-full">
                             <span className="text-[#004368] text-base font-semibold">
-                              {selectedLanguage === "zh-CN"
-                                ? "国家"
-                                : "Country"}
+                              {t("Country")}
                             </span>
                             <input
                               type="text"
                               name="country"
                               readOnly
-                              value="中国"
+                              value={t("Country")}
                               className="input input-bordered w-[300px] bg-transparent"
                             />
                           </label>
@@ -774,7 +749,7 @@ const Settings = () => {
                         <div>
                           <label className="form-control w-full">
                             <span className="text-[#004368] text-base font-semibold">
-                              {selectedLanguage === "zh-CN" ? "省" : "Province"}
+                              {t("Province")}
                             </span>
                             <select
                               className="border input-bordered rounded-md py-2 h-12 w-[300px]"
@@ -790,11 +765,7 @@ const Settings = () => {
                                 setSelectedProvince(e.target.value)
                               }
                             >
-                              <option value="">
-                                {selectedLanguage === "zh-CN"
-                                  ? "选择省份"
-                                  : "Select Province"}
-                              </option>
+                              <option value="">{t("SelectProvince")}</option>
                               {provinces?.map((province) => (
                                 <option
                                   key={province.id}
@@ -811,7 +782,7 @@ const Settings = () => {
                         <div>
                           <label className="form-control w-full">
                             <span className="text-[#004368] text-base font-semibold">
-                              {selectedLanguage === "zh-CN" ? "城市" : "City"}
+                              {t("City")}
                             </span>
                             <select
                               className="border input-bordered rounded-md py-2 h-12 w-[300px]"
@@ -824,11 +795,7 @@ const Settings = () => {
                               }}
                               onClick={(e) => setSelectedCity(e.target.value)}
                             >
-                              <option value="">
-                                {selectedLanguage === "zh-CN"
-                                  ? "选择城市"
-                                  : "Select City"}
-                              </option>
+                              <option value="">{t("SelectCity")}</option>
                               {cities?.map((city) => (
                                 <option key={city.id} value={city.region_name}>
                                   {city.region_name}
@@ -842,7 +809,7 @@ const Settings = () => {
                         <div>
                           <label className="form-control w-full">
                             <span className="text-[#004368] text-base font-semibold">
-                              {selectedLanguage === "zh-CN" ? "区" : "District"}
+                              {t("District")}
                             </span>
                             <select
                               className="border input-bordered rounded-md py-2 h-12 w-[300px]"
@@ -851,11 +818,7 @@ const Settings = () => {
                                 setSelectedDistricts(e.target.value)
                               }
                             >
-                              <option value="">
-                                {selectedLanguage === "zh-CN"
-                                  ? "选择地区"
-                                  : "Select District"}
-                              </option>
+                              <option value="">{t("SelectDistrict")}</option>
                               {districts?.map((district) => (
                                 <option
                                   key={district.id}
@@ -872,19 +835,13 @@ const Settings = () => {
                         <div>
                           <label className="form-control w-full">
                             <span className="text-[#004368] text-base font-semibold">
-                              {selectedLanguage === "zh-CN"
-                                ? "地址"
-                                : "Address"}
+                              {t("Address")}
                             </span>
                             <input
                               type="text"
                               name="address"
                               required
-                              placeholder={
-                                selectedLanguage === "zh-CN"
-                                  ? "输入地址"
-                                  : "Type Address"
-                              }
+                              placeholder={t("TypeAddress")}
                               className="input input-bordered w-[300px] bg-transparent"
                               value={formData.address}
                               onChange={handleInputChange}
@@ -896,17 +853,13 @@ const Settings = () => {
                         <div>
                           <label className="form-control w-full">
                             <span className="text-[#004368] text-base font-semibold">
-                              {selectedLanguage === "zh-CN" ? "电话" : "Phone"}
+                              {t("Landline")}
                             </span>
                             <input
                               type="text"
                               name="receiver_phone"
                               required
-                              placeholder={
-                                selectedLanguage === "zh-CN"
-                                  ? "输入座机电话"
-                                  : "Type Landline"
-                              }
+                              placeholder={t("TypeLandline")}
                               className="input input-bordered w-[300px] bg-transparent"
                               value={formData.receiver_phone}
                               onChange={handleInputChange}
@@ -918,19 +871,13 @@ const Settings = () => {
                         <div>
                           <label className="form-control w-full">
                             <span className="text-[#004368] text-base font-semibold">
-                              {selectedLanguage === "zh-CN"
-                                ? "操作"
-                                : "Operate"}
+                              {t("Operate")}
                             </span>
                             <input
                               type="text"
                               name="operate"
                               required
-                              placeholder={
-                                selectedLanguage === "zh-CN"
-                                  ? "输入操作"
-                                  : "Type Operate"
-                              }
+                              placeholder={t("TypeOperate")}
                               className="input input-bordered w-[300px] bg-transparent"
                               value={formData.operate}
                               onChange={handleInputChange}
@@ -945,7 +892,7 @@ const Settings = () => {
                             document.getElementById("my_modal_settings").close()
                           }
                         >
-                          {selectedLanguage === "zh-CN" ? "关闭" : "Close"}
+                          {t("Close")}
                         </p>
                         <button
                           className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[100px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mt-5"
@@ -957,9 +904,7 @@ const Settings = () => {
                               <ClipLoader color="#0f0722" size={30} />
                             </span>
                           ) : (
-                            <span>
-                              {selectedLanguage === "zh-CN" ? "保存" : "Save"}
-                            </span>
+                            <span>{t("Save")}</span>
                           )}
                         </button>
                       </div>
@@ -970,10 +915,10 @@ const Settings = () => {
             </div>
             <button
               onClick={handleRecipientInfoExcelClick}
-              className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[115px] h-10 px-8 py-2 rounded-md cursor-pointer"
+              className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto h-10 px-8 py-2 rounded-md cursor-pointer"
             >
-              <p className="text-[15px] font-medium capitalize cursor-pointer">
-                {selectedLanguage === "zh-CN" ? "导出" : "Export"}
+              <p className="text-[15px] font-medium capitalize cursor-pointer whitespace-nowrap">
+                {t("Export")}
               </p>
             </button>
           </div>
@@ -985,16 +930,12 @@ const Settings = () => {
             <div className="flex flex-col items-center justify-center py-28">
               <FadeLoader color="#004368" size={25} />
               <p className="text-2xl font-medium pt-10 text-[#004368]">
-                {selectedLanguage === "zh-CN"
-                  ? "数据正在加载，请稍候..."
-                  : "Data is Loading. Please Wait..."}
+                {t("DataLoading")}
               </p>
             </div>
           ) : isError || !clients ? (
             <p className="text-center text-3xl text-red-500 font-medium py-20">
-              {selectedLanguage === "zh-CN"
-                ? "未找到数据。请稍后再试..."
-                : "Data Not Found. Please try again later...."}
+              {t("DataNotFound")}
             </p>
           ) : (
             <table className="table">
@@ -1011,40 +952,28 @@ const Settings = () => {
                       className="w-4 h-4 rounded-[2px] text-[#004368] text-opacity-60 bg-[#004368] cursor-pointer"
                     />
                     <span className=" text-black opacity-80 capitalize text-center text-[15px] font-light leading-normal ml-3">
-                      {selectedLanguage === "zh-CN"
-                        ? "收件人姓名"
-                        : "recipient name"}
+                      {t("RecipientName")}
                     </span>
                     <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                   </th>
                   <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 text-black opacity-80 capitalize text-center text-[15px] font-light leading-normal">
-                    <span className="mr-2">
-                      {selectedLanguage === "zh-CN"
-                        ? "公司名称"
-                        : "Company Name"}
-                    </span>
+                    <span className="mr-2">{t("CompanyName")}</span>
                     <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                   </th>
                   <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 text-black opacity-80 capitalize text-center text-[15px] font-light leading-normal">
-                    <span className="mr-2">
-                      {selectedLanguage === "zh-CN" ? "地址" : "Address"}
-                    </span>
+                    <span className="mr-2">{t("Address")}</span>
                     <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                   </th>
                   <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 text-black opacity-80 capitalize text-center text-[15px] font-light leading-normal">
-                    <span className="mr-2">
-                      {selectedLanguage === "zh-CN" ? "座机电话" : "landline"}
-                    </span>
+                    <span className="mr-2">{t("Landline")}</span>
                     <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                   </th>
                   <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 text-black opacity-80 capitalize text-center text-[15px] font-light leading-normal">
-                    <span className="mr-2">
-                      {selectedLanguage === "zh-CN" ? "邮政编码" : "post code"}
-                    </span>
+                    <span className="mr-2">{t("PostCode")}</span>
                     <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                   </th>
                   <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 text-black opacity-80 capitalize text-center text-[15px] font-light leading-normal rounded-r-md">
-                    {selectedLanguage === "zh-CN" ? " 操作" : "operate"}
+                    {t("Operate")}
                   </th>
                 </tr>
               </thead>
