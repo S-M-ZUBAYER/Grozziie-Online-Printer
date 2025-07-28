@@ -139,7 +139,8 @@ const Pricing = () => {
 
   const handleChoosePlan = (plan) => {
     setSelectedPlan(plan);
-    setIsModalOpen(true);
+    setIsModalOpen(false);
+    navigate("/payment", { state: { plan } });
   };
 
   const handleConfirmPlan = async () => {
