@@ -60,6 +60,7 @@ const Login = () => {
       const res = await response.json();
       // console.log("response", response);
       console.log("res>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", response, res);
+      dispatch(accountUserChange("smzubayer9004@gmail.com"));
 
       if (response.status === 200) {
         localStorage.setItem("printerUser", JSON.stringify(res));
