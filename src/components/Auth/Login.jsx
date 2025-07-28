@@ -49,35 +49,33 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch(
-        "https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/signin",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await fetch("http://192.168.1.13:8888/user/signin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
       const res = await response.json();
       // console.log("response", response);
-      // console.log("res", res);
+      console.log("res>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", response, res);
 
       if (response.status === 200) {
-        localStorage.setItem("printerUser", formData.email);
-        localStorage.setItem("GrozziieToken", res.token);
+        localStorage.setItem("printerUser", JSON.stringify(res));
         dispatch(accountUserChange(formData.email));
-        const response = await axios.get(
-          "https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/details",
-          { params: { token: res.token } }
-        );
-
-        const userData = response.data;
-
-        // Dispatch user email change (assuming userEmail is in userData)
-        dispatch(paymentUserChange(userData));
+        dispatch(paymentUserChange(res));
         navigate("/");
+        // const response = await axios.get(
+        //   "https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/details",
+        //   { params: { token: res.token } }
+        // );
+
+        // const userData = response.data;
+
+        // // Dispatch user email change (assuming userEmail is in userData)
+        // dispatch(paymentUserChange(userData));
+        // navigate("/");
       } else if (response.status === 400) {
         res.message === "User Email Not Found" &&
           setEmailError("Incorrect email. Please try again");

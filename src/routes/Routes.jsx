@@ -154,11 +154,11 @@ export const routes = createBrowserRouter([
       {
         path: "/singlePrint",
         element: (
-          // <PrivateRoute>
-          // <PaymentPrivateRoute>
-          <SinglePrint />
-          // </PaymentPrivateRoute>
-          // </PrivateRoute>
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <SinglePrint />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
         ),
       },
       {
