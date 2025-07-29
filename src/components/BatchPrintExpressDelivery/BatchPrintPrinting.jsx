@@ -126,14 +126,14 @@ const BatchPrintPrinting = () => {
 
             // ✅ Save printedId if docUrl exists
             if (docUrl && itemId) {
-              await fetch(
-                "http://localhost:2000/tht/grozziiePrinter/printedIdS/add",
-                {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ tikTokPrintedId: itemId }),
-                }
+              const url = new URL(
+                "http://192.168.1.16:8888/api/dev/printedIds/add"
               );
+              url.searchParams.append("tikTokPrintedId", itemId);
+
+              await fetch(url, {
+                method: "POST",
+              });
             }
 
             return docUrl || null;

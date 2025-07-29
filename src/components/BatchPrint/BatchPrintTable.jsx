@@ -222,7 +222,7 @@ const BatchPrintTable = ({
             </button>
 
             {/* Header */}
-            <h2 className="text-2xl font-bold mb-6 text-[#004368] text-center">
+            <h2 className="text-2xl font-semibold mb-6 text-[#004368] text-center">
               {t("Tracking Updates")}
             </h2>
 

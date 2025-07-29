@@ -59,10 +59,10 @@ const TopNavbar = () => {
     { key: "home", path: "/home" },
     { key: "batchPrint", path: "/batchprint" },
     { key: "packages", path: "/packages" },
-    { key: "singlePrint", path: "/singleprint" },
-    { key: "settings", path: "/settings/recipient information" },
-    { key: "utility", path: "/utility/delivery record" },
-    { key: "manualOrder", path: "/manualOrder" },
+    // { key: "singlePrint", path: "/singleprint" },
+    // { key: "settings", path: "/settings/recipient information" },
+    // { key: "utility", path: "/utility/delivery record" },
+    // { key: "manualOrder", path: "/manualOrder" },
     { key: "contact", path: "/contact" },
   ];
 

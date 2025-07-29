@@ -39,7 +39,7 @@ const HomeSideNavbar = () => {
               </Link>
             </li>
 
-            <li className="my-2 ml-4">
+            {/* <li className="my-2 ml-4">
               <Link
                 className="text-black text-[15px] font-medium capitalize transition hover:font-bold hover:text-[#004368]"
                 to="/singleprint"
@@ -73,7 +73,7 @@ const HomeSideNavbar = () => {
               >
                 {t("manualOrder")}
               </Link>
-            </li>
+            </li> */}
 
             <li className="my-2 ml-4">
               <Link
