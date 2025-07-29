@@ -209,9 +209,10 @@ const Transactions = () => {
                   <li
                     key={index}
                     onClick={() => handleToSelectCustomer(client)}
-                    className={`text-black opacity-80 text-sm font-light capitalize pb-2 cursor-pointer ${active === client?.recipientName &&
+                    className={`text-black opacity-80 text-sm font-light capitalize pb-2 cursor-pointer ${
+                      active === client?.recipientName &&
                       "text-[#004368] font-medium text-[15px]"
-                      }`}
+                    }`}
                   >
                     {client?.receiver_name ? client?.receiver_name : "No Name"}
                   </li>
@@ -274,7 +275,9 @@ const Transactions = () => {
                   onClick={handleBatchPrinterExcelClick}
                   className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[115px] h-10 px-8 py-2 rounded-md cursor-pointer"
                 >
-                  <p className="text-[15px] font-medium capitalize cursor-pointer">Export</p>
+                  <p className="text-[15px] font-medium capitalize cursor-pointer">
+                    Export
+                  </p>
                 </button>
               </div>
             </div>

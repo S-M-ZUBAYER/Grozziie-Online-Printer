@@ -228,15 +228,14 @@ const BatchPrint = () => {
   useEffect(() => {
     const fetchPrintedIds = async () => {
       try {
-        const res = await fetch(
-          "http://localhost:2000/tht/grozziiePrinter/printedIdS"
-        );
+        const res = await fetch("http://192.168.1.16:8888/api/dev/printedIds");
         const data = await res.json();
+        console.log(data, "✅ Fetched printed IDs");
 
-        if (data?.code === 200 && Array.isArray(data.result)) {
-          setTikTokPrintedIds(data.result);
+        if (Array.isArray(data)) {
+          setTikTokPrintedIds(data);
         } else {
-          throw new Error("Invalid response format");
+          throw new Error("Expected array but got invalid response");
         }
       } catch (err) {
         console.error("❌ Failed to fetch printed IDs:", err);
@@ -304,6 +303,7 @@ const BatchPrint = () => {
               ? "AWAITING_COLLECTION"
               : tikTokOrderStatusCheck,
           pageSize: 100,
+          sortOrder: "DESC",
         }).unwrap();
 
         const orders = response?.data?.orders ?? [];
@@ -312,6 +312,7 @@ const BatchPrint = () => {
         const printedIdSet = new Set(
           tikTokPrintedIds.map((item) => item.tikTokPrintedId)
         );
+        console.log(printedIdSet, "seet.................................");
 
         let filteredOrderList = orders.filter((item) => item?.buyerEmail);
 
@@ -498,7 +499,7 @@ const BatchPrint = () => {
   const [showConfirmButton, setShowConfirmButton] = useState(false);
 
   // modal show function
-  const handleToCheckItemsUpdate = () => {
+  const handleToCheckItemsPackageUpdate = () => {
     if (checkedItems.length === 0) {
       setModalTitle(
         <div className="bg-red-200 w-16 h-16 rounded-full flex items-center justify-center">
@@ -528,7 +529,43 @@ const BatchPrint = () => {
             : "Are you sure you have completed packaging this order?"}
         </p>
       );
-      setConfirmAction(() => handleConfirm);
+      setConfirmAction(() => handleConfirmPackage);
+      setShowConfirmButton(true);
+      setIsConfirmModalOpen(true);
+    }
+  };
+
+  const handleToCheckItemsShippingUpdate = () => {
+    if (checkedItems.length === 0) {
+      setModalTitle(
+        <div className="bg-red-200 w-16 h-16 rounded-full flex items-center justify-center">
+          <TiInfoOutline className="w-10 h-10 text-red-600" />
+        </div>
+      );
+      setModalMessage(
+        <p>
+          {selectedLanguage === "zh-CN"
+            ? "沒有選擇任何項目。"
+            : "No items selected."}
+        </p>
+      );
+      setConfirmAction(null);
+      setShowConfirmButton(false);
+      setIsConfirmModalOpen(true);
+    } else {
+      setModalTitle(
+        <div className="bg-green-200 w-16 h-16 rounded-full flex items-center justify-center">
+          <AiOutlineCheckCircle className="w-10 h-10 text-green-600" />
+        </div>
+      );
+      setModalMessage(
+        <p className="text-xl font-semibold">
+          {selectedLanguage === "zh-CN"
+            ? "您确定接受这个订单吗？"
+            : "Are you sure to accept this order?"}
+        </p>
+      );
+      setConfirmAction(() => handleConfirmShipping);
       setShowConfirmButton(true);
       setIsConfirmModalOpen(true);
     }
@@ -603,7 +640,7 @@ const BatchPrint = () => {
   //   }
   // };
 
-  const handleConfirm = async () => {
+  const handleConfirmPackage = async () => {
     const cipherValue = cipher[0]?.cipher;
 
     if (!cipherValue || checkedItems.length === 0) {
@@ -645,8 +682,50 @@ const BatchPrint = () => {
       );
       setFilteredData(restOfOrders.slice(0, 5));
       setIsConfirmModalOpen(false); // close the modal
+      dispatch(checkedItemsChange({ items: [], from: tikTokOrderStatusCheck }));
     } catch (error) {
       console.error("🚨 Error creating packages:", error);
+    }
+  };
+
+  const handleConfirmShipping = async () => {
+    dispatch(
+      checkedItemsChange({ items: checkedItems, from: tikTokOrderStatusCheck })
+    );
+    navigate("/batchPrintPrinting");
+    return;
+    try {
+      const item = checkedItems[0];
+      const lineItemIds = item.lineItems.map((li) => li.id);
+      const trackingNumber = item.lineItems[0].trackingNumber || "";
+      const shippingProviderId = item.lineItems[0].shippingProviderId;
+
+      const params = new URLSearchParams({
+        cipher: cipher[0].cipher,
+        orderNumber: item.id,
+        setTrackingNumber: trackingNumber,
+        shippingProviderId: shippingProviderId,
+      });
+
+      // Append array values manually
+      lineItemIds.forEach((id) => {
+        params.append("order_line_item_ids", id);
+      });
+
+      const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/mark/shipped?${params.toString()}`;
+
+      console.log("📦 Shipping URL:", url);
+
+      const res = await fetch(url, {
+        method: "POST",
+      });
+
+      const result = await res.json();
+      console.log("✅ Marked as shipped result:", result);
+      return result;
+    } catch (error) {
+      console.error("🚨 Error marking package as shipped:", error);
+      throw error;
     }
   };
 
@@ -1095,7 +1174,7 @@ const BatchPrint = () => {
           {(tikTokOrderStatusCheck === "AWAITING_COLLECTION" ||
             tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") && (
             <button
-              onClick={handleToCheckItemsUpdate}
+              onClick={handleToCheckItemsShippingUpdate}
               className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto  h-10 px-4 gap-2 py-2 rounded-md cursor-pointer flex items-center justify-center"
             >
               <MdOutlineLocalPrintshop className="w-[18px] h-[18px]" />
@@ -1107,7 +1186,7 @@ const BatchPrint = () => {
 
           {tikTokOrderStatusCheck === "AWAITING_SHIPMENT" && (
             <button
-              onClick={handleToCheckItemsUpdate}
+              onClick={handleToCheckItemsPackageUpdate}
               className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto  h-10 px-4 gap-2 py-2 rounded-md cursor-pointer flex items-center justify-center"
             >
               <MdOutlineLocalPrintshop className="w-[18px] h-[18px]" />
@@ -1135,8 +1214,8 @@ const BatchPrint = () => {
             >
               <div className="modal-box w-[800px] max-w-full bg-white shadow-xl rounded-2xl p-8 overflow-y-auto max-h-[90vh]">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-3xl font-bold text-[#004368]">
+                <div className="flex justify-center items-center mb-6">
+                  <h2 className="text-3xl font-semibold text-[#004368]">
                     TikTok Order Details
                   </h2>
                 </div>

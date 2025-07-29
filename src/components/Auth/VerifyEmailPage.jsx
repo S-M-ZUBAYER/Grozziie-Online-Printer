@@ -32,7 +32,7 @@ const VerifyEmailPage = () => {
     try {
       const response = await fetch(
         // `https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/verify?code=${verifyCode}`,
-        `http://192.168.1.14:8888/user/verify?code=${verifyCode}`,
+        `http://192.168.1.16:8888/user/verify?code=${verifyCode}`,
         {
           method: "GET",
           headers: {

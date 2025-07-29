@@ -49,7 +49,7 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch("http://192.168.1.14:8888/user/signin", {
+      const response = await fetch("http://192.168.1.16:8888/user/signin", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -226,7 +226,7 @@ const Login = () => {
 
             <div className="flex items-center justify-center mb-6">
               <button
-                className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[150px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mr-3 mt-6"
+                className="bg-[#004368] hover:bg-opacity-60 text-white hover:text-black w-[150px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mr-3 mt-6"
                 type="submit"
                 disabled={loading}
               >
