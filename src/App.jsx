@@ -92,7 +92,6 @@ function App() {
   // Temporary add the feature to get all available express company
   const [deliveryCompanyName, setDeliveryCompanyName] = useState([]);
   const [shopDeliveryCompanyName, setShopDeliveryCompanyName] = useState([]);
-  console.log(tikTokShopCipher, "Cipher");
 
   useEffect(() => {
     if (deliveryCompanyName) {

@@ -24,6 +24,7 @@ const PaymentPrivateRoute = ({ children }) => {
     const stored = localStorage.getItem("tiktokShopInfo");
     return stored ? JSON.parse(stored) : [];
   });
+  console.log(cipher, currentUser);
 
   //pin dou dou
   // useEffect(() => {
