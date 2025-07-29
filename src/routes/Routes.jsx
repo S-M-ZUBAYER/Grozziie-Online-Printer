@@ -130,11 +130,11 @@ export const routes = createBrowserRouter([
       {
         path: "/batchPrint",
         element: (
-          // <PrivateRoute>
-          // <PaymentPrivateRoute>
-          <BatchPrint />
-          // </PaymentPrivateRoute>
-          // </PrivateRoute>
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <BatchPrint />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
         ),
       },
       {
@@ -149,7 +149,13 @@ export const routes = createBrowserRouter([
       },
       {
         path: "/packages",
-        element: <Package />,
+        element: (
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <Package />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
+        ),
       },
       {
         path: "/singlePrint",
@@ -174,11 +180,11 @@ export const routes = createBrowserRouter([
       {
         path: "/manualOrder",
         element: (
-          // <PrivateRoute>
-          <PaymentPrivateRoute>
-            <ManualOrder />
-          </PaymentPrivateRoute>
-          // </PrivateRoute>
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <ManualOrder />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
         ),
       },
       {

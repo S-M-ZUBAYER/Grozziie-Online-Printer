@@ -33,7 +33,7 @@ const Registration = () => {
     confirmPassword: "",
     shopName: "",
     city: "",
-    region: "中国",
+    region: "",
     province: "",
     district: "",
     area: "",
@@ -123,7 +123,7 @@ const Registration = () => {
       // Make API call to register user
       const response = await fetch(
         // "https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/signup",
-        "http://192.168.1.14:8888/user/signup",
+        "http://192.168.1.16:8888/user/signup",
         {
           method: "POST",
           headers: {
@@ -375,8 +375,8 @@ const Registration = () => {
 
             {/* address */}
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-              {/* Region */}
-              <div className="">
+              {/* Country */}
+              <div>
                 <label className="form-control w-full">
                   <span className="text-[#004368] text-base font-semibold">
                     {selectedLanguage === "zh-CN" ? "国家" : "Country"}
@@ -384,89 +384,75 @@ const Registration = () => {
                   <input
                     type="text"
                     name="region"
-                    readOnly
-                    value="中国"
+                    value={formData.region}
+                    onChange={handleChange}
+                    placeholder={
+                      selectedLanguage === "zh-CN" ? "中国" : "China"
+                    }
                     className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg"
                   />
                 </label>
               </div>
+
               {/* Province */}
-              <div className="">
+              <div>
                 <label className="form-control w-full">
                   <span className="text-[#004368] text-base font-semibold">
                     {selectedLanguage === "zh-CN" ? "省份" : "Province"}
                   </span>
-                  <select
-                    className="border input-bordered rounded-md py-2 h-10 bg-[#004368] bg-opacity-5"
-                    onChange={(e) => {
-                      const selectedId = provinces?.find(
-                        (province) => province.region_name === e.target.value
-                      ).id;
-                      filterCityUnderProvince(selectedId);
-                    }}
-                    onClick={(e) => setSelectedProvince(e.target.value)}
-                  >
-                    <option value="" disabled>
-                      Select Province
-                    </option>
-                    {provinces?.map((province) => (
-                      <option key={province.id} value={province.region_name}>
-                        {province.region_name}
-                      </option>
-                    ))}
-                  </select>
+                  <input
+                    type="text"
+                    name="province"
+                    value={formData.province}
+                    onChange={handleChange}
+                    placeholder={
+                      selectedLanguage === "zh-CN" ? "省份" : "Province Name"
+                    }
+                    className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg"
+                  />
                 </label>
               </div>
-              {/* city */}
-              <div className="">
+
+              {/* City */}
+              <div>
                 <label className="form-control w-full">
                   <span className="text-[#004368] text-base font-semibold">
                     {selectedLanguage === "zh-CN" ? "城市" : "City"}
                   </span>
-                  <select
-                    className="border input-bordered rounded-md py-2 h-10 bg-[#004368] bg-opacity-5"
-                    onChange={(e) => {
-                      const selectedId = cities?.find(
-                        (city) => city.region_name === e.target.value
-                      ).id;
-                      filterDistrictUnderCity(selectedId);
-                    }}
-                    onClick={(e) => setSelectedCity(e.target.value)}
-                  >
-                    <option value="" disabled>
-                      Select City
-                    </option>
-                    {cities?.map((city) => (
-                      <option key={city.id} value={city.region_name}>
-                        {city.region_name}
-                      </option>
-                    ))}
-                  </select>
+                  <input
+                    type="text"
+                    name="city"
+                    value={formData.city}
+                    onChange={handleChange}
+                    placeholder={
+                      selectedLanguage === "zh-CN" ? "城市" : "City Name"
+                    }
+                    className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg"
+                  />
                 </label>
               </div>
+
               {/* District */}
-              <div className="">
+              <div>
                 <label className="form-control w-full">
                   <span className="text-[#004368] text-base font-semibold">
                     {selectedLanguage === "zh-CN" ? "区" : "District"}
                   </span>
-                  <select
-                    className="border input-bordered rounded-md py-2 h-10 bg-[#004368] bg-opacity-5"
-                    onClick={(e) => setSelectedDistricts(e.target.value)}
-                  >
-                    <option value="" disabled>
-                      Select District
-                    </option>
-                    {districts?.map((district) => (
-                      <option key={district.id} value={district.region_name}>
-                        {district.region_name}
-                      </option>
-                    ))}
-                  </select>
+                  <input
+                    type="text"
+                    name="district"
+                    value={formData.district}
+                    onChange={handleChange}
+                    placeholder={
+                      selectedLanguage === "zh-CN" ? "区" : "District Name"
+                    }
+                    className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg"
+                  />
                 </label>
               </div>
+
               {/* Area */}
-              <div className="">
+              <div>
                 <label className="form-control w-full">
                   <span className="text-[#004368] text-base font-semibold">
                     {selectedLanguage === "zh-CN" ? "地区" : "Area"}
@@ -486,8 +472,9 @@ const Registration = () => {
                   />
                 </label>
               </div>
+
               {/* Postal Code */}
-              <div className="">
+              <div>
                 <label className="form-control w-full">
                   <span className="text-[#004368] text-base font-semibold">
                     {selectedLanguage === "zh-CN" ? "邮政编码" : "Postal Code"}
@@ -523,7 +510,7 @@ const Registration = () => {
             {/* button */}
             <div className="flex items-center justify-center mb-5">
               <button
-                className="bg-[#004368] bg-opacity-30 hover:bg-opacity-100 text-black hover:text-white w-[100px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mr-3 mt-5"
+                className="bg-[#004368] hover:bg-opacity-60 text-white hover:text-black w-[150px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mr-3 mt-6"
                 type="submit"
                 disabled={loading}
               >
