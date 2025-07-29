@@ -50,6 +50,7 @@ import ProductApplication from "../components/Marketing/ProductApplication/Produ
 import Registration from "../components/Auth/Registration";
 import Login from "../components/Auth/Login";
 import Pricing from "../components/Pricing/Pricing";
+import PaymentSystem from "../components/Pricing/PaymentSystem";
 import ForgotPassword from "../components/Auth/ForgotPassword";
 import ResetPassword from "../components/Auth/ResetPassword";
 import PrivateRoute from "../components/Private/PrivateRoute";
@@ -58,20 +59,26 @@ import PaymentAlipay from "../components/Pricing/PaymentAlipay";
 import VerifyEmailPage from "../components/Auth/VerifyEmailPage";
 import Package from "../components/Packages/Package";
 import BatchPrintPrinting from "../components/BatchPrintExpressDelivery/BatchPrintPrinting";
+import WrappedPaymentPage from "../components/Pricing/PaymentPage";
+import SuccessPage from "../components/Pricing/SuccessPage";
 
 export const routes = createBrowserRouter([
   {
     path: "/error",
     element: <ErrorPage />,
   },
+  {
+    path: "/register",
+    element: <Registration />,
+  },
   // {
-  //   path: "/register",
-  //   element: <Registration />,
+  //   path: "/payment",
+  //   element: <WrappedPaymentPage />,
   // },
-  // {
-  //   path: "/login",
-  //   element: <Login />,
-  // },
+  {
+    path: "/login",
+    element: <Login />,
+  },
   {
     path: "/forgotpassword",
     element: <ForgotPassword />,
@@ -123,35 +130,41 @@ export const routes = createBrowserRouter([
       {
         path: "/batchPrint",
         element: (
-          // <PrivateRoute>
-          // <PaymentPrivateRoute>
-          <BatchPrint />
-          // </PaymentPrivateRoute>
-          // </PrivateRoute>
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <BatchPrint />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
         ),
       },
       {
         path: "/批量打印",
         element: (
-          // <PrivateRoute>
-          // <PaymentPrivateRoute>
-          <BatchPrint />
-          // </PaymentPrivateRoute>
-          // </PrivateRoute>
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <BatchPrint />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
         ),
       },
       {
         path: "/packages",
-        element: <Package />,
+        element: (
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <Package />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
+        ),
       },
       {
         path: "/singlePrint",
         element: (
-          // <PrivateRoute>
-          // <PaymentPrivateRoute>
-          <SinglePrint />
-          // </PaymentPrivateRoute>
-          // </PrivateRoute>
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <SinglePrint />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
         ),
       },
       {
@@ -167,11 +180,11 @@ export const routes = createBrowserRouter([
       {
         path: "/manualOrder",
         element: (
-          // <PrivateRoute>
-          // <PaymentPrivateRoute>
-          <ManualOrder />
-          // </PaymentPrivateRoute>
-          // </PrivateRoute>
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <ManualOrder />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
         ),
       },
       {
@@ -503,6 +516,10 @@ export const routes = createBrowserRouter([
   },
   {
     path: "/payment",
-    element: <PaymentAlipay />,
+    element: <PaymentSystem />,
+  },
+  {
+    path: "/success",
+    element: <SuccessPage />,
   },
 ]);

@@ -44,6 +44,19 @@ function App() {
   }, []);
 
   useEffect(() => {
+    const storedUser = localStorage.getItem("printerUser");
+
+    if (storedUser) {
+      try {
+        const user = JSON.parse(storedUser);
+        dispatch(accountUserChange(user?.email));
+      } catch (err) {
+        console.error("Failed to parse user from localStorage", err);
+      }
+    }
+  }, [dispatch]);
+
+  useEffect(() => {
     fetch(
       "https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/shops/authorizedShops"
     )
@@ -79,7 +92,6 @@ function App() {
   // Temporary add the feature to get all available express company
   const [deliveryCompanyName, setDeliveryCompanyName] = useState([]);
   const [shopDeliveryCompanyName, setShopDeliveryCompanyName] = useState([]);
-  console.log(tikTokShopCipher, "Cipher");
 
   useEffect(() => {
     if (deliveryCompanyName) {

@@ -49,35 +49,34 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch(
-        "https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/signin",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await fetch("http://192.168.1.16:8888/user/signin", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
 
       const res = await response.json();
       // console.log("response", response);
-      // console.log("res", res);
+      console.log("res>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>", response, res);
+      dispatch(accountUserChange("smzubayer9004@gmail.com"));
 
       if (response.status === 200) {
-        localStorage.setItem("printerUser", formData.email);
-        localStorage.setItem("GrozziieToken", res.token);
+        localStorage.setItem("printerUser", JSON.stringify(res));
         dispatch(accountUserChange(formData.email));
-        const response = await axios.get(
-          "https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/details",
-          { params: { token: res.token } }
-        );
-
-        const userData = response.data;
-
-        // Dispatch user email change (assuming userEmail is in userData)
-        dispatch(paymentUserChange(userData));
+        dispatch(paymentUserChange(res));
         navigate("/");
+        // const response = await axios.get(
+        //   "https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/details",
+        //   { params: { token: res.token } }
+        // );
+
+        // const userData = response.data;
+
+        // // Dispatch user email change (assuming userEmail is in userData)
+        // dispatch(paymentUserChange(userData));
+        // navigate("/");
       } else if (response.status === 400) {
         res.message === "User Email Not Found" &&
           setEmailError("Incorrect email. Please try again");
@@ -227,7 +226,7 @@ const Login = () => {
 
             <div className="flex items-center justify-center mb-6">
               <button
-                className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[150px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mr-3 mt-6"
+                className="bg-[#004368] hover:bg-opacity-60 text-white hover:text-black w-[150px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mr-3 mt-6"
                 type="submit"
                 disabled={loading}
               >

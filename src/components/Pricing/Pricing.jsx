@@ -10,7 +10,7 @@ import { useSelector } from "react-redux";
 const plans = [
   {
     name: "Basic",
-    amount: 0.1,
+    amount: 10,
     duration: "01 Month",
     facilities: [
       "Facility given here",
@@ -22,7 +22,7 @@ const plans = [
   },
   {
     name: "Standard",
-    amount: 0.2,
+    amount: 20,
     duration: "03 Months",
     facilities: [
       "Facility given here",
@@ -34,7 +34,7 @@ const plans = [
   },
   {
     name: "Pro",
-    amount: 0.3,
+    amount: 30,
     duration: "06 Months",
     facilities: [
       "Facility given here",
@@ -46,7 +46,7 @@ const plans = [
   },
   {
     name: "Ultimate",
-    amount: 0.4,
+    amount: 40,
     duration: "12 Months",
     facilities: [
       "Facility given here",
@@ -139,7 +139,8 @@ const Pricing = () => {
 
   const handleChoosePlan = (plan) => {
     setSelectedPlan(plan);
-    setIsModalOpen(true);
+    setIsModalOpen(false);
+    navigate("/payment", { state: { plan } });
   };
 
   const handleConfirmPlan = async () => {
@@ -228,7 +229,7 @@ const Pricing = () => {
                       activePlan === plan ? "text-white" : ""
                     }`}
                   >
-                    ¥{plan.amount}
+                    ${plan.amount}
                     <sub
                       className={`text-black text-sm ${
                         activePlan === plan ? "text-white" : ""

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { refundStatusOptions } from "../../Share/Data/ClientData";
+import { tikTokOrderStatusOptions } from "../../Share/Data/ClientData";
 import { useSelector } from "react-redux";
 import { MdDateRange } from "react-icons/md";
 import { format } from "date-fns";
@@ -10,7 +10,8 @@ import { filterDataByDateRange } from "./SearchComponentFunction";
 import { useTranslation } from "react-i18next";
 
 const NewSearchComponent = ({
-  setRefundStatusCheck,
+  setTikTokOrderStatusCheck,
+  tikTokOrderStatusCheck,
   setStartDate,
   setEndDate,
   startDate,
@@ -177,10 +178,15 @@ const NewSearchComponent = ({
     }
   };
 
-  //   refund status function working
   const handleRefundStatusChange = (event) => {
-    setRefundStatus(event.target.value);
-    setRefundStatusCheck(event.target.value);
+    const selectedValue = event.target.value;
+
+    const selectedStatusObj = tikTokOrderStatusOptions.find(
+      (status) => status.value === selectedValue
+    );
+
+    setRefundStatus(selectedValue);
+    setTikTokOrderStatusCheck(selectedValue);
   };
 
   const selectionRange = {
@@ -190,14 +196,48 @@ const NewSearchComponent = ({
   };
 
   // search all data
+  // pin dou dou
+  // const handleSearchAllChange = (event) => {
+  //   if (currentActiveButton === true) {
+  //     setSearchFields({
+  //       ...searchFields,
+  //       [activeButton]: event.target.value,
+  //       [`isActive${activeButton}`]: true,
+  //     });
+  //   }
+  // };
+
   const handleSearchAllChange = (event) => {
-    if (currentActiveButton === true) {
-      setSearchFields({
-        ...searchFields,
-        [activeButton]: event.target.value,
-        [`isActive${activeButton}`]: true,
-      });
-    }
+    const searchTerm = event.target.value.toLowerCase();
+
+    const filtered = customersData.filter((item) => {
+      switch (activeButton) {
+        case "RecipientAddress":
+          return item.recipientAddress?.fullAddress
+            ?.toLowerCase()
+            .includes(searchTerm);
+        case "OrderId":
+          return item.id?.toLowerCase().includes(searchTerm);
+        case "AccountName":
+          return item.buyerEmail?.toLowerCase().includes(searchTerm);
+        case "Product":
+          return (
+            item.lineItems?.[0]?.productName
+              ?.toLowerCase()
+              .includes(searchTerm) ||
+            item.lineItems?.[0]?.skuName?.toLowerCase().includes(searchTerm)
+          );
+        case "Amount":
+          return item.payment?.totalAmount
+            ?.toString()
+            .toLowerCase()
+            .includes(searchTerm);
+        default:
+          return false;
+      }
+    });
+
+    setFilteredData(filtered);
   };
 
   return (
@@ -362,23 +402,21 @@ const NewSearchComponent = ({
               value={"manualOrder"}
               className="text-base font-light bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[220px] h-12 px-8 py-3 rounded-md cursor-pointer"
             >
-              {t("ManualOrder")}
+              {t("manualOrder")}
             </button>
           ) : (
             <select
+              value={tikTokOrderStatusCheck} // <-- This ensures correct default
               onChange={handleRefundStatusChange}
               className="select w-[220px] h-10 rounded-md outline-none text-[#00000099] font-normal text-[15px] capitalize px-[15px] py-2 text-center inline-flex items-center bg-[#0043681A]"
             >
-              {/* <option disabled selected>
-                selectedLanguage === "zh-CN" ? "没有数据" : "No Data"
-              </option> */}
-              {refundStatusOptions.map((status, index) => (
+              {tikTokOrderStatusOptions.map((status, index) => (
                 <option
                   key={index}
-                  value={status}
+                  value={status?.value}
                   className="text-base font-light"
                 >
-                  {t(status)}
+                  {t(status?.status)}
                 </option>
               ))}
             </select>

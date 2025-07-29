@@ -4,7 +4,7 @@ import {
   orderList,
   orderTypes,
   recipientAddresses,
-  refundStatusOptions,
+  tikTokOrderStatusOptions,
   sortOptions,
 } from "../../Share/Data/ClientData";
 import { useSelector } from "react-redux";
@@ -14,7 +14,7 @@ import { DateRange, DateRangePicker } from "react-date-range";
 import { CiSearch } from "react-icons/ci";
 import { RxReset } from "react-icons/rx";
 
-const SearchComponent = ({ setRefundStatusCheck }) => {
+const SearchComponent = ({ setTikTokOrderStatusCheck }) => {
   const [orderSource, setOrderSource] = useState("");
   const [pendingDelivery, setPendingDelivery] = useState("");
   const [recipientAddress, setRecipientAddress] = useState("");
@@ -66,7 +66,7 @@ const SearchComponent = ({ setRefundStatusCheck }) => {
   //   refund status function working
   const handleRefundStatusChange = (event) => {
     setRefundStatus(event.target.value);
-    setRefundStatusCheck(event.target.value);
+    setTikTokOrderStatusCheck(event.target.value);
   };
 
   const handleSortByChange = (event) => {
@@ -218,13 +218,13 @@ const SearchComponent = ({ setRefundStatusCheck }) => {
             <option disabled selected>
               Refund Status
             </option>
-            {refundStatusOptions.map((status, index) => (
+            {tikTokOrderStatusOptions.map((status, index) => (
               <option
                 key={index}
-                value={status}
+                value={status?.value}
                 className="text-base font-light"
               >
-                {status}
+                {status?.status}
               </option>
             ))}
           </select>
