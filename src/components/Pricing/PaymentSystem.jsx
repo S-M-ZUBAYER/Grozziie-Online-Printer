@@ -19,7 +19,6 @@ const PaymentForm = ({ email, setEmail, duration, amount, currency }) => {
   const stripe = useStripe();
   const elements = useElements();
   const currentUser = useSelector((state) => state.user.accountUser);
-  console.log(currentUser);
 
   const [cipher, setCipher] = useState(() => {
     const stored = localStorage.getItem("tiktokShopInfo");
@@ -55,10 +54,10 @@ const PaymentForm = ({ email, setEmail, duration, amount, currency }) => {
         confirmParams: {
           payment_method_data: {
             billing_details: {
-              email: email,
+              email: currentUser,
             },
           },
-          return_url: `${window.location.origin}/success?email=${email}&duration=${duration}`,
+          return_url: `${window.location.origin}/success?email=${currentUser}&duration=${duration}`,
         },
       });
 
@@ -80,9 +79,9 @@ const PaymentForm = ({ email, setEmail, duration, amount, currency }) => {
       shopName: cipher[0].name,
       paymentTime: new Date().toISOString().split(".")[0] + "Z",
       paymentExpireTime: calculatePaymentExpireTime(duration),
+      amount,
+      currency,
     };
-
-    console.log("Payment Info to be sent:", paymentInfo);
 
     try {
       const { data } = await axios.post(
@@ -90,7 +89,6 @@ const PaymentForm = ({ email, setEmail, duration, amount, currency }) => {
         paymentInfo
       );
       localStorage.setItem("paymentInfo", JSON.stringify(data));
-      console.log("Payment info stored successfully:", data);
     } catch (err) {
       console.error("Failed to store payment info:", err);
     }
@@ -100,7 +98,7 @@ const PaymentForm = ({ email, setEmail, duration, amount, currency }) => {
     e.preventDefault();
     if (!stripe || !elements) return;
 
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!currentUser || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(currentUser)) {
       setError("Please enter a valid email address.");
       return;
     }
@@ -137,10 +135,8 @@ const PaymentForm = ({ email, setEmail, duration, amount, currency }) => {
               />
             </div>
 
-            {/* Stripe Payment Element */}
             <PaymentElement />
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={!stripe || loading}
@@ -173,9 +169,8 @@ const Payment = () => {
   const location = useLocation();
   const packageName = location.state?.plan?.name || "basic";
   const duration = location.state?.plan?.duration || "1month";
-  console.log(location.state.plan);
 
-  const initialPrice = 10;
+  const initialPrice = location.state?.plan?.amount;
   const [currency] = useState("usd");
 
   const [email, setEmail] = useState("");
