@@ -235,15 +235,14 @@ const Package = () => {
   useEffect(() => {
     const fetchPrintedIds = async () => {
       try {
-        const res = await fetch(
-          "http://localhost:2000/tht/grozziiePrinter/printedIdS"
-        );
+        const res = await fetch("http://192.168.1.16:8888/api/dev/printedIds");
         const data = await res.json();
+        console.log(data, "✅ Fetched printed IDs");
 
-        if (data?.code === 200 && Array.isArray(data.result)) {
-          setTikTokPrintedIds(data.result);
+        if (Array.isArray(data)) {
+          setTikTokPrintedIds(data);
         } else {
-          throw new Error("Invalid response format");
+          throw new Error("Expected array but got invalid response");
         }
       } catch (err) {
         console.error("❌ Failed to fetch printed IDs:", err);
@@ -482,7 +481,43 @@ const Package = () => {
   const [showConfirmButton, setShowConfirmButton] = useState(false);
 
   // modal show function
-  const handleToCheckItemsUpdate = () => {
+  const handleToCheckItemsPackageUpdate = () => {
+    if (checkedItems.length === 0) {
+      setModalTitle(
+        <div className="bg-red-200 w-16 h-16 rounded-full flex items-center justify-center">
+          <TiInfoOutline className="w-10 h-10 text-red-600" />
+        </div>
+      );
+      setModalMessage(
+        <p>
+          {selectedLanguage === "zh-CN"
+            ? "沒有選擇任何項目。"
+            : "No items selected."}
+        </p>
+      );
+      setConfirmAction(null);
+      setShowConfirmButton(false);
+      setIsConfirmModalOpen(true);
+    } else {
+      setModalTitle(
+        <div className="bg-green-200 w-16 h-16 rounded-full flex items-center justify-center">
+          <AiOutlineCheckCircle className="w-10 h-10 text-green-600" />
+        </div>
+      );
+      setModalMessage(
+        <p className="text-xl font-semibold">
+          {selectedLanguage === "zh-CN"
+            ? "您确定已经完成此订单的包装了吗？"
+            : "Are you sure you have completed packaging this order?"}
+        </p>
+      );
+      setConfirmAction(() => handleConfirmPackage);
+      setShowConfirmButton(true);
+      setIsConfirmModalOpen(true);
+    }
+  };
+
+  const handleToCheckItemsShippingUpdate = () => {
     if (checkedItems.length === 0) {
       setModalTitle(
         <div className="bg-red-200 w-16 h-16 rounded-full flex items-center justify-center">
@@ -512,12 +547,11 @@ const Package = () => {
             : "Are you sure to accept this order?"}
         </p>
       );
-      setConfirmAction(() => handleConfirm);
+      setConfirmAction(() => handleConfirmShipping);
       setShowConfirmButton(true);
       setIsConfirmModalOpen(true);
     }
   };
-
   // const handleConfirm = () => {
   //   // Implement order update API logic here
   //   dispatch(
@@ -554,7 +588,7 @@ const Package = () => {
     }
   };
 
-  const handleConfirm = async () => {
+  const handleConfirmShipping = async () => {
     dispatch(
       checkedItemsChange({ items: checkedItems, from: tikTokOrderStatusCheck })
     );
@@ -592,6 +626,54 @@ const Package = () => {
     } catch (error) {
       console.error("🚨 Error marking package as shipped:", error);
       throw error;
+    }
+  };
+
+  const handleConfirmPackage = async () => {
+    const cipherValue = cipher[0]?.cipher;
+
+    if (!cipherValue || checkedItems.length === 0) {
+      console.warn("Missing cipher or no checked items");
+      return;
+    }
+
+    try {
+      const responses = await Promise.all(
+        checkedItems.map(async (item) => {
+          const packageId = item?.lineItems?.[0]?.packageId;
+
+          if (!packageId) {
+            console.warn(`Missing packageId for item with id ${item?.id}`);
+            return null;
+          }
+
+          const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package?cipher=${encodeURIComponent(
+            cipherValue
+          )}&packageId=${encodeURIComponent(packageId)}`;
+
+          const res = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          const result = await res.json();
+          console.log(`📦 Package created for order ${item?.id}:`, result);
+          return result;
+        })
+      );
+
+      // Optional: Filter out successfully processed items
+      const successfulIds = checkedItems.map((item) => item.id);
+      const restOfOrders = filteredData.filter(
+        (item) => !successfulIds.includes(item?.id)
+      );
+      setFilteredData(restOfOrders.slice(0, 5));
+      setIsConfirmModalOpen(false); // close the modal
+      dispatch(checkedItemsChange({ items: [], from: tikTokOrderStatusCheck }));
+    } catch (error) {
+      console.error("🚨 Error creating packages:", error);
     }
   };
 
@@ -958,7 +1040,7 @@ const Package = () => {
           {(tikTokOrderStatusCheck === "AWAITING_COLLECTION" ||
             tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") && (
             <button
-              onClick={handleToCheckItemsUpdate}
+              onClick={handleToCheckItemsShippingUpdate}
               className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto  h-10 px-4 gap-2 py-2 rounded-md cursor-pointer flex items-center justify-center"
             >
               <MdOutlineLocalPrintshop className="w-[18px] h-[18px]" />
@@ -967,7 +1049,17 @@ const Package = () => {
               </p>
             </button>
           )}
-
+          {tikTokOrderStatusCheck === "AWAITING_SHIPMENT" && (
+            <button
+              onClick={handleToCheckItemsPackageUpdate}
+              className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto  h-10 px-4 gap-2 py-2 rounded-md cursor-pointer flex items-center justify-center"
+            >
+              <MdOutlineLocalPrintshop className="w-[18px] h-[18px]" />
+              <p className="text-[15px] font-medium leading-normal capitalize pl-1">
+                {t("OrderAcceptedAndPackages")}
+              </p>
+            </button>
+          )}
           <ConfirmationModal
             isOpen={isConfirmModalOpen}
             title={modalTitle}
@@ -986,8 +1078,8 @@ const Package = () => {
             >
               <div className="modal-box w-[800px] max-w-full bg-white shadow-xl rounded-2xl p-8 overflow-y-auto max-h-[90vh]">
                 {/* Header */}
-                <div className="flex justify-between items-center mb-6">
-                  <h2 className="text-3xl font-bold text-[#004368]">
+                <div className="flex items-center justify-center mb-6">
+                  <h2 className="text-3xl font-semibold text-[#004368]">
                     TikTok Order Details
                   </h2>
                 </div>

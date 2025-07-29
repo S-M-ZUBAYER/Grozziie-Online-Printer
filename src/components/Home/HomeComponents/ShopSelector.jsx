@@ -523,7 +523,7 @@ const ShopSelector = () => {
   );
 
   return (
-    <div>
+    <div className="mb-16">
       <p className="text-[#004368] text-[25px] font-[500] capitalize mb-4">
         {t("Select Shop")}
       </p>
