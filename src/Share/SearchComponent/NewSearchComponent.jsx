@@ -240,11 +240,6 @@ const NewSearchComponent = ({
     setFilteredData(filtered);
   };
 
-  console.log(
-    tikTokOrderStatusCheck,
-    "tikTokOderStatusCheck............................................."
-  );
-
   return (
     <div className="bg-white rounded-[17px] shadow-[6px 9px 16.4px 0px rgba(0, 0, 0, 0.04)] py-4 pl-3 pr-2">
       <p className="text-[#004368] text-sm font-semibold mb-[6px]">
@@ -411,12 +406,10 @@ const NewSearchComponent = ({
             </button>
           ) : (
             <select
+              value={tikTokOrderStatusCheck} // <-- This ensures correct default
               onChange={handleRefundStatusChange}
               className="select w-[220px] h-10 rounded-md outline-none text-[#00000099] font-normal text-[15px] capitalize px-[15px] py-2 text-center inline-flex items-center bg-[#0043681A]"
             >
-              {/* <option disabled selected>
-                selectedLanguage === "zh-CN" ? "没有数据" : "No Data"
-              </option> */}
               {tikTokOrderStatusOptions.map((status, index) => (
                 <option
                   key={index}

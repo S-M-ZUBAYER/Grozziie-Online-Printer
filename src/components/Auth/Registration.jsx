@@ -123,7 +123,7 @@ const Registration = () => {
       // Make API call to register user
       const response = await fetch(
         // "https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/signup",
-        "http://192.168.1.13:8888/user/signup",
+        "http://192.168.1.14:8888/user/signup",
         {
           method: "POST",
           headers: {
