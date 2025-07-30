@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { tikTokOrderStatusOptions } from "../../Share/Data/ClientData";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { MdDateRange } from "react-icons/md";
 import { format } from "date-fns";
 import { DateRange } from "react-date-range";
@@ -8,6 +8,7 @@ import { CiSearch } from "react-icons/ci";
 import { RxReset } from "react-icons/rx";
 import { filterDataByDateRange } from "./SearchComponentFunction";
 import { useTranslation } from "react-i18next";
+import { tikTokSelectStatusChange } from "../../features/slice/userSlice";
 
 const NewSearchComponent = ({
   setTikTokOrderStatusCheck,
@@ -47,6 +48,7 @@ const NewSearchComponent = ({
   const [activeButton, setActiveButton] = useState("");
   const [currentActiveButton, setCurrentActiveButton] = useState(false);
   const { t } = useTranslation();
+  const dispatch = useDispatch();
 
   const handleSelect = (date) => {
     setStartDate(date.selection.startDate);
@@ -187,6 +189,7 @@ const NewSearchComponent = ({
 
     setRefundStatus(selectedValue);
     setTikTokOrderStatusCheck(selectedValue);
+    dispatch(tikTokSelectStatusChange(selectedValue));
   };
 
   const selectionRange = {

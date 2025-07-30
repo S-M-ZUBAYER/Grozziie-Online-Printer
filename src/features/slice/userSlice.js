@@ -5,6 +5,7 @@ const initialState = {
   mainRoute: false,
   isPaymentUser: {},
   accountUser: "",
+  tikTokSelectStatus: "",
   checkedItemsFromRedux: [],
   printedDataFromRedux: [],
   checkedExpressFromRedux: [],
@@ -22,6 +23,9 @@ export const counterSlice = createSlice({
     },
     accountUserChange: (state, action) => {
       state.accountUser = action.payload;
+    },
+    tikTokSelectStatusChange: (state, action) => {
+      state.tikTokSelectStatus = action.payload;
     },
     paymentUserChange: (state, action) => {
       state.isPaymentUser = action.payload;
@@ -54,6 +58,7 @@ export const {
   mainRouteStateChange,
   paymentUserChange,
   accountUserChange,
+  tikTokSelectStatusChange,
   mainRouteStateFalseChange,
   checkedItemsChange,
   printedDataFromRedux,

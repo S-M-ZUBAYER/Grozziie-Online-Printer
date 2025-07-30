@@ -37,9 +37,15 @@ const Package = () => {
   const [totalOrderData, setTotalOrderData] = useState(orderListDataGet);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
-  const [tikTokOrderStatusCheck, setTikTokOrderStatusCheck] = useState(
-    "AWAITING_COLLECTION"
+  const selectedTitTokOrderStatus = useSelector(
+    (state) => state.user.tikTokSelectStatus
   );
+  const [tikTokOrderStatusCheck, setTikTokOrderStatusCheck] = useState(
+    selectedTitTokOrderStatus
+      ? selectedTitTokOrderStatus
+      : "AWAITING_COLLECTION"
+  );
+
   const [tikTokPrintedIds, setTikTokPrintedIds] = useState([]);
 
   const [searchFields, setSearchFields] = useState({
@@ -192,7 +198,11 @@ const Package = () => {
       try {
         const now = Math.floor(Date.now() / 1000);
         const fiveDaysAgo = now - 10 * 24 * 60 * 60;
-
+        dispatch(
+          checkedItemsChange({ items: [], from: tikTokOrderStatusCheck })
+        );
+        setCheckedItems([]);
+        setSelectAll(false);
         const response = await loadOrderList({
           cipher: cipher[0]?.cipher,
           createTimeGe: fiveDaysAgo,
@@ -481,6 +491,11 @@ const Package = () => {
 
           const result = await res.json();
           console.log(`📦 Package created for order ${item?.id}:`, result);
+          dispatch(
+            checkedItemsChange({ items: [], from: tikTokOrderStatusCheck })
+          );
+          setCheckedItems([]);
+          setSelectAll(false);
           return result;
         })
       );
@@ -493,6 +508,7 @@ const Package = () => {
       setFilteredData(restOfOrders.slice(0, 5));
       setIsConfirmModalOpen(false); // close the modal
       dispatch(checkedItemsChange({ items: [], from: tikTokOrderStatusCheck }));
+      setCheckedItems([]);
     } catch (error) {
       console.error("🚨 Error creating packages:", error);
     }
