@@ -1,4 +1,4 @@
-import React from "react";
+import { useTranslation } from "react-i18next";
 
 const ConfirmationModal = ({
   isOpen,
@@ -11,7 +11,7 @@ const ConfirmationModal = ({
   selectedLanguage,
 }) => {
   if (!isOpen) return null;
-
+  const { t } = useTranslation();
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
       <div className="bg-white p-6 rounded shadow-lg w-[500px] h-72 flex flex-col items-center justify-center">
@@ -22,10 +22,7 @@ const ConfirmationModal = ({
             onClick={onClose}
             className="bg-[#004368] bg-opacity-30 text-black hover:bg-opacity-100 hover:text-white px-4 py-1 rounded h-8"
           >
-            {
-              showOkButton ? selectedLanguage === "zh-CN" ? "确认" : "Ok" : selectedLanguage === "zh-CN" ? "取消" : "Cancel"
-            }
-
+            {showOkButton ? t("Ok") : t("Cancel")}
           </button>
           {/* {showOkButton &&
             <button
@@ -37,13 +34,12 @@ const ConfirmationModal = ({
             </button>
           } */}
 
-
           {showConfirmButton && (
             <button
               onClick={onConfirm}
               className="bg-[#004368] text-white px-4 py-1 rounded hover:bg-opacity-30 hover:text-black h-8"
             >
-              {selectedLanguage === "zh-CN" ? "确认" : "Confirm"}
+              {t("Confirm")}
             </button>
           )}
         </div>

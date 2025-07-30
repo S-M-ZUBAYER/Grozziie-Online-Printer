@@ -506,13 +506,7 @@ const BatchPrint = () => {
           <TiInfoOutline className="w-10 h-10 text-red-600" />
         </div>
       );
-      setModalMessage(
-        <p>
-          {selectedLanguage === "zh-CN"
-            ? "沒有選擇任何項目。"
-            : "No items selected."}
-        </p>
-      );
+      setModalMessage(<p>{t("NoItemsSelected")}</p>);
       setConfirmAction(null);
       setShowConfirmButton(false);
       setIsConfirmModalOpen(true);
@@ -542,13 +536,7 @@ const BatchPrint = () => {
           <TiInfoOutline className="w-10 h-10 text-red-600" />
         </div>
       );
-      setModalMessage(
-        <p>
-          {selectedLanguage === "zh-CN"
-            ? "沒有選擇任何項目。"
-            : "No items selected."}
-        </p>
-      );
+      setModalMessage(<p>{t("NoItemsSelected")}</p>);
       setConfirmAction(null);
       setShowConfirmButton(false);
       setIsConfirmModalOpen(true);
@@ -560,9 +548,7 @@ const BatchPrint = () => {
       );
       setModalMessage(
         <p className="text-xl font-semibold">
-          {selectedLanguage === "zh-CN"
-            ? "您确定接受这个订单吗？"
-            : "Are you sure to accept this order?"}
+          {t("AreYouSureToAcceptThisOrder")}
         </p>
       );
       setConfirmAction(() => handleConfirmShipping);
@@ -1216,94 +1202,95 @@ const BatchPrint = () => {
                 {/* Header */}
                 <div className="flex justify-center items-center mb-6">
                   <h2 className="text-3xl font-semibold text-[#004368]">
-                    TikTok Order Details
+                    {t("TikTokOrderDetails")}
                   </h2>
                 </div>
 
                 {/* Info Grid */}
                 <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
                   <div>
-                    <strong>Order Source:</strong>{" "}
+                    <strong>{t("OrderSource")}:</strong>{" "}
                     {selectedCustomer?.commercePlatform}
                   </div>
                   <div>
-                    <strong>Buyer Nickname:</strong>{" "}
+                    <strong>{t("BuyerNickname")}:</strong>{" "}
                     {selectedCustomer?.recipientAddress?.name}
                   </div>
 
                   <div>
-                    <strong>Buyer Email:</strong> {selectedCustomer?.buyerEmail}
+                    <strong>{t("BuyerEmail")}:</strong>{" "}
+                    {selectedCustomer?.buyerEmail}
                   </div>
                   <div>
-                    <strong>Order ID:</strong> {selectedCustomer?.id}
+                    <strong>{t("OrderID")}:</strong> {selectedCustomer?.id}
                   </div>
 
                   <div>
-                    <strong>Status:</strong>{" "}
+                    <strong>{t("Status")}:</strong>{" "}
                     <span className="text-blue-700 font-semibold">
                       {selectedCustomer?.status}
                     </span>
                   </div>
                   <div>
-                    <strong>Package ID:</strong>{" "}
+                    <strong>{t("PackageID")}:</strong>{" "}
                     {selectedCustomer?.lineItems?.[0]?.packageId}
                   </div>
 
                   <div>
-                    <strong>Tracking Number:</strong>{" "}
+                    <strong>{t("TrackingNumber")}:</strong>{" "}
                     {selectedCustomer?.trackingNumber}
                   </div>
                   <div>
-                    <strong>Shipping Provider:</strong>{" "}
+                    <strong>{t("ShippingProvider")}:</strong>{" "}
                     {selectedCustomer?.shippingProvider}
                   </div>
 
                   <div>
-                    <strong>Delivery Type:</strong>{" "}
+                    <strong>{t("DeliveryType")}:</strong>{" "}
                     {selectedCustomer?.deliveryType}
                   </div>
                   <div>
-                    <strong>Delivery Option:</strong>{" "}
+                    <strong>{t("DeliveryOptionName")}:</strong>{" "}
                     {selectedCustomer?.deliveryOptionName}
                   </div>
 
                   <div>
-                    <strong>SKU:</strong>{" "}
+                    <strong>{t("SKU")}:</strong>{" "}
                     {selectedCustomer?.lineItems?.[0]?.skuName}
                   </div>
                   <div>
-                    <strong>SKU Price:</strong>{" "}
+                    <strong>{t("SKUPrice")}:</strong>{" "}
                     {selectedCustomer?.lineItems?.[0]?.salePrice}{" "}
                     {selectedCustomer?.payment?.currency}
                   </div>
 
                   <div>
-                    <strong>Quantity:</strong>{" "}
+                    <strong>{t("Quantity")}:</strong>{" "}
                     {selectedCustomer?.lineItems?.length}
                   </div>
                   <div>
-                    <strong>Shipping Fee:</strong>{" "}
+                    <strong>{t("ShippingFee")}:</strong>{" "}
                     {selectedCustomer?.payment?.shippingFee}
                   </div>
 
                   <div>
-                    <strong>Total Amount:</strong>{" "}
+                    <strong>{t("TotalAmount")}:</strong>{" "}
                     {selectedCustomer?.payment?.totalAmount}{" "}
                     {selectedCustomer?.payment?.currency}
                   </div>
                   <div>
-                    <strong>Payment Method:</strong>{" "}
+                    <strong>{t("PaymentMethod")}:</strong>{" "}
                     {selectedCustomer?.paymentMethodName}
                   </div>
 
                   <div>
-                    <strong>Paid Time:</strong>{" "}
+                    <strong>{t("PaidTime")}:</strong>{" "}
                     {new Date(
                       selectedCustomer?.paidTime * 1000
                     ).toLocaleString()}
                   </div>
                   <div>
-                    <strong>Region:</strong>{" "}
+                    <strong>{t("Region")}:</strong>{" "}
                     {selectedCustomer?.recipientAddress?.regionCode}
                   </div>
                 </div>
@@ -1317,15 +1304,15 @@ const BatchPrint = () => {
                   />
                   <div>
                     <p>
-                      <strong>Product:</strong>{" "}
+                      <strong>{t("Product")}:</strong>{" "}
                       {selectedCustomer?.lineItems?.[0]?.productName}
                     </p>
                     <p>
-                      <strong>Seller SKU:</strong>{" "}
+                      <strong>{t("SellerSKU")}:</strong>{" "}
                       {selectedCustomer?.lineItems?.[0]?.sellerSku}
                     </p>
                     <p>
-                      <strong>Currency:</strong>{" "}
+                      <strong>{t("Currency")}:</strong>{" "}
                       {selectedCustomer?.lineItems?.[0]?.currency}
                     </p>
                   </div>
@@ -1333,7 +1320,7 @@ const BatchPrint = () => {
 
                 {/* Address */}
                 <div className="mt-6">
-                  <strong>Shipping Address:</strong>
+                  <strong>{t("ShippingAddress")}:</strong>
                   <p className="text-gray-600 mt-1">
                     {selectedCustomer?.recipientAddress?.fullAddress}
                   </p>
@@ -1345,7 +1332,7 @@ const BatchPrint = () => {
                     onClick={closeModal}
                     className="bg-[#004368] hover:bg-[#00324d] text-white font-semibold px-8 py-2 rounded-lg transition"
                   >
-                    Close
+                    {t("Close")}
                   </button>
                 </div>
               </div>
