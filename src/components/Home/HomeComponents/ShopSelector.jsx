@@ -421,10 +421,19 @@ const ShopSelector = () => {
     localStorage.setItem(key, JSON.stringify(shopArray));
   };
 
-  // When selecting platform, reset selected store
+  // When selecting platform, automatically select the first store of that platform
   const handlePlatformSelect = (platformId) => {
     setSelectedPlatform(platformId);
-    setSelectedStore(null);
+
+    // Find the platform and get its first store
+    const platformObj = shops.find((shop) => shop.id === platformId);
+    if (platformObj && platformObj.stores.length > 0) {
+      const firstStore = platformObj.stores[0];
+      setSelectedStore(firstStore.name);
+      saveShopToLocalStorage(platformId, [firstStore]);
+    } else {
+      setSelectedStore(null);
+    }
   };
 
   // Select a store under platform — save full object array with 1 selected object
@@ -494,7 +503,7 @@ const ShopSelector = () => {
                 {stores.map((store, idx) => (
                   <li key={idx} className="flex items-center gap-2">
                     <Checkbox.Root
-                      className="flex size-[20px] appearance-none items-center justify-center rounded shadow-[0_2px_6px] shadow-blackA4 outline-none hover:bg-violet3"
+                      className="flex size-[20px] appearance-none items-center justify-center rounded border border-[#004368] hover:bg-violet3"
                       checked={
                         selectedPlatform === id && selectedStore === store.name
                       }
