@@ -134,7 +134,9 @@ const BatchPrint = () => {
   useEffect(() => {
     const fetchPrintedIds = async () => {
       try {
-        const res = await fetch("http://192.168.1.16:8888/api/dev/printedIds");
+        const res = await fetch(
+          "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds"
+        );
         const data = await res.json();
         console.log(data, "✅ Fetched printed IDs");
 
