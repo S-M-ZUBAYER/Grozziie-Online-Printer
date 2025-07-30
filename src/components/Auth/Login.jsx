@@ -49,13 +49,16 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch("http://192.168.1.16:8888/user/signin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        "https://grozziie.zjweiting.com:3091/tiktokshop-print/user/signin",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const res = await response.json();
       // console.log("response", response);
