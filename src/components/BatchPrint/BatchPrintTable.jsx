@@ -68,22 +68,16 @@ const BatchPrintTable = ({
         <div className="flex flex-col items-center justify-center pt-10 text-center w-full mx-auto pb-60">
           <FadeLoader color="#004368" size={25} />
           <p className="text-2xl font-medium pt-10 text-[#004368]">
-            {selectedLanguage === "zh-CN"
-              ? "数据正在加载，请稍候..."
-              : "Data is Loading. Please Wait..."}
+            {t("DataLoading")}
           </p>
         </div>
       ) : isError ? (
         <p className="text-center text-3xl text-red-500 font-medium py-20">
-          {selectedLanguage === "zh-CN"
-            ? "未找到数据。请稍后再试..."
-            : "Data Not Found. Please try again later...."}
+          {t("NoData")}
         </p>
       ) : filteredData?.length === 0 ? (
         <p className="text-center text-3xl text-red-500 font-medium py-20">
-          {selectedLanguage === "zh-CN"
-            ? "未找到数据。请稍后再试..."
-            : "No Available orders. Please try again later...."}
+          {t("NoData")}
         </p>
       ) : (
         <table className="table">
@@ -198,7 +192,7 @@ const BatchPrintTable = ({
                           className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
                           onClick={() => handleGetTracking(order)}
                         >
-                          {selectedLanguage === "zh-CN" ? "细节" : "Tracking"}
+                          {t("Tracking")}
                         </p>
                       </td>
                     )}
