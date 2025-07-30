@@ -69,17 +69,6 @@ const Home = () => {
     setCurrentDate(now.toLocaleDateString("en-US", options));
   }, []);
 
-  // useEffect(() => {
-  //   if (deliveryCompanyName.length > 0) {
-  //     fetchAvailableWaybills(deliveryCompanyName)
-  //       .then((waybills) => {
-  //         const flatList = waybills.flat();
-  //         dispatch(shopDeliveryCompanyList(flatList));
-  //       })
-  //       .catch(console.error);
-  //   }
-  // }, [deliveryCompanyName]);
-
   return (
     <div className="bg-[#0043680D] grid grid-cols-6">
       <div className="col-span-1">

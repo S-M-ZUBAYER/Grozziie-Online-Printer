@@ -117,70 +117,6 @@ const BatchPrint = () => {
     setIsActiveBtnAmount(false);
   };
 
-  // // this is the part to store orderList into local storage temporary
-  // function storeDecryptedOrderList(decryptedOrderList) {
-  //   try {
-  //     // Convert the decryptedOrderList to a JSON string
-  //     const serializedDecryptedOrderList = JSON.stringify(decryptedOrderList);
-
-  //     // Store the serialized data in local storage under the key 'decryptedOrderList'
-  //     localStorage.setItem("decryptedOrderList", serializedDecryptedOrderList);
-  //   } catch (error) {
-  //     console.error(
-  //       "Error storing decrypted order list in local storage:",
-  //       error
-  //     );
-  //   }
-  // }
-  // useEffect(() => {
-  //   // Usage:
-  //   storeDecryptedOrderList(loadOrderList);
-  // }, [loadOrderList]);
-
-  // start the functionalities to get all express delivery company list
-  // call the function with useEffect to get the the company name list
-  // const [deliveryCompanyName, setDeliveryCompanyName] = useState([]);
-  // const [shopDeliveryCompanyName, setShopDeliveryCompanyName] = useState([]);
-  // useEffect(() => {
-  //   if (deliveryCompanyName) {
-  //     fetchAvailableWaybills(deliveryCompanyName)
-  //       .then((waybills) => {
-  //         console.log(waybills);
-  //         setShopDeliveryCompanyName(splitArrays(waybills));
-  //         const ShopDeliveryCompanyNameList = splitArrays(waybills);
-  //         dispatch(shopDeliveryCompanyList(ShopDeliveryCompanyNameList));
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error fetching available waybills:", error);
-  //       });
-  //   }
-  // }, [deliveryCompanyName]);
-  // //call the function to get all logistics company list
-  // function splitArrays(arrays) {
-  //   const individualArrays = [];
-  //   arrays.forEach((array) => {
-  //     if (Array.isArray(array)) {
-  //       array.forEach((eachArray) => {
-  //         individualArrays.push(eachArray);
-  //       });
-  //     }
-  //   });
-  //   return individualArrays;
-  // }
-
-  // const fetchCompanies = async () => {
-  //   try {
-  //     const companies = await fetchLogisticCompanies();
-  //     setDeliveryCompanyName(companies);
-  //   } catch (error) {
-  //     console.error("Failed to fetch logistic companies:", error);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchCompanies(); // Call the function to fetch companies
-  // }, []);
-
   // Function to handle the master checkbox change
 
   const handleMasterCheckboxChange = () => {
@@ -192,36 +128,6 @@ const BatchPrint = () => {
       setCheckedItems([]);
     }
   };
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await loadOrderList({
-  //         tikTokShopCipher: cipher[0]?.cipher,
-  //       }).unwrap();
-  //       const orders = response?.data?.orders;
-  //       if (Array.isArray(orders) && orders.length > 0) {
-  //         console.log(orders, "orders from the batch printer");
-
-  //         const filteredOrderList = orders.filter(
-  //           (item) => item?.buyerEmail && item?.status === "AWAITING_SHIPMENT"
-  //         );
-
-  //         dispatch(orderListData(filteredOrderList));
-  //         setTotalOrderData(filteredOrderList);
-  //       } else {
-  //         console.warn(
-  //           "No valid orders received or unexpected format",
-  //           response
-  //         );
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [loadOrderList, cipher]);
 
   // Function to handle individual checkbox change
 
@@ -244,47 +150,6 @@ const BatchPrint = () => {
 
     fetchPrintedIds();
   }, [tikTokOrderStatusCheck]);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const now = Math.floor(Date.now() / 1000);
-  //       const fiveDaysAgo = now - 5 * 24 * 60 * 60;
-  //       console.log(
-  //         tikTokOrderStatusCheck,
-  //         "status////////////////////////////////////"
-  //       );
-  //       console.log("response Start..................");
-  //       const response = await loadOrderList({
-  //         cipher: cipher[0]?.cipher,
-  //         createTimeGe: fiveDaysAgo,
-  //         createTimeLt: now,
-  //         updateTimeGe: fiveDaysAgo,
-  //         updateTimeLt: now,
-  //         orderStatus: tikTokOrderStatusCheck, // You can parameterize this too
-  //         pageSize: 100,
-  //       }).unwrap();
-  //       console.log("response..................", response);
-
-  //       const orders = response?.data?.orders ?? [];
-
-  //       if(tikTokOrderStatusCheck==="AWAITING_COLLECTION"){
-  //         const filteredOrderList = orders.filter((item) => item?.buyerEmail);
-  //       }
-
-  //       const filteredOrderList = orders.filter((item) => item?.buyerEmail);
-
-  //       dispatch(orderListData(filteredOrderList));
-  //       setTotalOrderData(filteredOrderList);
-  //     } catch (error) {
-  //       console.error("Error fetching data:", error);
-  //     }
-  //   };
-
-  //   if (cipher?.[0]?.cipher) {
-  //     fetchData();
-  //   }
-  // }, [cipher, dispatch, loadOrderList, tikTokOrderStatusCheck]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -427,13 +292,6 @@ const BatchPrint = () => {
 
   // pagination prev option
   const handleToPrevious = (count) => {
-    // const data =
-    //   tikTokOrderStatusCheck === "Waiting For Shipment"
-    //     ? totalOrderData
-    //     : tikTokOrderStatusCheck === "shipped"
-    //     ? printedData
-    //     : [];
-
     if (count > 0) {
       if (count === 1) {
         setLeftPaginationBtn(false);
@@ -571,75 +429,6 @@ const BatchPrint = () => {
     }
   };
 
-  // const handleConfirm = () => {
-  //   // Implement order update API logic here
-  //   dispatch(
-  //     checkedItemsChange({ items: checkedItems, from: tikTokOrderStatusCheck })
-  //   );
-  //   navigate("/batchprintexpressdelivery");
-  // };
-  console.log(filteredData, "filtered Data from batch");
-
-  const fetchOrderListData = async (id) => {
-    try {
-      const response = await loadOrderList({
-        tikTokShopCipher: cipher[0]?.cipher,
-      }).unwrap();
-
-      const orders = response?.data?.orders;
-
-      if (Array.isArray(orders) && orders.length > 0) {
-        const filteredOrderList = orders.filter((item) => item?.buyerEmail);
-
-        dispatch(orderListData(filteredOrderList));
-      } else {
-        console.warn("No valid orders received or unexpected format", response);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-
-  // const handleConfirm = async (id) => {
-  //   const packageId = checkedItems[0]?.lineItems[0]?.packageId;
-  //   const cipherValue = cipher[0]?.cipher;
-
-  //   if (!packageId || !cipherValue) {
-  //     console.warn("Missing packageId or cipher");
-  //     return;
-  //   }
-
-  //   try {
-  //     const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package?cipher=${encodeURIComponent(
-  //       cipherValue
-  //     )}&packageId=${encodeURIComponent(packageId)}`;
-
-  //     const res = await fetch(url, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //     });
-
-  //     const result = await res.json();
-  //     console.log("📦 Package created:", result);
-
-  //     const restOfOrders = filteredData.filter(
-  //       (item) => item?.id !== checkedItems[0]?.id
-  //     );
-
-  //     fetchOrderListData();
-  //     setFilteredData(restOfOrders.slice(0, 5));
-
-  //     // ✅ Close modal if successful
-  //     setIsConfirmModalOpen(false); // <-- replace with your actual modal state control
-
-  //     return result;
-  //   } catch (error) {
-  //     console.error("🚨 Error creating package:", error);
-  //   }
-  // };
-
   const handleConfirmPackage = async () => {
     const cipherValue = cipher[0]?.cipher;
 
@@ -693,131 +482,7 @@ const BatchPrint = () => {
       checkedItemsChange({ items: checkedItems, from: tikTokOrderStatusCheck })
     );
     navigate("/batchPrintPrinting");
-    return;
-    try {
-      const item = checkedItems[0];
-      const lineItemIds = item.lineItems.map((li) => li.id);
-      const trackingNumber = item.lineItems[0].trackingNumber || "";
-      const shippingProviderId = item.lineItems[0].shippingProviderId;
-
-      const params = new URLSearchParams({
-        cipher: cipher[0].cipher,
-        orderNumber: item.id,
-        setTrackingNumber: trackingNumber,
-        shippingProviderId: shippingProviderId,
-      });
-
-      // Append array values manually
-      lineItemIds.forEach((id) => {
-        params.append("order_line_item_ids", id);
-      });
-
-      const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/mark/shipped?${params.toString()}`;
-
-      console.log("📦 Shipping URL:", url);
-
-      const res = await fetch(url, {
-        method: "POST",
-      });
-
-      const result = await res.json();
-      console.log("✅ Marked as shipped result:", result);
-      return result;
-    } catch (error) {
-      console.error("🚨 Error marking package as shipped:", error);
-      throw error;
-    }
   };
-
-  // const handleFileChange = async (e) => {
-  //   const file = e.target.files[0];
-
-  //   if (!file) {
-  //     return;
-  //   }
-  //   const reader = new FileReader();
-  //   reader.onload = async (e) => {
-  //     // Make the callback async
-  //     const data = new Uint8Array(e.target.result);
-  //     const workbook = XLSX.read(data, { type: "array" });
-
-  //     // Assuming the first sheet is the one you want to convert
-  //     const sheetName = workbook.SheetNames[0];
-  //     const sheet = workbook.Sheets[sheetName];
-
-  //     // Convert the sheet to an array of objects
-  //     const jsonData = XLSX.utils.sheet_to_json(sheet);
-
-  //     const updateJsonData = jsonData?.map((item, index) => {
-  //       if (item) {
-  //         item.item_list = [
-  //           {
-  //             goods_id: item?.goods_id,
-  //             goods_count: item?.goods_count,
-  //             goods_img: item?.goods_img,
-  //             goods_name: item?.goods_name,
-  //             goods_price: item?.goods_price,
-  //             goods_spec: item?.goods_spec,
-  //             outer_goods_id: item?.outer_goods_id,
-  //             outer_id: item?.outer_id,
-  //             sku_id: item?.sku_id,
-  //           },
-  //         ];
-  //       }
-  //       const {
-  //         goods_id,
-  //         goods_count,
-  //         goods_img,
-  //         goods_name,
-  //         goods_price,
-  //         goods_spec,
-  //         outer_goods_id,
-  //         sku_id,
-  //         ...updateDataWithoutGoodsId
-  //       } = item; // Destructure 'goods_id' from 'item'
-  //       const updateData = { ...updateDataWithoutGoodsId };
-  //       return updateData;
-  //     });
-
-  //     // setTotalOrderData([...totalOrderData, ...jsonData]);
-  //     // console.log(tikTokOrderStatusCheck, "check status")
-  //     if (tikTokOrderStatusCheck === "Waiting For Shipment") {
-  //       // console.log(
-  //       //   [...updateJsonData, ...customersData],
-  //       //   "waiting for shipment"
-  //       // );
-  //       dispatch(orderListData([...updateJsonData, ...customersData]));
-  //       setCustomersData([...updateJsonData, ...customersData]);
-  //       setTotalPart(Math.ceil((totalOrderData.length + jsonData?.length) / 5));
-  //       toast.success(
-  //         "Import file Store as Awaiting for Shipment Data Successfully"
-  //       );
-  //     }
-  //     if (tikTokOrderStatusCheck === "shipped") {
-  //       // console.log(updateJsonData, "jsonData");
-
-  //       const response = await postShippedDataToApi(updateJsonData[0]);
-  //       if (response.error) {
-  //         console.error("Error storing data:", response.error);
-  //         toast.error("Failed To Store Import file Printing Data");
-  //       } else {
-  //         toast.success("Import file Store as Printing Data Successfully");
-  //       }
-  //       setCustomersData([...updateJsonData, ...customersData]);
-  //       setTotalPart(Math.ceil((totalOrderData.length + jsonData?.length) / 5));
-  //     }
-  //     // setCustomersData([...updateJsonData, ...customersData]);
-  //     // setTotalPart(Math.ceil((totalOrderData.length + jsonData?.length) / 5));
-  //   };
-
-  //   reader.readAsArrayBuffer(file);
-  // };
-
-  // const handleImportOrderClick = () => {
-  //   // Trigger the hidden file input
-  //   const fileInput = document.getElementById("fileInput");
-  //   fileInput.click();
-  // };
 
   const handleFileChange = async (e) => {
     const file = e.target.files[0];
@@ -1008,12 +673,6 @@ const BatchPrint = () => {
             </div>
 
             <div className="col-span-1 flex items-center justify-center">
-              {/* <p className="text-[#004368] text-sm font-normal capitalize cursor-pointer">
-                {selectedLanguage === "zh-CN" ? "拆分订单" : "split order"}
-              </p>
-
-              <div className="w-[1px] h-8 bg-[#004368] mx-2"></div> */}
-
               <input
                 type="file"
                 id="fileInput"
@@ -1104,12 +763,6 @@ const BatchPrint = () => {
                   </button>
                 </div>
               </div>
-              {/* <div className="flex items-center justify-center px-7 cursor-pointer">
-                <img src={Settings} alt="settings" className="w-4 h-4" />
-                <p className="ml-2 text-[#004368] text-sm font-medium capitalize">
-                  settings
-                </p>
-              </div> */}
               <button
                 onClick={handleBatchPrinterExcelClick}
                 className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[115px] h-10 px-8 py-2 rounded-md cursor-pointer"
@@ -1124,8 +777,6 @@ const BatchPrint = () => {
           {/* table */}
           {loadOrderList && (
             <BatchPrintTable
-              // loadOrderList={tikTokOrderStatusCheck === "Waiting For Shipment" ? totalOrderData?.slice(0, 5) : tikTokOrderStatusCheck === "shipped" ? printedData?.slice(0, 5) : null}
-              // loadOrderList={currentCustomerData}
               filteredData={filteredData}
               isError={isError}
               isLoading={isLoading}
@@ -1149,28 +800,6 @@ const BatchPrint = () => {
       {/* end section button */}
       <div className="mt-4 mr-8 mb-96">
         <div className="flex items-center justify-end">
-          {/* <button className="w-52 h-10 bg-white text-[#004368] rounded-md border flex items-center hover:bg-[#004368] hover:text-white p-2">
-            <FaEdit className="w-4 h-4" />
-            <span className="text-[15px] font-medium leading-normal capitalize pl-2">
-              Create manual order
-            </span>
-          </button>
-          <button
-            className="w-52 h-10 bg-white text-[#004368]  hover:bg-[#004368] hover:text-white rounded-md border flex items-center p-2 ml-3">
-            <MdOutlineLocalPrintshop className="w-[18px] h-[18px]" />
-            <span className="text-[15px] font-medium leading-normal capitalize pl-1 hover:text-white">
-              print express delivery
-            </span>
-          </button>
-
-          <button className="w-52 h-10 bg-white text-[#004368]  hover:bg-[#004368] hover:text-white rounded-md border flex items-center p-2 ml-3">
-            <TbTruckDelivery className="w-[18px] h-[18px]" />
-            <span className="text-[15px] font-medium leading-normal capitalize pl-2">
-              shipping same date
-            </span>
-          </button> */}
-
-          {/* <Link to="/batchprintexpressdelivery"> */}
           {(tikTokOrderStatusCheck === "AWAITING_COLLECTION" ||
             tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") && (
             <button

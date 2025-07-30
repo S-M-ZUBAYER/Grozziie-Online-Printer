@@ -1,25 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
 import { RxCross1 } from "react-icons/rx";
-import PacmanLoader from "react-spinners/PacmanLoader";
 import FadeLoader from "react-spinners/FadeLoader";
 import { useTranslation } from "react-i18next";
 
 const PackageTable = ({
   filteredData,
   isLoading,
-  isPrintedLoading,
   isError,
-  selectedCustomer,
   handleDetailsClick,
-  isModalOpen,
-  closeModal,
   checkedItems,
   handleCheckboxChange,
-  data,
   tikTokOrderStatusCheck,
-  startDate,
-  endDate,
   cipher,
 }) => {
   const selectedLanguage = useSelector(

@@ -381,17 +381,6 @@ const NewSearchComponent = ({
             {t("Amount")}
           </button>
         </div>
-
-        {/* <div className="">
-              <input
-                type="date"
-                id=""
-                name=""
-                value=""
-                placeholder="Select delivery time"
-                className="w-[355px] h-12 bg-[#0043681A] outline-none text-[#00000099] font-normal text-[15px] uppercase text-center rounded-md px-[15px] py-2"
-              />
-            </div> */}
       </div>
 
       <div className="flex items-center mt-5 space-x-2">
