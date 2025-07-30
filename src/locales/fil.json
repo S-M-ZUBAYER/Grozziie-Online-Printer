@@ -45,7 +45,9 @@
   "Product": "Produkto",
   "Amount": "Halaga",
   "Waiting For Shipment": "Naghihintay ng Padala",
-  "Shipped": "Naipadala na",
+  "shipping": "Naipadala na",
+  "Delivered": "Naipadala na",
+  "Cancel & return": "Kanselahin",
   "Search": "Maghanap",
   "Reset": "I-reset",
   "AddNewTemplate": "Magdagdag ng Bagong Template",
@@ -101,7 +103,12 @@
   "Currency": "Currency",
   "ShippingAddress": "Shipping Address",
   "Ok": "Ok",
+  "PaymentMethod": "Payment Method",
 
+  "_comment_package": "Package",
+
+  "NoAvailableOrder": "Walang Natagpuang Order. Pakisubukang muli mamaya....",
+  "TrackingUpdates": "Mga Update ng Pagsubaybay",
   "_comment_SinglePrint": "Single Print",
 
   "CustomerList": "Listahan ng Customer",

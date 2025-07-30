@@ -70,9 +70,7 @@ const PackageTable = ({
         </p>
       ) : filteredData?.length === 0 ? (
         <p className="text-center text-3xl text-red-500 font-medium py-20">
-          {selectedLanguage === "zh-CN"
-            ? "未找到数据。请稍后再试..."
-            : "No Available Order. Please try again later...."}
+          {t("NoAvailableOrder")}
         </p>
       ) : (
         <table className="table">
@@ -191,7 +189,7 @@ const PackageTable = ({
                             className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
                             onClick={() => handleGetTracking(order)}
                           >
-                            {selectedLanguage === "zh-CN" ? "细节" : "Tracking"}
+                            {t("Tracking")}
                           </p>
                         </td>
                       )}
@@ -216,7 +214,7 @@ const PackageTable = ({
 
             {/* Header */}
             <h2 className="text-2xl font-semibold mb-6 text-[#004368] text-center">
-              {t("Tracking Updates")}
+              {t("TrackingUpdates")}
             </h2>
 
             {/* Timeline List */}
@@ -239,7 +237,7 @@ const PackageTable = ({
                 onClick={() => setShowModal(false)}
                 className="bg-[#004368] hover:bg-[#00324d] text-white font-medium py-2 px-6 rounded-lg transition"
               >
-                Close
+                {t("Close")}
               </button>
             </div>
           </div>
