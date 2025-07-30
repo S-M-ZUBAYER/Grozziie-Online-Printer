@@ -45,7 +45,9 @@
   "Product": "产品",
   "Amount": "金额",
   "Waiting For Shipment": "待发货",
-  "Shipped": "已发货",
+  "shipping": "已发货",
+  "Delivered": "已发货",
+  "Cancel & return": "已取消",
   "Search": "搜索",
   "Reset": "重置",
   "AddNewTemplate": "添加新模板",
@@ -101,7 +103,11 @@
   "Currency": "货币",
   "ShippingAddress": "发货地址",
   "Ok": "确定",
+  "PaymentMethod": "支付方式",
 
+  "_comment_package": "Package",
+  "NoAvailableOrder": "没有可用的订单。请稍后再试....",
+  "TrackingUpdates": "跟踪更新",
   "_comment_SinglePrint": "Single Print",
 
   "CustomerList": "客户列表",

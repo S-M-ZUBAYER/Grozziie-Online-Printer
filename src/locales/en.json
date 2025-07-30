@@ -45,7 +45,9 @@
   "Product": "Product",
   "Amount": "Amount",
   "WaitingForShipment": "Waiting For Shipment",
-  "Shipped": "Shipped",
+  "shipping": "Shipping",
+  "Delivered": "Delivered",
+  "Cancel & return": "Cancel & Return",
   "Search": "Search",
   "Reset": "Reset",
   "AddNewTemplate": "Select Shipment Provider",
@@ -101,6 +103,12 @@
   "Currency": "Currency",
   "ShippingAddress": "Shipping Address",
   "Ok": "ok",
+  "PaymentMethod": "Payment Method",
+
+  "_comment_package": "Package",
+
+  "NoAvailableOrder": "No Available Order. Please try again later....",
+  "TrackingUpdates": "Tracking Updates",
 
   "_comment_Single_print": "Single Print",
 

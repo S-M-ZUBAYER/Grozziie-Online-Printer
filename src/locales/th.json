@@ -45,7 +45,9 @@
   "Product": "สินค้า",
   "Amount": "จำนวน",
   "Waiting For Shipment": "รอจัดส่ง",
-  "Shipped": "จัดส่งแล้ว",
+  "shipping": "จัดส่งแล้ว",
+  "Delivered": "จัดส่งแล้ว",
+  "Cancel & return": "ยกเลิก",
   "Search": "ค้นหา",
   "Reset": "รีเซ็ต",
   "AddNewTemplate": "เพิ่มแม่แบบใหม่",
@@ -101,7 +103,11 @@
   "Currency": "สกุลเงิน",
   "ShippingAddress": "ที่อยู่การจัดส่ง",
   "Ok": "ตกลง",
+  "PaymentMethod": "วิธีการชำระเงิน",
 
+  "_comment_package": "Package",
+  "NoAvailableOrder": "ไม่มีคำสั่งซื้อที่พร้อมใช้งาน กรุณาลองใหม่ภายหลัง....",
+  "TrackingUpdates": "การติดตามการอัปเดต",
   "_comment_single_print": " Single Print",
 
   "CustomerList": "รายชื่อลูกค้า",
