@@ -45,7 +45,9 @@
   "Product": "Sản phẩm",
   "Amount": "Số lượng",
   "Waiting For Shipment": "Chờ giao hàng",
-  "Shipped": "Đã giao hàng",
+  "shipping": "Đã giao hàng",
+  "Delivered": "Đã giao hàng",
+  "Cancel & return": "Đã hủy",
   "Search": "Tìm kiếm",
   "Reset": "Đặt lại",
   "AddNewTemplate": "Thêm mẫu mới",
@@ -101,7 +103,11 @@
   "Currency": "Đơn vị tiền tệ",
   "ShippingAddress": "Địa chỉ giao hàng",
   "Ok": "Ok",
+  "PaymentMethod": "Phương thức thanh toán",
 
+  "_comment_package": "Package",
+  "NoAvailableOrder": "Không có đơn hàng nào khả dụng. Vui lòng thử lại sau....",
+  "TrackingUpdates": "Cập nhật theo dõi",
   "_comment_SinglePrint": "Single Print",
 
   "CustomerList": "Danh sách khách hàng",

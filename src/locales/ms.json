@@ -45,7 +45,9 @@
   "Product": "Produk",
   "Amount": "Jumlah",
   "Waiting For Shipment": "Menunggu Penghantaran",
-  "Shipped": "Dihantar",
+  "shipping": "Dihantar",
+  "Delivered": "Dihantar",
+  "Cancel & return": "Dibatalkan",
   "Search": "Cari",
   "Reset": "Tetap Semula",
   "AddNewTemplate": "Tambah Templat Baru",
@@ -101,7 +103,11 @@
   "Currency": "Mata Uang",
   "ShippingAddress": "Alamat Pengiriman",
   "Ok": "Ok",
+  "PaymentMethod": "Metode Pembayaran",
 
+  "_comment_package": "Package",
+  "NoAvailableOrder": "Tiada pesanan yang tersedia. Sila cuba lagi nanti....",
+  "TrackingUpdates": "Kemaskini Penjejakan",
   "_comment_single_print": "Single Print",
 
   "CustomerList": "Senarai Pelanggan",

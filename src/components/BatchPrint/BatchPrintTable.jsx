@@ -209,7 +209,7 @@ const BatchPrintTable = ({
 
             {/* Header */}
             <h2 className="text-2xl font-semibold mb-6 text-[#004368] text-center">
-              {t("Tracking Updates")}
+              {t("TrackingUpdates")}
             </h2>
 
             {/* Timeline List */}
@@ -232,7 +232,7 @@ const BatchPrintTable = ({
                 onClick={() => setShowModal(false)}
                 className="bg-[#004368] hover:bg-[#00324d] text-white font-medium py-2 px-6 rounded-lg transition"
               >
-                Close
+                {t("Close")}
               </button>
             </div>
           </div>
