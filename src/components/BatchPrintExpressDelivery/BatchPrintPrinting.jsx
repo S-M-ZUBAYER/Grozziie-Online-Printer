@@ -127,7 +127,7 @@ const BatchPrintPrinting = () => {
             // ✅ Save printedId if docUrl exists
             if (docUrl && itemId) {
               const url = new URL(
-                "http://192.168.1.16:8888/api/dev/printedIds/add"
+                "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds/add"
               );
               url.searchParams.append("tikTokPrintedId", itemId);
 
