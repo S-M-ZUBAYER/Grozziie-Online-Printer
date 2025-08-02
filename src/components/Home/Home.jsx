@@ -3,7 +3,13 @@ import { CiCalendarDate, CiDeliveryTruck, CiTimer } from "react-icons/ci";
 import { HiOutlineReceiptRefund } from "react-icons/hi2";
 import { FiPrinter } from "react-icons/fi";
 import { format } from "date-fns";
-import { isSameDay, parseISO } from "date-fns";
+import {
+  isSameDay,
+  parseISO,
+  startOfDay,
+  endOfDay,
+  fromUnixTime,
+} from "date-fns";
 import {
   PieChart,
   Pie,
@@ -12,54 +18,30 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import { useTranslation } from "react-i18next";
 
 import print from "../../assets/printer01.png";
 import shipped from "../../assets/shipped01.png";
 import needPrint from "../../assets/needtoprint01.png";
-
-import { useTranslation } from "react-i18next";
-import { useDispatch, useSelector } from "react-redux";
-
-import { useGetShippedDataUsQuery } from "../../features/allApis/shippedDataGetUsApi";
-import { findPrintedToday, findShippedLast7Days } from "./HomeFunction";
-import {
-  fetchAvailableWaybills,
-  fetchLogisticCompanies,
-} from "../BatchPrint/BatchPrinterFunctions";
-import { shopDeliveryCompanyList } from "../../features/slice/shopDeliveryCompanySlice";
-
-import {
-  accountUserChange,
-  checkedDefaultExpressChange,
-} from "../../features/slice/userSlice";
-
 import HomeSideNavbar from "./HomeSideNavbar";
 import DashboardCard from "./HomeComponents/DashboardCard";
-import TutorialCard from "./HomeComponents/TutorialCard";
 import ActivityRow from "./HomeComponents/ActivityRow";
 import ShopSelector from "./HomeComponents/ShopSelector";
 import { useLoadOrderListMutation } from "../../features/allApis/batchPrintApi";
-import { startOfDay, endOfDay, fromUnixTime } from "date-fns";
 
 const Home = () => {
-  const { t, i18n } = useTranslation();
-  const dispatch = useDispatch();
+  const { t } = useTranslation();
   const [cipher, setCipher] = useState(() => {
     const stored = localStorage.getItem("tiktokShopInfo");
     return stored ? JSON.parse(stored) : [];
   });
-  const { data: printedData } = useGetShippedDataUsQuery();
-  const printedToday = findPrintedToday(printedData);
-  const last7DaysShippedList = findShippedLast7Days(printedData);
   const [currentDate, setCurrentDate] = useState("");
-  const [deliveryCompanyName, setDeliveryCompanyName] = useState([]);
   const now = new Date();
-  const sevenDaysAgo = new Date();
+  const sevenDaysAgo = new Date(now);
   sevenDaysAgo.setDate(now.getDate() - 7);
-  const start = startOfDay(new Date());
-  const end = endOfDay(new Date());
+  const start = startOfDay(now);
+  const end = endOfDay(now);
 
-  // real data
   const [tikTokPrintedIds, setTikTokPrintedIds] = useState([]);
   const [tikTokShippedToday, setTikTokShippedToday] = useState([]);
   const [tikTokPrintedToday, setTikTokPrintedToday] = useState([]);
@@ -72,7 +54,9 @@ const Home = () => {
     useState([]);
   const [deliveredOrders, setDeliveredOrders] = useState([]);
   const [cancelledOrders, setCancelledOrders] = useState([]);
-  const [loadOrderList] = useLoadOrderListMutation(); // from RTK Query
+  const [loadOrderList] = useLoadOrderListMutation();
+
+  const COLORS = ["#34D399", "#FBBF24", "#F87171", "#60A5FA"];
 
   const chartData = [
     {
@@ -93,13 +77,16 @@ const Home = () => {
     },
   ];
 
-  const COLORS = ["#34D399", "#FBBF24", "#F87171", "#60A5FA"];
-
-  // Total count
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
 
-  // Custom Tooltip
   const CustomTooltip = ({ active, payload }) => {
+    if (total === 0) {
+      return (
+        <div className="bg-white shadow-lg rounded-md px-3 py-2 text-sm text-gray-700">
+          {t("No Data")}
+        </div>
+      );
+    }
     if (active && payload?.length) {
       const { name, value } = payload[0];
       return (
@@ -115,19 +102,16 @@ const Home = () => {
     const fetchPrintedIds = async () => {
       try {
         const res = await fetch(
-          "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds"
+          "https://grozziieget.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds"
         );
         const data = await res.json();
-        console.log(data, "✅ Fetched printed IDs");
 
         if (Array.isArray(data)) {
           setTikTokPrintedIds(data);
-          const todayPrinted =
-            data?.filter((item) => isSameDay(parseISO(item.createdAt), now)) ||
-            [];
+          const todayPrinted = data.filter((item) =>
+            isSameDay(parseISO(item.createdAt), now)
+          );
           setTikTokPrintedToday(todayPrinted);
-        } else {
-          throw new Error("Expected array but got invalid response");
         }
       } catch (err) {
         console.error("❌ Failed to fetch printed IDs:", err);
@@ -142,6 +126,7 @@ const Home = () => {
   useEffect(() => {
     const fetchStatusOrders = async () => {
       if (!cipher[0]?.cipher || tikTokPrintedIds.length === 0) return;
+
       const statuses = [
         "AWAITING_SHIPMENT",
         "AWAITING_COLLECTION",
@@ -149,46 +134,33 @@ const Home = () => {
         "DELIVERED",
         "CANCELLED",
       ];
-      const now = Math.floor(Date.now() / 1000);
-      const sevenDaysAgo = now - 10 * 24 * 60 * 60;
-
+      const nowUnix = Math.floor(Date.now() / 1000);
+      const sevenDaysAgoUnix = nowUnix - 10 * 24 * 60 * 60;
       const printedSet = new Set(
-        tikTokPrintedIds.map((item) => item.tikTokPrintedId.toString())
+        tikTokPrintedIds.map((item) => item.tikTokPrintedId?.toString())
       );
 
-      for (let status of statuses) {
+      for (const status of statuses) {
         try {
           const response = await loadOrderList({
             cipher: cipher[0]?.cipher,
-            createTimeGe: sevenDaysAgo,
-            createTimeLt: now,
-            updateTimeGe: sevenDaysAgo,
-            updateTimeLt: now,
+            createTimeGe: sevenDaysAgoUnix,
+            createTimeLt: nowUnix,
+            updateTimeGe: sevenDaysAgoUnix,
+            updateTimeLt: nowUnix,
             orderStatus: status,
             pageSize: 100,
             sortOrder: "DESC",
           }).unwrap();
 
           const orderList = response?.data?.orders || [];
-
-          // Split printed/unprinted
-          const printedOrders = orderList.filter((item) =>
+          const printedOrders = orderList?.filter((item) =>
             printedSet.has(item.id?.toString())
           );
           const unprintedOrders = orderList.filter(
             (item) => !printedSet.has(item.id?.toString())
           );
-          if (status === "AWAITING_COLLECTION")
-            console.log(
-              orderList,
-              "AWAITING_COLLECTION........................",
-              printedOrders,
-              "printed collection",
-              unprintedOrders,
-              "unPrinted Collection",
-              status
-            );
-          // Store in state
+
           if (status === "AWAITING_SHIPMENT") {
             setAwaitingShipment(orderList);
           } else if (status === "AWAITING_COLLECTION") {
@@ -198,11 +170,10 @@ const Home = () => {
           } else if (status === "DELIVERED") {
             setDeliveredOrders(orderList);
           } else if (status === "IN_TRANSIT") {
-            const todayShippedOrders =
-              orderList?.filter((order) => {
-                const updateDate = fromUnixTime(order.updateTime); // Convert seconds to Date
-                return updateDate >= start && updateDate <= end;
-              }) || [];
+            const todayShippedOrders = orderList.filter((order) => {
+              const updateDate = fromUnixTime(order.updateTime);
+              return updateDate >= start && updateDate <= end;
+            });
             setTikTokShippedToday(todayShippedOrders);
           } else if (status === "CANCELLED") {
             setCancelledOrders(orderList);
@@ -224,7 +195,6 @@ const Home = () => {
       <div className="col-span-1">
         <HomeSideNavbar />
       </div>
-
       <div className="pt-11 pl-[62px] mb-[17px] col-span-5">
         <ShopSelector />
         <div className="flex items-center justify-between">
@@ -239,7 +209,6 @@ const Home = () => {
           </p>
         </div>
 
-        {/* Top 3 Cards */}
         <div className="mb-9 grid grid-cols-3 gap-6">
           <DashboardCard
             title={t("Printed Today")}
@@ -265,7 +234,6 @@ const Home = () => {
           />
         </div>
 
-        {/* Bottom Section */}
         <div className="grid grid-cols-5 mt-[73px] pb-[174px]">
           <div className="col-span-2 pr-14">
             <p className="text-[#004368] text-[25px] font-[500] capitalize mb-4">
@@ -279,7 +247,11 @@ const Home = () => {
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={chartData}
+                      data={
+                        total === 0
+                          ? [{ name: t("No Data"), value: 1 }]
+                          : chartData
+                      }
                       cx="50%"
                       cy="50%"
                       innerRadius={70}
@@ -288,10 +260,15 @@ const Home = () => {
                       dataKey="value"
                       isAnimationActive
                     >
-                      {chartData.map((entry, index) => (
+                      {(total === 0
+                        ? [{ fill: "#d1d5db" }] // grey for no data
+                        : chartData.map((_, index) => ({
+                            fill: COLORS[index % COLORS.length],
+                          }))
+                      ).map((style, index) => (
                         <Cell
                           key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
+                          {...style}
                           stroke="#fff"
                           strokeWidth={2}
                         />
@@ -302,8 +279,7 @@ const Home = () => {
                   </PieChart>
                 </ResponsiveContainer>
 
-                {/* Center label */}
-                <div className="absolute top-[50%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 text-center">
+                <div className="absolute top-[43%] left-[50%] transform -translate-x-1/2 -translate-y-1/2 text-center">
                   <p className="text-[18px] text-gray-700 font-medium">
                     {t("Total")}
                   </p>
@@ -314,7 +290,7 @@ const Home = () => {
               </div>
             </div>
           </div>
-          {/* Activity */}
+
           <div className="col-span-3">
             <p className="text-[#004368] text-[25px] font-[500] capitalize">
               {t("Activities of last 7 days")}
