@@ -5,15 +5,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
-  checkedExpressChange,
   checkedItemsChange,
   printedDataFromRedux,
 } from "../../features/slice/userSlice";
 import * as XLSX from "xlsx";
-import {
-  useGetBatchPrintQuery,
-  useLoadOrderListMutation,
-} from "../../features/allApis/batchPrintApi";
+import { useLoadOrderListMutation } from "../../features/allApis/batchPrintApi";
 import BatchPrintTable from "./BatchPrintTable";
 import BatchPrinterModal from "./BatchPrinterModal";
 import StoredDeliveryCompanyList from "../../Share/StoredDeliveryCompanyList/StoredDeliveryCompanyList";
@@ -28,11 +24,7 @@ import { orderListData } from "../../features/slice/orderListSlice";
 import ConfirmationModal from "../../Share/ConfirmationModal";
 import { TiInfoOutline } from "react-icons/ti";
 import { AiOutlineCheckCircle } from "react-icons/ai";
-import {
-  fetchAvailableWaybills,
-  fetchLogisticCompanies,
-} from "./BatchPrinterFunctions";
-import { shopDeliveryCompanyList } from "../../features/slice/shopDeliveryCompanySlice";
+import { fetchLogisticCompanies } from "./BatchPrinterFunctions";
 
 const BatchPrint = () => {
   const [selectAll, setSelectAll] = useState(false);

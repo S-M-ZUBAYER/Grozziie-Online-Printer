@@ -176,7 +176,6 @@ const BatchPrintPrinting = () => {
 
   const handlePrintAll = () => {
     const iframe = document.querySelector("iframe");
-    dispatch(checkedItemsChange({ items: [], from: tikTokOrderStatusCheck }));
     if (iframe?.contentWindow) {
       iframe.contentWindow.focus();
       iframe.contentWindow.print();

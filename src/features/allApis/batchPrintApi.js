@@ -42,7 +42,7 @@ const batchPrintApi = baseApi.injectEndpoints({
         });
 
         return {
-          url: `/order/list/filter?${queryParams.toString()}`,
+          url: `/tiktokshop-partner/api/dev/order/list/filter?${queryParams.toString()}`,
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -52,7 +52,40 @@ const batchPrintApi = baseApi.injectEndpoints({
       invalidatesTags: ["orders"],
     }),
 
+    getLazadaOrders: builder.query({
+      query: ({
+        sortBy = "updated_at",
+        createdBefore,
+        createdAfter,
+        updateBefore,
+        updateAfter,
+        status,
+        sortDirection = "DESC",
+        offset = 0,
+        limit = 100,
+      }) => {
+        const params = new URLSearchParams({
+          sortBy,
+          createdBefore,
+          createdAfter,
+          updateBefore,
+          updateAfter,
+          sortDirection,
+          offset: offset.toString(),
+          limit: limit.toString(),
+        });
 
+        if (status) {
+          params.append("status", status);
+        }
+
+        return {
+          url: `/lazada-open-shop/api/dev/orders?${params.toString()}`,
+          method: "GET",
+        };
+      },
+      providesTags: ["lazadaOrders"],
+    }),
 
     getBatchPrint: builder.query({
       query: () => ({
@@ -95,6 +128,8 @@ const batchPrintApi = baseApi.injectEndpoints({
 
 export const {
   useLoadOrderListMutation,
+  useGetLazadaOrdersQuery,
+  useLazyGetLazadaOrdersQuery,
   useGetBatchPrintQuery,
   useGetBatchPrintByIdQuery,
   useUpdateBatchPrintMutation,

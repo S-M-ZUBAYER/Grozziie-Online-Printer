@@ -11,7 +11,6 @@ import {
   paymentUserChange,
 } from "./features/slice/userSlice";
 import { useDispatch } from "react-redux";
-import CallTheOrder from "./components/Private/callTheOrder";
 import { useLoadOrderListMutation } from "./features/allApis/batchPrintApi";
 import { orderListParameter } from "./components/BatchPrint/OrderListParameter";
 import { decryptArrayData } from "./Share/Function/OrderListFunctions";
@@ -300,7 +299,6 @@ function App() {
 
   return (
     <div className="bg-white app">
-      <CallTheOrder />
       <Toaster position="top-right" />
       <RouterProvider router={routes} />
     </div>
