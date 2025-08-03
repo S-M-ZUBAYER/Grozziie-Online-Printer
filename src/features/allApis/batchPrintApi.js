@@ -52,7 +52,7 @@ const batchPrintApi = baseApi.injectEndpoints({
       invalidatesTags: ["orders"],
     }),
 
-    getLazadaOrders: builder.query({
+    getLazadaOrders: builder.mutation({
       query: ({
         sortBy = "updated_at",
         createdBefore,
