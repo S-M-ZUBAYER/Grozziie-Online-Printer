@@ -61,6 +61,7 @@ import Package from "../components/Packages/Package";
 import BatchPrintPrinting from "../components/BatchPrintExpressDelivery/BatchPrintPrinting";
 import WrappedPaymentPage from "../components/Pricing/PaymentPage";
 import SuccessPage from "../components/Pricing/SuccessPage";
+import LazadaBatchPrint from "../components/LazadaShop/LazadaBatchPrint";
 
 export const routes = createBrowserRouter([
   {
@@ -155,6 +156,16 @@ export const routes = createBrowserRouter([
               <Package />
             </PaymentPrivateRoute>
           </PrivateRoute>
+        ),
+      },
+      {
+        path: "/LazadaOrderManagement",
+        element: (
+          // <PrivateRoute>
+          <PaymentPrivateRoute>
+            <LazadaBatchPrint />
+          </PaymentPrivateRoute>
+          // </PrivateRoute>
         ),
       },
       {
