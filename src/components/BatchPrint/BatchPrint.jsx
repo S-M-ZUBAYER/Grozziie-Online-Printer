@@ -5,15 +5,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
-  checkedExpressChange,
   checkedItemsChange,
   printedDataFromRedux,
 } from "../../features/slice/userSlice";
 import * as XLSX from "xlsx";
-import {
-  useGetBatchPrintQuery,
-  useLoadOrderListMutation,
-} from "../../features/allApis/batchPrintApi";
+import { useLoadOrderListMutation } from "../../features/allApis/batchPrintApi";
 import BatchPrintTable from "./BatchPrintTable";
 import BatchPrinterModal from "./BatchPrinterModal";
 import StoredDeliveryCompanyList from "../../Share/StoredDeliveryCompanyList/StoredDeliveryCompanyList";
@@ -28,11 +24,7 @@ import { orderListData } from "../../features/slice/orderListSlice";
 import ConfirmationModal from "../../Share/ConfirmationModal";
 import { TiInfoOutline } from "react-icons/ti";
 import { AiOutlineCheckCircle } from "react-icons/ai";
-import {
-  fetchAvailableWaybills,
-  fetchLogisticCompanies,
-} from "./BatchPrinterFunctions";
-import { shopDeliveryCompanyList } from "../../features/slice/shopDeliveryCompanySlice";
+import { fetchLogisticCompanies } from "./BatchPrinterFunctions";
 
 const BatchPrint = () => {
   const [selectAll, setSelectAll] = useState(false);
@@ -41,8 +33,12 @@ const BatchPrint = () => {
   const [totalOrderData, setTotalOrderData] = useState(orderListDataGet);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
-  const [tikTokOrderStatusCheck, setTikTokOrderStatusCheck] =
-    useState("AWAITING_SHIPMENT");
+  const selectedTitTokOrderStatus = useSelector(
+    (state) => state.user.tikTokSelectStatus
+  );
+  const [tikTokOrderStatusCheck, setTikTokOrderStatusCheck] = useState(
+    selectedTitTokOrderStatus ? selectedTitTokOrderStatus : "AWAITING_SHIPMENT"
+  );
   const [tikTokPrintedIds, setTikTokPrintedIds] = useState([]);
 
   const [searchFields, setSearchFields] = useState({
@@ -158,6 +154,11 @@ const BatchPrint = () => {
       try {
         const now = Math.floor(Date.now() / 1000);
         const fiveDaysAgo = now - 10 * 24 * 60 * 60;
+        dispatch(
+          checkedItemsChange({ items: [], from: tikTokOrderStatusCheck })
+        );
+        setCheckedItems([]);
+        setSelectAll(false);
 
         const response = await loadOrderList({
           cipher: cipher[0]?.cipher,
@@ -448,6 +449,11 @@ const BatchPrint = () => {
 
           const result = await res.json();
           console.log(`📦 Package created for order ${item?.id}:`, result);
+          dispatch(
+            checkedItemsChange({ items: [], from: tikTokOrderStatusCheck })
+          );
+          setCheckedItems([]);
+          setSelectAll(false);
           return result;
         })
       );
@@ -576,12 +582,36 @@ const BatchPrint = () => {
     <div className="bg-[#004368] bg-opacity-5 w-full h-screen">
       <div className="px-[30px] pt-6 pb-4">
         {/* top section */}
+        {/* <NewSearchComponent
+          setStartDate={setStartDate}
+          startDate={startDate}
+          endDate={endDate}
+          setEndDate={setEndDate}
+          setTikTokOrderStatusCheck={setTikTokOrderStatusCheck}
+          handleToSearch={handleToSearch}
+          handleToReset={handleToReset}
+          searchFields={searchFields}
+          setSearchFields={setSearchFields}
+          customersData={customersData}
+          setFilteredData={setFilteredData}
+          isActiveBtnRecipientAddress={isActiveBtnRecipientAddress}
+          setIsActiveBtnRecipientAddress={setIsActiveBtnRecipientAddress}
+          isActiveBtnOrderId={isActiveBtnOrderId}
+          setIsActiveBtnOrderId={setIsActiveBtnOrderId}
+          isActiveBtnAccountName={isActiveBtnAccountName}
+          setIsActiveBtnAccountName={setIsActiveBtnAccountName}
+          isActiveBtnProduct={isActiveBtnProduct}
+          setIsActiveBtnProduct={setIsActiveBtnProduct}
+          isActiveBtnAmount={isActiveBtnAmount}
+          setIsActiveBtnAmount={setIsActiveBtnAmount}
+        /> */}
         <NewSearchComponent
           setStartDate={setStartDate}
           startDate={startDate}
           endDate={endDate}
           setEndDate={setEndDate}
           setTikTokOrderStatusCheck={setTikTokOrderStatusCheck}
+          tikTokOrderStatusCheck={tikTokOrderStatusCheck}
           handleToSearch={handleToSearch}
           handleToReset={handleToReset}
           searchFields={searchFields}

@@ -38,6 +38,14 @@ const HomeSideNavbar = () => {
                 {t("packages")}
               </Link>
             </li>
+            <li className="my-2 ml-4">
+              <Link
+                className="text-black text-[15px] font-medium capitalize transition hover:font-bold hover:text-[#004368]"
+                to="/LazadaOrderManagement"
+              >
+                {t("Lazada")}
+              </Link>
+            </li>
 
             {/* <li className="my-2 ml-4">
               <Link

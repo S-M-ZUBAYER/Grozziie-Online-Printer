@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import FadeLoader from "react-spinners/FadeLoader";
 import { HiOutlinePrinter } from "react-icons/hi2";
+import { checkedItemsChange } from "../../features/slice/userSlice";
 
 const BatchPrintPrinting = () => {
   const checkedItems = useSelector((state) => state.user.checkedItemsFromRedux);

@@ -50,7 +50,7 @@ const TopNavbar = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem("GrozziieToken");
+    localStorage.removeItem("printerUser");
     dispatch(accountUserChange(""));
     navigate("/login");
   };
@@ -59,6 +59,7 @@ const TopNavbar = () => {
     { key: "home", path: "/home" },
     { key: "batchPrint", path: "/batchprint" },
     { key: "packages", path: "/packages" },
+    { key: "Lazada", path: "/LazadaOrderManagement" },
     // { key: "singlePrint", path: "/singleprint" },
     // { key: "settings", path: "/settings/recipient information" },
     // { key: "utility", path: "/utility/delivery record" },
