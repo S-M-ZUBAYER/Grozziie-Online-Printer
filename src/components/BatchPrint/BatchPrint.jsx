@@ -75,6 +75,8 @@ const BatchPrint = () => {
   //Data post request send and return data get
   const [loadOrderList, { isLoading, isError }] = useLoadOrderListMutation();
 
+  console.log(isLoading, isError, "lksjfldks");
+
   // shipped Data Get from our server (Already Printed)
   const { data: printed, isLoading: isPrintedLoading } =
     useGetShippedDataUsQuery();
@@ -162,6 +164,7 @@ const BatchPrint = () => {
 
         const response = await loadOrderList({
           cipher: cipher[0]?.cipher,
+          shippingType: "TIKTOK",
           createTimeGe: fiveDaysAgo,
           createTimeLt: now,
           updateTimeGe: fiveDaysAgo,
@@ -628,6 +631,7 @@ const BatchPrint = () => {
           setIsActiveBtnProduct={setIsActiveBtnProduct}
           isActiveBtnAmount={isActiveBtnAmount}
           setIsActiveBtnAmount={setIsActiveBtnAmount}
+          currentShop="TikTok"
         />
 
         {/* middle section */}
