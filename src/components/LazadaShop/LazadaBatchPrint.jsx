@@ -5,10 +5,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { checkedItemsChange } from "../../features/slice/userSlice";
 import * as XLSX from "xlsx";
-import {
-  useLazyGetLazadaOrdersQuery,
-  useLoadOrderListMutation,
-} from "../../features/allApis/batchPrintApi";
+// import {
+//   useLazyGetLazadaOrdersQuery,
+//   useLoadOrderListMutation,
+// } from "../../features/allApis/batchPrintApi";
 import NewSearchComponent from "../../Share/SearchComponent/NewSearchComponent";
 import { filterDataBySearchFieldsBatchPrint } from "../../Share/SearchComponent/SearchComponentFunction";
 import toast from "react-hot-toast";
@@ -20,10 +20,12 @@ import { useTranslation } from "react-i18next";
 import LazadaBatchPrintTable from "./LazadaBatchPrintTable";
 import StoredDeliveryCompanyList from "../../Share/StoredDeliveryCompanyList/StoredDeliveryCompanyList";
 import BatchPrinterModal from "../BatchPrint/BatchPrinterModal";
+import { useLazyGetLazadaOrdersQuery } from "../../features/allApis/lazadaApi";
 
 const LazadaBatchPrint = () => {
   const [selectAll, setSelectAll] = useState(false);
   const [detailsLoading, setDetailsLoading] = useState(false);
+  const [lazadaLoading, setLazadaLoading] = useState(false);
   const [checkedItems, setCheckedItems] = useState([]);
   const orderListDataGet = useSelector((state) => state.orderList.data);
   const [totalOrderData, setTotalOrderData] = useState(orderListDataGet);
@@ -66,11 +68,15 @@ const LazadaBatchPrint = () => {
   const navigate = useNavigate();
 
   //Data post request send and return data get
-  const [loadOrderList, { isLoading, isError }] = useLoadOrderListMutation();
+  // const [loadOrderList, { isLoading, isError }] = useLazyGetLazadaOrdersQuery();
+  const [getLazadaOrders, { isLoading, isError }] =
+    useLazyGetLazadaOrdersQuery();
 
   const selectedLanguage = useSelector(
     (state) => state.user.selectedLanguageRedux
   );
+
+  console.log(isLoading, "klsjdflkjadslkjfljasljflj");
 
   const handleToReset = () => {
     setFilteredData(customersData?.slice(0, 5));
@@ -111,10 +117,10 @@ const LazadaBatchPrint = () => {
 
   // Function to handle individual checkbox change
   const handleCheckboxChange = (order) => {
-    if (checkedItems.some((item) => item?.id === order?.id)) {
+    if (checkedItems.some((item) => item?.order_id === order?.order_id)) {
       // If the order id is already in the checkedItems, remove it
       const updatedItems = checkedItems.filter(
-        (item) => item?.id !== order?.id
+        (item) => item?.order_id !== order?.order_id
       );
       setCheckedItems(updatedItems);
       setSelectAll(false);
@@ -141,7 +147,7 @@ const LazadaBatchPrint = () => {
   const [leftPaginationBtn, setLeftPaginationBtn] = useState(false);
   const [rightPaginationBtn, setRightPaginationBtn] = useState(true);
 
-  const [getLazadaOrders] = useLazyGetLazadaOrdersQuery();
+  // const [getLazadaOrders] = useLazyGetLazadaOrdersQuery();
 
   useEffect(() => {
     const fetchLazadaOrders = async () => {
@@ -156,24 +162,26 @@ const LazadaBatchPrint = () => {
         setCheckedItems([]);
         setSelectAll(false);
 
+        setLazadaLoading(true); // ✅ set before trigger
+
         const response = await getLazadaOrders({
           sortBy: "updated_at",
           createdAfter: toISOString(fiveDaysAgo),
           createdBefore: toISOString(now),
           updateAfter: toISOString(fiveDaysAgo),
           updateBefore: toISOString(now),
-          status: lazadaOrderStatusCheck, // Try omitting this first
+          status: lazadaOrderStatusCheck,
           sortDirection: "DESC",
           offset: 0,
           limit: 100,
         }).unwrap();
 
-        // ✅ Just console the raw response
         const parsedBody = JSON.parse(response?.body || "{}");
-        console.log("📦 Lazada Raw Orders:", parsedBody?.data?.orders);
         setTotalOrderData(parsedBody?.data?.orders);
       } catch (error) {
         console.error("❌ Lazada Order Fetch Error:", error);
+      } finally {
+        setLazadaLoading(false); // ✅ reset on finish
       }
     };
 
@@ -181,8 +189,6 @@ const LazadaBatchPrint = () => {
       fetchLazadaOrders();
     }
   }, [getLazadaOrders, lazadaOrderStatusCheck]);
-
-  console.log(isLoading, "loading......................................");
 
   useEffect(() => {
     const firstPageData = data?.slice(0, 5);
@@ -352,7 +358,7 @@ const LazadaBatchPrint = () => {
       );
       setModalMessage(
         <p className="text-xl font-semibold">
-          {t("AreYouSureToAcceptThisOrder")}
+          {t("AreYouSureToPrintForReadyToShip")}
         </p>
       );
       setConfirmAction(() => handleConfirmShipping);
@@ -733,11 +739,11 @@ const LazadaBatchPrint = () => {
           </div>
 
           {/* table */}
-          {loadOrderList && (
+          {getLazadaOrders && (
             <LazadaBatchPrintTable
               filteredData={filteredData}
               isError={isError}
-              isLoading={isLoading}
+              isLoading={lazadaLoading}
               selectedCustomer={selectedCustomer}
               handleDetailsClick={handleDetailsClick}
               isModalOpen={isModalOpen}
@@ -757,8 +763,8 @@ const LazadaBatchPrint = () => {
       {/* end section button */}
       <div className="mt-4 mr-8">
         <div className="flex items-center justify-end">
-          {(lazadaOrderStatusCheck === "AWAITING_COLLECTION" ||
-            lazadaOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") && (
+          {lazadaOrderStatusCheck === "Packed" && (
+            // ||lazadaOrderStatusCheck === "AWAITING_COLLECTION_PRINTED"
             <button
               onClick={handleToCheckItemsShippingUpdate}
               className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto  h-10 px-4 gap-2 py-2 rounded-md cursor-pointer flex items-center justify-center"

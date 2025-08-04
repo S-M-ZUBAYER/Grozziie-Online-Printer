@@ -61,6 +61,7 @@ const BatchPrint = () => {
   const [isActiveBtnAccountName, setIsActiveBtnAccountName] = useState(false);
   const [isActiveBtnProduct, setIsActiveBtnProduct] = useState(false);
   const [isActiveBtnAmount, setIsActiveBtnAmount] = useState(false);
+  const [tiktokLoading, setTiktokLoading] = useState(false); // Local loading state
   const [printedData, setPrintedData] = useState([]);
   const [cipher, setCipher] = useState(() => {
     const stored = localStorage.getItem("tiktokShopInfo");
@@ -154,8 +155,11 @@ const BatchPrint = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setTiktokLoading(true); // Start loading
+
         const now = Math.floor(Date.now() / 1000);
         const fiveDaysAgo = now - 10 * 24 * 60 * 60;
+
         dispatch(
           checkedItemsChange({ items: [], from: tikTokOrderStatusCheck })
         );
@@ -179,22 +183,19 @@ const BatchPrint = () => {
 
         const orders = response?.data?.orders ?? [];
 
-        // Extract only the IDs that have already been printed
+        // Filter orders with buyerEmail
+        let filteredOrderList = orders.filter((item) => item?.buyerEmail);
+
+        // Filter based on printed ID status
         const printedIdSet = new Set(
           tikTokPrintedIds.map((item) => item.tikTokPrintedId)
         );
-        console.log(printedIdSet, "seet.................................");
 
-        let filteredOrderList = orders.filter((item) => item?.buyerEmail);
-
-        // If status is AWAITING_COLLECTION, filter out printed IDs
         if (tikTokOrderStatusCheck === "AWAITING_COLLECTION") {
           filteredOrderList = filteredOrderList.filter(
             (item) => !printedIdSet.has(item.id)
           );
-        }
-        // If status is AWAITING_COLLECTION, filter out printed IDs
-        if (tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") {
+        } else if (tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") {
           filteredOrderList = filteredOrderList.filter((item) =>
             printedIdSet.has(item.id)
           );
@@ -203,7 +204,9 @@ const BatchPrint = () => {
         dispatch(orderListData(filteredOrderList));
         setTotalOrderData(filteredOrderList);
       } catch (error) {
-        console.error("Error fetching data:", error);
+        console.error("❌ Error fetching TikTok orders:", error);
+      } finally {
+        setTiktokLoading(false); // Done loading
       }
     };
 
@@ -216,6 +219,9 @@ const BatchPrint = () => {
     loadOrderList,
     tikTokOrderStatusCheck,
     tikTokPrintedIds,
+    setCheckedItems,
+    setSelectAll,
+    setTotalOrderData,
   ]);
 
   const handleCheckboxChange = (order) => {
@@ -801,7 +807,7 @@ const BatchPrint = () => {
             <BatchPrintTable
               filteredData={filteredData}
               isError={isError}
-              isLoading={isLoading}
+              isLoading={tiktokLoading}
               isPrintedLoading={isPrintedLoading}
               selectedCustomer={selectedCustomer}
               handleDetailsClick={handleDetailsClick}
