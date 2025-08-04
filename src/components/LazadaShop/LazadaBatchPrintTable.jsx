@@ -52,6 +52,7 @@ const LazadaBatchPrintTable = ({
       setLoading(false);
     }
   };
+  console.log(filteredData, "data");
 
   return (
     <div className="mt-6">
@@ -66,7 +67,7 @@ const LazadaBatchPrintTable = ({
         <p className="text-center text-3xl text-red-500 font-medium py-20">
           {t("DataNotFound")}
         </p>
-      ) : filteredData?.length === 0 ? (
+      ) : filteredData?.length === 0 || !filteredData?.length ? (
         <p className="text-center text-3xl text-red-500 font-medium py-20">
           {t("NoAvailableOrder")}
         </p>
