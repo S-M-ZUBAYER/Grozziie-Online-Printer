@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import FadeLoader from "react-spinners/FadeLoader";
 import { HiOutlinePrinter } from "react-icons/hi2";
 import { checkedItemsChange } from "../../features/slice/userSlice";
+import { useTranslation } from "react-i18next";
 
 const BatchPrintPrinting = () => {
   const checkedItems = useSelector((state) => state.user.checkedItemsFromRedux);
@@ -16,6 +17,7 @@ const BatchPrintPrinting = () => {
   const [warehouses, setWarehouses] = useState([]);
   const [shipmentProviders, setShipmentProviders] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { t } = useTranslation();
 
   const [cipher] = useState(() => {
     const stored = localStorage.getItem("tiktokShopInfo");
@@ -192,14 +194,11 @@ const BatchPrintPrinting = () => {
   return (
     <div className="w-full h-screen pb-16 mb-10">
       <div className="mt-8 mx-12">
-        <p className="text-[#004368] text-xl font-semibold mb-3">
-          {selectedLanguage === "zh-CN" ? "仓库列表" : "Warehouse List"}
-        </p>
-
-        <div className="grid grid-cols-10 max-h-[549px]">
+        <div className="grid grid-cols-11 max-h-[549px]">
           {/* Left - Warehouses */}
-          <div className="col-span-2 bg-[#004368] bg-opacity-[0.05] rounded-md">
-            <div className="px-6 pt-4">
+          <div className="col-span-4 mr-12">
+            <div className="bg-[#004368] bg-opacity-[0.05] rounded-md px-6 pt-6">
+              <p className="text-lg font-semibold mb-2">{t("WarehouseList")}</p>
               {warehouses.map((warehouse) => (
                 <div
                   key={warehouse.id}
@@ -247,8 +246,8 @@ const BatchPrintPrinting = () => {
                     className="bg-[#004368] text-white px-4 py-2 rounded hover:bg-[#0d2735]"
                   >
                     <div className=" flex">
-                      <HiOutlinePrinter className=" text-xl mr-2" /> Print All
-                      Pages
+                      <HiOutlinePrinter className=" text-xl mr-2" />
+                      {t("PrintAllPages")}
                     </div>
                   </button>
                 </div>
@@ -257,12 +256,10 @@ const BatchPrintPrinting = () => {
           </div>
 
           {/* Right - Shipment Providers */}
-          <div className="col-span-4 ml-12">
+          <div className="col-span-3 ml-12">
             <div className="bg-[#004368] bg-opacity-[0.05] rounded-md px-6 pt-6">
               <p className="text-lg font-semibold mb-2">
-                {selectedLanguage === "zh-CN"
-                  ? "运输服务商列表"
-                  : "Shipment Provider List"}
+                {t("ShipmentProviderList")}
               </p>
               {shipmentProviders.map((provider) => (
                 <div
