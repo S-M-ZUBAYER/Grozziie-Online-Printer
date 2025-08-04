@@ -32,7 +32,7 @@ const VerifyEmailPage = () => {
     try {
       const response = await fetch(
         // `https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/verify?code=${verifyCode}`,
-        `https://grozziieget.zjweiting.com:3091/tiktokshop-print/user/verify?code=${verifyCode}`,
+        `https://grozziie.zjweiting.com:3091/tiktokshop-print/user/verify?code=${verifyCode}`,
         {
           method: "GET",
           headers: {

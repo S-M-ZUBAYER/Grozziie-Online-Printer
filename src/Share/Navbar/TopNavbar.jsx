@@ -22,6 +22,8 @@ const TopNavbar = () => {
   const currentUser = useSelector((state) => state.user.accountUser);
   const routeState = useSelector((state) => state.user.mainRoute);
   const selectedLanguage = i18n.language;
+  const storedUser = localStorage.getItem("printerUser");
+  const userDetails = storedUser ? JSON.parse(storedUser) : null;
 
   const [activeLi, setActiveLi] = useState(null);
 
@@ -139,7 +141,10 @@ const TopNavbar = () => {
                   className="btn-circle avatar flex items-center"
                 >
                   <div className="w-8 h-8 rounded-[32px] flex items-center justify-center">
-                    <img alt="Profile" src={Avatar} />
+                    <img
+                      alt="Profile"
+                      src={userDetails ? userDetails?.image : Avatar}
+                    />
                   </div>
                 </div>
 

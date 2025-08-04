@@ -102,7 +102,8 @@ const Home = () => {
     const fetchPrintedIds = async () => {
       try {
         const res = await fetch(
-          "https://grozziieget.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds"
+          // "https://grozziieget.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds"
+          "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds"
         );
         const data = await res.json();
 
