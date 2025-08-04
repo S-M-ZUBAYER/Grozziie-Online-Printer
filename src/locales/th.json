@@ -134,7 +134,7 @@
   "DELIVERED": "จัดส่งแล้ว",
   "CANCELLED": "ยกเลิก",
   "NoItemsSelected": "ไม่มีรายการที่เลือก",
-  "AreYouSureYouHaveCompletedPackagingThisOrder": "คุณต้องการยืนยันการพิมพ์คำสั่งซื้อนี้หรือไม่",
+  "AreYouSureYouHaveCompletedPackagingThisOrder": "คุณแน่ใจหรือไม่ว่าคุณได้แพ็คออร์เดอร์นี้เสร็จเรียบร้อยแล้ว?",
   "AreYouSureToAcceptThisOrder": "คุณต้องการยืนยันการรับคำสั่งซื้อนี้หรือไม่",
   "TikTokOrderDetails": "รายละเอียดคำสั่งซื้อจาก TikTok",
   "OrderSource": "จาก",
@@ -246,5 +246,11 @@
   "EnterEmail": "กรอกอีเมลของคุณ",
   "SelectCountry": "เลือกประเทศ",
   "YourMessage": "ข้อความของคุณ",
-  "Submit": "ส่ง"
+  "Submit": "ส่ง",
+  "CompletePayment": "ชำระเงินให้เสร็จสิ้น",
+  "CompletePaymentMessage": "คุณต้องชำระเงินให้เสร็จสิ้นเพื่อเข้าถึงหน้านี้",
+  "GoToPayment": "ไปที่หน้าชำระเงิน",
+  "WarehouseList": "รายการคลังสินค้า",
+  "PrintAllPages": "พิมพ์ทุกหน้า",
+  "ShipmentProviderList": "รายการผู้ให้บริการจัดส่ง"
 }

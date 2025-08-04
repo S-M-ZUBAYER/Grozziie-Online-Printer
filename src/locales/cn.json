@@ -246,5 +246,11 @@
   "EnterEmail": "输入您的邮箱",
   "SelectCountry": "选择国家",
   "YourMessage": "您的留言",
-  "Submit": "提交"
+  "Submit": "提交",
+  "CompletePayment": "完成付款",
+  "CompletePaymentMessage": "您需要完成付款才能访问此页面。",
+  "GoToPayment": "前往付款",
+  "WarehouseList": "仓库列表",
+  "PrintAllPages": "打印所有页面",
+  "ShipmentProviderList": "运输服务提供商列表"
 }

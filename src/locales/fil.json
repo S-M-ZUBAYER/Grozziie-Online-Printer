@@ -247,5 +247,11 @@
   "EnterEmail": "Ilagay ang iyong email",
   "SelectCountry": "Pumili ng Bansa",
   "YourMessage": "Iyong mensahe",
-  "Submit": "Isumite"
+  "Submit": "Isumite",
+  "CompletePayment": "Kumpletuhin ang Bayad",
+  "CompletePaymentMessage": "Kailangan mong kumpletuhin ang iyong bayad upang ma-access ang pahinang ito.",
+  "GoToPayment": "Pumunta sa Bayad",
+  "WarehouseList": "Listahan ng Imbakan",
+  "PrintAllPages": "I-print ang Lahat ng Pahina",
+  "ShipmentProviderList": "Listahan ng Nagbibigay ng Pagpapadala"
 }

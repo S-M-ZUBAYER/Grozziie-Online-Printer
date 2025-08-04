@@ -246,5 +246,11 @@
   "EnterEmail": "Masukkan emel anda",
   "SelectCountry": "Pilih Negara",
   "YourMessage": "Mesej anda",
-  "Submit": "Hantar"
+  "Submit": "Hantar",
+  "CompletePayment": "Lengkapkan Pembayaran",
+  "CompletePaymentMessage": "Anda perlu melengkapkan pembayaran anda untuk mengakses halaman ini.",
+  "GoToPayment": "Pergi ke Pembayaran",
+  "WarehouseList": "Senarai Gudang",
+  "PrintAllPages": "Cetak Semua Muka Surat",
+  "ShipmentProviderList": "Senarai Penyedia Penghantaran"
 }

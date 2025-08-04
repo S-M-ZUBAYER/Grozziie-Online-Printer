@@ -245,5 +245,11 @@
   "EnterEmail": "Nhập email của bạn",
   "SelectCountry": "Chọn quốc gia",
   "YourMessage": "Tin nhắn của bạn",
-  "Submit": "Gửi"
+  "Submit": "Gửi",
+  "CompletePayment": "Hoàn tất thanh toán",
+  "CompletePaymentMessage": "Bạn cần hoàn tất thanh toán để truy cập trang này.",
+  "GoToPayment": "Đi đến Thanh toán",
+  "WarehouseList": "Danh sách kho",
+  "PrintAllPages": "In tất cả các trang",
+  "ShipmentProviderList": "Danh sách nhà cung cấp vận chuyển"
 }

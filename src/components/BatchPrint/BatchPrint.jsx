@@ -388,9 +388,10 @@ const BatchPrint = () => {
       );
       setModalMessage(
         <p className="text-xl font-semibold">
-          {selectedLanguage === "zh-CN"
+          {/* {selectedLanguage === "zh-CN"
             ? "您确定已经完成此订单的包装了吗？"
-            : "Are you sure you have completed packaging this order?"}
+            : "Are you sure you have completed packaging this order?"} */}
+          {t("AreYouSureYouHaveCompletedPackagingThisOrder")}
         </p>
       );
       setConfirmAction(() => handleConfirmPackage);
