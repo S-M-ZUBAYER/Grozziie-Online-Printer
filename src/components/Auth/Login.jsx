@@ -70,16 +70,6 @@ const Login = () => {
         dispatch(accountUserChange(formData.email));
         dispatch(paymentUserChange(res));
         navigate("/");
-        // const response = await axios.get(
-        //   "https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/details",
-        //   { params: { token: res.token } }
-        // );
-
-        // const userData = response.data;
-
-        // // Dispatch user email change (assuming userEmail is in userData)
-        // dispatch(paymentUserChange(userData));
-        // navigate("/");
       } else if (response.status === 400) {
         res.message === "User Email Not Found" &&
           setEmailError("Incorrect email. Please try again");
