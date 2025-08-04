@@ -4,11 +4,13 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import ClipLoader from "react-spinners/ClipLoader";
+import { useTranslation } from "react-i18next";
 
 const ForgotPassword = () => {
   const selectedLanguage = useSelector(
     (state) => state.user.selectedLanguageRedux
   );
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     code: "",
     newPassword: "",
@@ -87,29 +89,17 @@ const ForgotPassword = () => {
     <div className="bg-[#004368] bg-opacity-5 min-h-screen py-40">
       <div className=" bg-white flex flex-col items-center w-[950px] mx-auto py-16 rounded-2xl shadow-md">
         <h1 className="text-[#004368] text-3xl font-semibold mb-7">
-          {selectedLanguage === "zh-CN" ? "更改密码" : "Change Password"}
+          {t("change_password")}
         </h1>
         <p className="text-center text-black text-sm font-normal leading-normal mb-5">
-          {selectedLanguage === "zh-CN" ? (
-            <p>
-              输入我们发送到您的电子邮件地址的代码以验证您的账户。请检查您的收件箱或
-              <br />
-              垃圾邮件中的验证码。
-            </p>
-          ) : (
-            <p>
-              Enter the code we sent to your email address to verify your
-              account. Please check your inbox or <br /> spam message for the
-              verification code
-            </p>
-          )}
+          {t("verify_email_instruction")}
         </p>
         <form className="w-full px-20" onSubmit={handleSubmit}>
           {/* code */}
           <div className="mb-[10px]">
             <label className="form-control w-full">
               <span className="text-[#004368] text-base font-semibold">
-                {selectedLanguage === "zh-CN" ? "验证码" : "Verification Code"}
+                {t("verification_code")}
               </span>
               <input
                 type="text"
@@ -117,11 +107,7 @@ const ForgotPassword = () => {
                 required
                 value={formData.code}
                 onChange={handleChange}
-                placeholder={
-                  selectedLanguage === "zh-CN"
-                    ? "输入您的验证码"
-                    : "enter your verification code"
-                }
+                placeholder={t("enter_verification_code")}
                 className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg"
               />
             </label>
@@ -132,7 +118,7 @@ const ForgotPassword = () => {
           <div className="my-[10px]">
             <label className="form-control w-full">
               <span className="text-[#004368] text-base font-semibold">
-                {selectedLanguage === "zh-CN" ? "新密码" : "New Password"}
+                {t("new_password")}
               </span>
               <div className="relative">
                 <input
@@ -141,11 +127,7 @@ const ForgotPassword = () => {
                   required
                   value={formData.newPassword}
                   onChange={handleChange}
-                  placeholder={
-                    selectedLanguage === "zh-CN"
-                      ? "请输入您的新密码"
-                      : "enter your new password"
-                  }
+                  placeholder={t("enter_new_password")}
                   className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg"
                 />
                 <button
@@ -166,7 +148,7 @@ const ForgotPassword = () => {
           <div className="my-[10px]">
             <label className="form-control w-full">
               <span className="text-[#004368] text-base font-semibold">
-                {selectedLanguage === "zh-CN" ? "确认密码" : "Confirm Password"}
+                {t("confirm_password")}
               </span>
               <div className="relative">
                 <input
@@ -175,11 +157,7 @@ const ForgotPassword = () => {
                   required
                   value={formData.confirmPass}
                   onChange={handleChange}
-                  placeholder={
-                    selectedLanguage === "zh-CN"
-                      ? "再次输入您的密码"
-                      : "enter your password again"
-                  }
+                  placeholder={t("enter_password_again")}
                   className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg"
                 />
                 <button
@@ -193,9 +171,7 @@ const ForgotPassword = () => {
             </label>
             {passwordMatchError && (
               <p className="text-red-500 text-xs mt-1">
-                {selectedLanguage === "zh-CN"
-                  ? "密码不匹配"
-                  : "Passwords do not match"}
+                {t("passwords_do_not_match")}
               </p>
             )}
           </div>
@@ -205,7 +181,7 @@ const ForgotPassword = () => {
               className="bg-[#004368] hover:bg-opacity-60 text-white hover:text-black w-[150px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mr-3 mt-6"
               type="submit"
             >
-              {loading ? <ClipLoader color="#c3c1c8" size={28} /> : "Save"}
+              {loading ? <ClipLoader color="#c3c1c8" size={28} /> : t("Save")}
             </button>
           </div>
         </form>
