@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import ClipLoader from "react-spinners/ClipLoader";
 
 const ForgotPassword = () => {
   const selectedLanguage = useSelector(
@@ -18,6 +19,7 @@ const ForgotPassword = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [CodeError, setCodeError] = useState(false);
   const [passwordError, setPasswordError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
@@ -30,13 +32,14 @@ const ForgotPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     if (formData.newPassword !== formData.confirmPass) {
       setPasswordMatchError(true);
       return;
     }
     try {
       const response = await fetch(
-        "https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/resetbycode",
+        "https://grozziie.zjweiting.com:3091/tiktokshop-print/user/resetbycode",
         {
           method: "POST",
           headers: {
@@ -50,11 +53,13 @@ const ForgotPassword = () => {
       // console.log(res);
 
       if (response.status === 200) {
+        setLoading(false);
         navigate("/login");
       } else {
         res.message === "Error: Can not process your request!"
           ? setCodeError("Code error")
           : setPasswordError(res.message);
+        setLoading(false);
       }
       // Reset formData after submission
       setFormData({
@@ -66,6 +71,7 @@ const ForgotPassword = () => {
       setPasswordMatchError(false);
     } catch (error) {
       console.error("Error occurred:", error);
+      setLoading(false);
     }
   };
 
@@ -196,10 +202,10 @@ const ForgotPassword = () => {
 
           <div className="flex items-center justify-center mb-6">
             <button
-              className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[150px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mr-3 mt-6"
+              className="bg-[#004368] hover:bg-opacity-60 text-white hover:text-black w-[150px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mr-3 mt-6"
               type="submit"
             >
-              {selectedLanguage === "zh-CN" ? "保存" : "Save"}
+              {loading ? <ClipLoader color="#c3c1c8" size={28} /> : "Save"}
             </button>
           </div>
         </form>

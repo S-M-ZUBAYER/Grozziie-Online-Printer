@@ -84,7 +84,7 @@
   "DELIVERED": "จัดส่งแล้ว",
   "CANCELLED": "ยกเลิก",
   "NoItemsSelected": "ไม่มีรายการที่เลือก",
-  "AreYouSureYouHaveCompletedPackagingThisOrder": "คุณต้องการยืนยันการพิมพ์คำสั่งซื้อนี้หรือไม่",
+  "AreYouSureYouHaveCompletedPackagingThisOrder": "คุณแน่ใจหรือไม่ว่าคุณได้แพ็คออร์เดอร์นี้เสร็จเรียบร้อยแล้ว?",
   "AreYouSureToAcceptThisOrder": "คุณต้องการยืนยันการรับคำสั่งซื้อนี้หรือไม่",
   "TikTokOrderDetails": "รายละเอียดคำสั่งซื้อจาก TikTok",
   "OrderSource": "จาก",
