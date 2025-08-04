@@ -13,6 +13,7 @@ const LazadaBatchPrintTable = ({
   handleCheckboxChange,
   tikTokOrderStatusCheck,
   cipher,
+  detailsLoading,
 }) => {
   const { t } = useTranslation();
 
@@ -51,6 +52,7 @@ const LazadaBatchPrintTable = ({
       setLoading(false);
     }
   };
+  console.log(filteredData, "data");
 
   return (
     <div className="mt-6">
@@ -65,7 +67,7 @@ const LazadaBatchPrintTable = ({
         <p className="text-center text-3xl text-red-500 font-medium py-20">
           {t("DataNotFound")}
         </p>
-      ) : filteredData?.length === 0 ? (
+      ) : filteredData?.length === 0 || !filteredData?.length ? (
         <p className="text-center text-3xl text-red-500 font-medium py-20">
           {t("NoAvailableOrder")}
         </p>
@@ -169,23 +171,17 @@ const LazadaBatchPrintTable = ({
 
                   {/* Product Details */}
                   <td className="flex items-center justify-between cursor-pointer">
-                    <div className="flex items-center">
-                      <img
-                        src={"https://via.placeholder.com/40"} // Replace with actual product image if available
-                        alt="Product"
-                        className="w-9 h-8"
-                      />
-                      <span className="text-black opacity-80 text-xs font-normal capitalize ml-[6px] mr-6">
-                        {order.items_count
-                          ? `Items: ${order.items_count}`
-                          : t("NoData")}
-                      </span>
-                    </div>
+                    <span className="text-black opacity-80 text-xs font-normal capitalize ml-[6px] mr-6">
+                      {order.items_count
+                        ? `Items: ${order.items_count}`
+                        : t("NoData")}
+                    </span>
+
                     <p
                       className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
                       onClick={() => handleDetailsClick(order)}
                     >
-                      {t("Details")}
+                      {detailsLoading ? "Loading..." : t("Details")}
                     </p>
                   </td>
 

@@ -5,10 +5,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { checkedItemsChange } from "../../features/slice/userSlice";
 import * as XLSX from "xlsx";
-import {
-  useLazyGetLazadaOrdersQuery,
-  useLoadOrderListMutation,
-} from "../../features/allApis/batchPrintApi";
+// import {
+//   useLazyGetLazadaOrdersQuery,
+//   useLoadOrderListMutation,
+// } from "../../features/allApis/batchPrintApi";
 import NewSearchComponent from "../../Share/SearchComponent/NewSearchComponent";
 import { filterDataBySearchFieldsBatchPrint } from "../../Share/SearchComponent/SearchComponentFunction";
 import toast from "react-hot-toast";
@@ -20,21 +20,22 @@ import { useTranslation } from "react-i18next";
 import LazadaBatchPrintTable from "./LazadaBatchPrintTable";
 import StoredDeliveryCompanyList from "../../Share/StoredDeliveryCompanyList/StoredDeliveryCompanyList";
 import BatchPrinterModal from "../BatchPrint/BatchPrinterModal";
+import { useLazyGetLazadaOrdersQuery } from "../../features/allApis/lazadaApi";
 
 const LazadaBatchPrint = () => {
   const [selectAll, setSelectAll] = useState(false);
+  const [detailsLoading, setDetailsLoading] = useState(false);
+  const [lazadaLoading, setLazadaLoading] = useState(false);
   const [checkedItems, setCheckedItems] = useState([]);
   const orderListDataGet = useSelector((state) => state.orderList.data);
   const [totalOrderData, setTotalOrderData] = useState(orderListDataGet);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
-  const selectedTitTokOrderStatus = useSelector(
-    (state) => state.user.tikTokSelectStatus
+  const selectedLazadaOrderStatus = useSelector(
+    (state) => state.user.lazadaSelectStatus
   );
-  const [tikTokOrderStatusCheck, setTikTokOrderStatusCheck] = useState(
-    selectedTitTokOrderStatus
-      ? selectedTitTokOrderStatus
-      : "AWAITING_COLLECTION"
+  const [lazadaOrderStatusCheck, setLazadaOrderStatusCheck] = useState(
+    selectedLazadaOrderStatus ? selectedLazadaOrderStatus : "pending"
   );
 
   const [searchFields, setSearchFields] = useState({
@@ -67,11 +68,15 @@ const LazadaBatchPrint = () => {
   const navigate = useNavigate();
 
   //Data post request send and return data get
-  const [loadOrderList, { isLoading, isError }] = useLoadOrderListMutation();
+  // const [loadOrderList, { isLoading, isError }] = useLazyGetLazadaOrdersQuery();
+  const [getLazadaOrders, { isLoading, isError }] =
+    useLazyGetLazadaOrdersQuery();
 
   const selectedLanguage = useSelector(
     (state) => state.user.selectedLanguageRedux
   );
+
+  console.log(isLoading, "klsjdflkjadslkjfljasljflj");
 
   const handleToReset = () => {
     setFilteredData(customersData?.slice(0, 5));
@@ -112,10 +117,10 @@ const LazadaBatchPrint = () => {
 
   // Function to handle individual checkbox change
   const handleCheckboxChange = (order) => {
-    if (checkedItems.some((item) => item?.id === order?.id)) {
+    if (checkedItems.some((item) => item?.order_id === order?.order_id)) {
       // If the order id is already in the checkedItems, remove it
       const updatedItems = checkedItems.filter(
-        (item) => item?.id !== order?.id
+        (item) => item?.order_id !== order?.order_id
       );
       setCheckedItems(updatedItems);
       setSelectAll(false);
@@ -134,7 +139,7 @@ const LazadaBatchPrint = () => {
   const [currentBar, setCurrentBar] = useState(1);
   const [currentCustomerData, setCurrentCustomerData] = useState([]);
   const calculateTotalPart = () => {
-    return Math.ceil(data.length / 5);
+    return Math.ceil(data?.length / 5);
   };
   const [totalPart, setTotalPart] = useState(calculateTotalPart());
   const [customersData, setCustomersData] = useState([]);
@@ -142,7 +147,7 @@ const LazadaBatchPrint = () => {
   const [leftPaginationBtn, setLeftPaginationBtn] = useState(false);
   const [rightPaginationBtn, setRightPaginationBtn] = useState(true);
 
-  const [getLazadaOrders] = useLazyGetLazadaOrdersQuery();
+  // const [getLazadaOrders] = useLazyGetLazadaOrdersQuery();
 
   useEffect(() => {
     const fetchLazadaOrders = async () => {
@@ -151,6 +156,13 @@ const LazadaBatchPrint = () => {
         const fiveDaysAgo = new Date(now.getTime() - 100 * 24 * 60 * 60 * 1000);
 
         const toISOString = (date) => date.toISOString().split(".")[0] + "Z";
+        dispatch(
+          checkedItemsChange({ items: [], from: lazadaOrderStatusCheck })
+        );
+        setCheckedItems([]);
+        setSelectAll(false);
+
+        setLazadaLoading(true); // ✅ set before trigger
 
         const response = await getLazadaOrders({
           sortBy: "updated_at",
@@ -158,34 +170,34 @@ const LazadaBatchPrint = () => {
           createdBefore: toISOString(now),
           updateAfter: toISOString(fiveDaysAgo),
           updateBefore: toISOString(now),
-          status: "Pending", // Try omitting this first
+          status: lazadaOrderStatusCheck,
           sortDirection: "DESC",
           offset: 0,
           limit: 100,
         }).unwrap();
 
-        // ✅ Just console the raw response
         const parsedBody = JSON.parse(response?.body || "{}");
-        console.log("📦 Lazada Raw Orders:", parsedBody?.data?.orders);
         setTotalOrderData(parsedBody?.data?.orders);
       } catch (error) {
         console.error("❌ Lazada Order Fetch Error:", error);
+      } finally {
+        setLazadaLoading(false); // ✅ reset on finish
       }
     };
 
-    if (tikTokOrderStatusCheck) {
+    if (lazadaOrderStatusCheck) {
       fetchLazadaOrders();
     }
-  }, [getLazadaOrders, tikTokOrderStatusCheck]);
+  }, [getLazadaOrders, lazadaOrderStatusCheck]);
 
   useEffect(() => {
-    const firstPageData = data.slice(0, 5);
-    setTotalPart(Math.ceil(data.length / 5));
+    const firstPageData = data?.slice(0, 5);
+    setTotalPart(Math.ceil(data?.length / 5));
     setCustomersData(data);
     setFilteredData(firstPageData);
     setCurrentCustomerData(firstPageData);
     setCurrentBar(1);
-  }, [tikTokOrderStatusCheck, totalOrderData, tikTokOrderStatusCheck]);
+  }, [lazadaOrderStatusCheck, totalOrderData, lazadaOrderStatusCheck]);
 
   useEffect(() => {
     if (totalPart <= 1) {
@@ -258,7 +270,7 @@ const LazadaBatchPrint = () => {
         console.warn("No order ID provided.");
         return;
       }
-
+      setDetailsLoading(true);
       const response = await fetch(
         `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}`
       );
@@ -269,16 +281,15 @@ const LazadaBatchPrint = () => {
 
       const result = await response.json();
       const parsedBody = JSON.parse(result.body);
+      console.log("parseBody", parsedBody);
+
       const itemDetails = parsedBody.data?.[0]; // Assuming you want the first item
 
-      const enrichedData = {
-        itemDetails: itemDetails || {},
-      };
-      console.log(itemDetails, "details");
-
-      setSelectedCustomer(enrichedData);
+      setSelectedCustomer(itemDetails);
       setIsModalOpen(true);
+      setDetailsLoading(false);
     } catch (error) {
+      setDetailsLoading(false);
       console.error("Error fetching order item details:", error.message);
     }
   };
@@ -347,7 +358,7 @@ const LazadaBatchPrint = () => {
       );
       setModalMessage(
         <p className="text-xl font-semibold">
-          {t("AreYouSureToAcceptThisOrder")}
+          {t("AreYouSureToPrintForReadyToShip")}
         </p>
       );
       setConfirmAction(() => handleConfirmShipping);
@@ -385,7 +396,7 @@ const LazadaBatchPrint = () => {
 
   const handleConfirmShipping = async () => {
     dispatch(
-      checkedItemsChange({ items: checkedItems, from: tikTokOrderStatusCheck })
+      checkedItemsChange({ items: checkedItems, from: lazadaOrderStatusCheck })
     );
     navigate("/batchPrintPrinting");
   };
@@ -422,7 +433,7 @@ const LazadaBatchPrint = () => {
           const result = await res.json();
           console.log(`📦 Package created for order ${item?.id}:`, result);
           dispatch(
-            checkedItemsChange({ items: [], from: tikTokOrderStatusCheck })
+            checkedItemsChange({ items: [], from: lazadaOrderStatusCheck })
           );
           setCheckedItems([]);
           setSelectAll(false);
@@ -437,7 +448,7 @@ const LazadaBatchPrint = () => {
       );
       setFilteredData(restOfOrders.slice(0, 5));
       setIsConfirmModalOpen(false); // close the modal
-      dispatch(checkedItemsChange({ items: [], from: tikTokOrderStatusCheck }));
+      dispatch(checkedItemsChange({ items: [], from: lazadaOrderStatusCheck }));
       setCheckedItems([]);
     } catch (error) {
       console.error("🚨 Error creating packages:", error);
@@ -494,7 +505,7 @@ const LazadaBatchPrint = () => {
         return updateData;
       });
 
-      if (tikTokOrderStatusCheck === "Waiting For Shipment") {
+      if (lazadaOrderStatusCheck === "Waiting For Shipment") {
         dispatch(orderListData([...updateJsonData, ...customersData]));
         setCustomersData([...updateJsonData, ...customersData]);
         setTotalPart(Math.ceil((totalOrderData.length + jsonData?.length) / 5));
@@ -502,7 +513,7 @@ const LazadaBatchPrint = () => {
           "Import file Store as Awaiting for Shipment Data Successfully"
         );
       }
-      if (tikTokOrderStatusCheck === "shipped") {
+      if (lazadaOrderStatusCheck === "shipped") {
         // console.log(updateJsonData, "jsonData");
         if (response.error) {
           console.error("Error storing data:", response.error);
@@ -543,8 +554,8 @@ const LazadaBatchPrint = () => {
           startDate={startDate}
           endDate={endDate}
           setEndDate={setEndDate}
-          setTikTokOrderStatusCheck={setTikTokOrderStatusCheck}
-          tikTokOrderStatusCheck={tikTokOrderStatusCheck}
+          setLazadaOrderStatusCheck={setLazadaOrderStatusCheck}
+          lazadaOrderStatusCheck={lazadaOrderStatusCheck}
           handleToSearch={handleToSearch}
           handleToReset={handleToReset}
           searchFields={searchFields}
@@ -561,6 +572,7 @@ const LazadaBatchPrint = () => {
           setIsActiveBtnProduct={setIsActiveBtnProduct}
           isActiveBtnAmount={isActiveBtnAmount}
           setIsActiveBtnAmount={setIsActiveBtnAmount}
+          currentShop="Lazada"
         />
 
         {/* middle section */}
@@ -609,7 +621,7 @@ const LazadaBatchPrint = () => {
                 {/* {selectedLanguage === "zh-CN"
                   ? "等待发货"
                   : "waiting for shipment"} */}
-                {t(tikTokOrderStatusCheck)}
+                {t(lazadaOrderStatusCheck)}
               </p>
             </div>
 
@@ -727,21 +739,22 @@ const LazadaBatchPrint = () => {
           </div>
 
           {/* table */}
-          {loadOrderList && (
+          {getLazadaOrders && (
             <LazadaBatchPrintTable
               filteredData={filteredData}
               isError={isError}
-              isLoading={isLoading}
+              isLoading={lazadaLoading}
               selectedCustomer={selectedCustomer}
               handleDetailsClick={handleDetailsClick}
               isModalOpen={isModalOpen}
               closeModal={closeModal}
               checkedItems={checkedItems}
               handleCheckboxChange={handleCheckboxChange}
-              tikTokOrderStatusCheck={tikTokOrderStatusCheck}
+              lazadaOrderStatusCheck={lazadaOrderStatusCheck}
               startDate={startDate}
               endDate={endDate}
               cipher={cipher}
+              detailsLoading={detailsLoading}
             />
           )}
         </div>
@@ -750,8 +763,8 @@ const LazadaBatchPrint = () => {
       {/* end section button */}
       <div className="mt-4 mr-8">
         <div className="flex items-center justify-end">
-          {(tikTokOrderStatusCheck === "AWAITING_COLLECTION" ||
-            tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") && (
+          {lazadaOrderStatusCheck === "Packed" && (
+            // ||lazadaOrderStatusCheck === "AWAITING_COLLECTION_PRINTED"
             <button
               onClick={handleToCheckItemsShippingUpdate}
               className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto  h-10 px-4 gap-2 py-2 rounded-md cursor-pointer flex items-center justify-center"
@@ -762,7 +775,7 @@ const LazadaBatchPrint = () => {
               </p>
             </button>
           )}
-          {tikTokOrderStatusCheck === "AWAITING_SHIPMENT" && (
+          {lazadaOrderStatusCheck === "AWAITING_SHIPMENT" && (
             <button
               onClick={handleToCheckItemsPackageUpdate}
               className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto  h-10 px-4 gap-2 py-2 rounded-md cursor-pointer flex items-center justify-center"
@@ -789,7 +802,7 @@ const LazadaBatchPrint = () => {
               className="modal backdrop-blur-sm bg-black/10 fixed inset-0 z-50 flex items-center justify-center"
               open={isModalOpen}
             >
-              <div className="modal-box w-[800px] max-w-full bg-white shadow-xl rounded-2xl p-8 overflow-y-auto max-h-[90vh]">
+              <div className="modal-box w-[900px] max-w-full bg-white shadow-xl rounded-2xl p-8 overflow-y-auto max-h-[90vh]">
                 {/* Header */}
                 <div className="flex items-center justify-center mb-6">
                   <h2 className="text-3xl font-semibold text-[#004368]">
@@ -804,12 +817,20 @@ const LazadaBatchPrint = () => {
                     {selectedCustomer?.name || t("NoData")}
                   </div>
                   <div>
+                    <strong>{t("BuyerID")}:</strong>{" "}
+                    {selectedCustomer?.buyer_id || t("NoData")}
+                  </div>
+                  <div>
                     <strong>{t("OrderID")}:</strong>{" "}
-                    {selectedCustomer?.order_id}
+                    {selectedCustomer?.order_id || t("NoData")}
+                  </div>
+                  <div>
+                    <strong>{t("OrderItemID")}:</strong>{" "}
+                    {selectedCustomer?.order_item_id || t("NoData")}
                   </div>
                   <div>
                     <strong>{t("InvoiceNumber")}:</strong>{" "}
-                    {selectedCustomer?.invoice_number}
+                    {selectedCustomer?.invoice_number || t("NoData")}
                   </div>
                   <div>
                     <strong>{t("Status")}:</strong>{" "}
@@ -819,19 +840,19 @@ const LazadaBatchPrint = () => {
                   </div>
                   <div>
                     <strong>{t("ItemPrice")}:</strong>{" "}
-                    {selectedCustomer?.item_price || "0.00"}
+                    {selectedCustomer?.item_price ?? "0.00"}
                   </div>
                   <div>
                     <strong>{t("PaidPrice")}:</strong>{" "}
-                    {selectedCustomer?.paid_price || "0.00"}
+                    {selectedCustomer?.paid_price ?? "0.00"}
                   </div>
                   <div>
                     <strong>{t("ShippingFee")}:</strong>{" "}
-                    {selectedCustomer?.shipping_amount}
+                    {selectedCustomer?.shipping_amount ?? "0.00"}
                   </div>
                   <div>
                     <strong>{t("Warehouse")}:</strong>{" "}
-                    {selectedCustomer?.warehouse_code}
+                    {selectedCustomer?.warehouse_code || t("NoData")}
                   </div>
                   <div>
                     <strong>{t("CreatedAt")}:</strong>{" "}
@@ -840,6 +861,70 @@ const LazadaBatchPrint = () => {
                   <div>
                     <strong>{t("UpdatedAt")}:</strong>{" "}
                     {new Date(selectedCustomer?.updated_at).toLocaleString()}
+                  </div>
+                  <div>
+                    <strong>{t("ShippingType")}:</strong>{" "}
+                    {selectedCustomer?.shipping_type || t("NoData")}
+                  </div>
+                  <div>
+                    <strong>{t("ShippingProviderType")}:</strong>{" "}
+                    {selectedCustomer?.shipping_provider_type || t("NoData")}
+                  </div>
+                  <div>
+                    <strong>{t("DeliveryOption")}:</strong>{" "}
+                    {selectedCustomer?.delivery_option_sof ? "SOF" : "Standard"}
+                  </div>
+                  <div>
+                    <strong>{t("IsDigital")}:</strong>{" "}
+                    {selectedCustomer?.is_digital ? t("Yes") : t("No")}
+                  </div>
+                  <div>
+                    <strong>{t("DigitalDeliveryEmail")}:</strong>{" "}
+                    {selectedCustomer?.digital_delivery_info || t("NoData")}
+                  </div>
+                  <div>
+                    <strong>{t("Reason")}:</strong>{" "}
+                    {selectedCustomer?.reason || t("NoData")}
+                  </div>
+                  <div>
+                    <strong>{t("OrderType")}:</strong>{" "}
+                    {selectedCustomer?.order_type || t("NoData")}
+                  </div>
+                  <div>
+                    <strong>{t("ShopSKU")}:</strong>{" "}
+                    {selectedCustomer?.shop_sku || t("NoData")}
+                  </div>
+                  <div>
+                    <strong>{t("SKU")}:</strong>{" "}
+                    {selectedCustomer?.sku || t("NoData")}
+                  </div>
+                  <div>
+                    <strong>{t("Variation")}:</strong>{" "}
+                    {selectedCustomer?.variation || t("NoData")}
+                  </div>
+                  <div>
+                    <strong>{t("VoucherAmount")}:</strong>{" "}
+                    {selectedCustomer?.voucher_amount ?? 0}
+                  </div>
+                  <div>
+                    <strong>{t("VoucherSeller")}:</strong>{" "}
+                    {selectedCustomer?.voucher_seller ?? 0}
+                  </div>
+                  <div>
+                    <strong>{t("VoucherPlatform")}:</strong>{" "}
+                    {selectedCustomer?.voucher_platform ?? 0}
+                  </div>
+                  <div>
+                    <strong>{t("WalletCredits")}:</strong>{" "}
+                    {selectedCustomer?.wallet_credits ?? 0}
+                  </div>
+                  <div>
+                    <strong>{t("SupplyPrice")}:</strong>{" "}
+                    {selectedCustomer?.supply_price ?? 0}
+                  </div>
+                  <div>
+                    <strong>{t("TaxAmount")}:</strong>{" "}
+                    {selectedCustomer?.tax_amount ?? 0}
                   </div>
                 </div>
 
@@ -853,10 +938,17 @@ const LazadaBatchPrint = () => {
                     alt="SKU"
                     className="w-28 h-28 object-cover rounded-lg border"
                   />
-                  <div>
+                  <div className="flex-1">
                     <p>
-                      <strong>{t("VoucherAmount")}:</strong>{" "}
-                      {selectedCustomer?.voucher_amount}
+                      <strong>{t("ProductDetailURL")}:</strong>{" "}
+                      <a
+                        href={selectedCustomer?.product_detail_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline"
+                      >
+                        {t("ViewProduct")}
+                      </a>
                     </p>
                     <p>
                       <strong>{t("ShippingFeeOriginal")}:</strong>{" "}
@@ -871,12 +963,6 @@ const LazadaBatchPrint = () => {
                       {selectedCustomer?.shipping_fee_discount_seller}
                     </p>
                   </div>
-                </div>
-
-                {/* Optional Address */}
-                <div className="mt-6">
-                  <strong>{t("ShippingType")}:</strong>{" "}
-                  {selectedCustomer?.shipping_type || t("NoData")}
                 </div>
 
                 {/* Footer */}
