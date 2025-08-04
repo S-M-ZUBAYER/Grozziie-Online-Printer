@@ -2,8 +2,10 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import logoEmail from "../../assets/email.png";
 import { useSelector } from "react-redux";
+import { useTranslation } from "react-i18next";
 
 const VerifyEmailPage = () => {
+  const { t } = useTranslation();
   const selectedLanguage = useSelector(
     (state) => state.user.selectedLanguageRedux
   );
@@ -32,7 +34,7 @@ const VerifyEmailPage = () => {
     try {
       const response = await fetch(
         // `https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/verify?code=${verifyCode}`,
-        `http://192.168.1.16:8888/user/verify?code=${verifyCode}`,
+        `https://grozziie.zjweiting.com:3091/tiktokshop-print/user/verify?code=${verifyCode}`,
         {
           method: "GET",
           headers: {
@@ -44,7 +46,7 @@ const VerifyEmailPage = () => {
       if (response.status === 200) {
         navigate("/login");
       } else if (response.status === 404) {
-        setVerifyCodeError("Your verify code is wrong");
+        setVerifyCodeError(t("wrong_verification_code"));
       } else {
         console.error("Something went wrong. Please try again!");
       }
@@ -61,24 +63,10 @@ const VerifyEmailPage = () => {
             <img src={logoEmail} alt="Email" className="size-[120px]" />
           </div>
           <h4 className="text-[#004368] text-4xl font-semibold leading-normal">
-            {selectedLanguage === "zh-CN"
-              ? "请验证您的帐户"
-              : "Please verify your account"}
+            {t("verify_email")}
           </h4>
           <p className="text-center text-black text-sm font-normal leading-normal">
-            {selectedLanguage === "zh-CN" ? (
-              <span>
-                输入我们发送到您的电子邮件地址的代码以验证您的账户。请检查您的收件箱或
-                <br />
-                垃圾邮件中的验证码。
-              </span>
-            ) : (
-              <span>
-                Enter the code we sent to your email address to verify your
-                account. Please check your inbox or <br /> spam message for the
-                verification code
-              </span>
-            )}
+            {t("verify_email_instruction")}
           </p>
           <div>
             <div className="flex space-x-4">
@@ -97,9 +85,7 @@ const VerifyEmailPage = () => {
             </div>
             {verifyCodeError && (
               <p className="text-xs pt-3 text-red-500 font-bold">
-                {selectedLanguage === "zh-CN"
-                  ? "请提供我们发送至您电子邮件的有效代码"
-                  : verifyCodeError}
+                {verifyCodeError}
               </p>
             )}
           </div>
@@ -109,9 +95,7 @@ const VerifyEmailPage = () => {
               type="submit"
               onClick={handleSubmit}
             >
-              {selectedLanguage === "zh-CN"
-                ? "验证并继续"
-                : "Verify & Continue"}
+              {t("verify_continue")}
             </button>
           </div>
         </div>

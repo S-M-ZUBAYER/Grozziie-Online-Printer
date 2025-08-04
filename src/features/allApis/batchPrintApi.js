@@ -42,7 +42,7 @@ const batchPrintApi = baseApi.injectEndpoints({
         });
 
         return {
-          url: `/order/list/filter?${queryParams.toString()}`,
+          url: `/tiktokshop-partner/api/dev/order/list/filter?${queryParams.toString()}`,
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -51,8 +51,6 @@ const batchPrintApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["orders"],
     }),
-
-
 
     getBatchPrint: builder.query({
       query: () => ({
@@ -95,6 +93,8 @@ const batchPrintApi = baseApi.injectEndpoints({
 
 export const {
   useLoadOrderListMutation,
+  useGetLazadaOrdersQuery,
+  useLazyGetLazadaOrdersQuery,
   useGetBatchPrintQuery,
   useGetBatchPrintByIdQuery,
   useUpdateBatchPrintMutation,

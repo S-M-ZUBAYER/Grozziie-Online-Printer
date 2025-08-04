@@ -63,7 +63,7 @@ export const tikTokOrderStatusOptions = [
     value: "DELIVERED",
   },
   {
-    status: "Cancel & return",
+    status: "Cancel",
     value: "CANCELLED",
   },
   // "等待发货",
@@ -73,6 +73,44 @@ export const tikTokOrderStatusOptions = [
   // "all",
 ];
 
+export const lazadaOrderStatusOptions = [
+  {
+    status: "Waiting For Shipment",
+    value: "pening",
+  },
+  {
+    status: "Packed",
+    value: "Packed",
+  },
+  {
+    status: "Printed",
+    value: "AWAITING_COLLECTION_PRINTED",
+  },
+  {
+    status: "Ready To Ship Pending",
+    value: "ready_to_ship_pending",
+  },
+  {
+    status: "Ready To Ship",
+    value: "ready_to_ship",
+  },
+  {
+    status: "Shipped",
+    value: "shipped",
+  },
+  {
+    status: "Delivered",
+    value: "delivered",
+  },
+  {
+    status: "Returned",
+    value: "returned",
+  },
+  {
+    status: "Cancel",
+    value: "Canceled",
+  },
+];
 export const orderList = [
   {
     address:

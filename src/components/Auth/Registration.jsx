@@ -5,6 +5,7 @@ import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useSelector } from "react-redux";
 import { useGetAllAddressQuery } from "../../features/allApis/allAddressApi";
 import ClipLoader from "react-spinners/ClipLoader";
+import { useTranslation } from "react-i18next";
 
 const Registration = () => {
   const selectedLanguage = useSelector(
@@ -17,6 +18,7 @@ const Registration = () => {
   const [emailError, setEmailError] = useState("");
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   // Province, city, district data get
   const [provinces, setProvinces] = useState([]);
@@ -123,7 +125,7 @@ const Registration = () => {
       // Make API call to register user
       const response = await fetch(
         // "https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/signup",
-        "http://192.168.1.16:8888/user/signup",
+        "https://grozziieget.zjweiting.com:3091/tiktokshop-print/user/signup",
         {
           method: "POST",
           headers: {
@@ -141,7 +143,7 @@ const Registration = () => {
         setError(res.message);
       } else if (res.status === 409) {
         // setEmailError(res.message);
-        setEmailError("This email already in use Please try another or login");
+        setEmailError(t("email_already_in_use"));
       } else if (res.status === 201) {
         navigate("/verifyemail");
         // Reset form data
@@ -187,9 +189,7 @@ const Registration = () => {
             <div className="flex flex-col items-center gap-y-7">
               <h1 className="text-[#004368] text-6xl font-bold">Grozziie</h1>
               <p className="text-[#004368] text-xl font-normal">
-                {selectedLanguage === "zh-CN"
-                  ? "注册以探索我们的网站"
-                  : "Register to explore our site"}
+                {t("register_to_explore")}
               </p>
             </div>
             <div className="mt-10">
@@ -199,14 +199,14 @@ const Registration = () => {
         </div>
         <div className="col-span-4 bg-white flex flex-col items-center py-8 rounded-r-2xl">
           <h1 className="text-[#004368] text-3xl font-semibold mb-7">
-            {selectedLanguage === "zh-CN" ? "注册" : "Register"}
+            {t("register")}
           </h1>
           <form onSubmit={handleSubmit} className="w-full px-10">
             {/* full name */}
             <div className="mb-[10px]">
               <label className="form-control w-full">
                 <span className="text-[#004368] text-base font-semibold">
-                  {selectedLanguage === "zh-CN" ? "全名" : "Full Name"}
+                  {t("full_name")}
                 </span>
                 <input
                   type="text"
@@ -214,11 +214,7 @@ const Registration = () => {
                   required
                   value={formData.fullName}
                   onChange={handleChange}
-                  placeholder={
-                    selectedLanguage === "zh-CN"
-                      ? "输入您的全名"
-                      : "Enter your full name"
-                  }
+                  placeholder={t("enter_full_name")}
                   className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg"
                 />
               </label>
@@ -230,9 +226,7 @@ const Registration = () => {
               <div className="">
                 <label className="form-control w-full">
                   <span className="text-[#004368] text-base font-semibold">
-                    {selectedLanguage === "zh-CN"
-                      ? "电子邮件地址"
-                      : "E-Mail Address"}
+                    {t("email_address")}
                   </span>
                   <input
                     type="email"
@@ -240,11 +234,7 @@ const Registration = () => {
                     required
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder={
-                      selectedLanguage === "zh-CN"
-                        ? "输入您的电子邮件"
-                        : "enter your email"
-                    }
+                    placeholder={t("enter_email")}
                     className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg"
                   />
                 </label>
@@ -257,7 +247,7 @@ const Registration = () => {
               <div className="">
                 <label className="form-control w-full">
                   <span className="text-[#004368] text-base font-semibold">
-                    {selectedLanguage === "zh-CN" ? "电话号码" : "Phone Number"}
+                    {t("phone_number")}
                   </span>
                   <input
                     type="text"
@@ -275,7 +265,7 @@ const Registration = () => {
               <div className="">
                 <label className="form-control w-full">
                   <span className="text-[#004368] text-base font-semibold">
-                    {selectedLanguage === "zh-CN" ? "密码" : "Password"}
+                    {t("password")}
                   </span>
                   <div className="relative">
                     <input
@@ -284,11 +274,7 @@ const Registration = () => {
                       required
                       value={formData.password}
                       onChange={handleChange}
-                      placeholder={
-                        selectedLanguage === "zh-CN"
-                          ? "输入密码"
-                          : "enter your password"
-                      }
+                      placeholder={t("enter_password")}
                       className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg"
                     />
                     <button
@@ -314,9 +300,7 @@ const Registration = () => {
               <div className="">
                 <label className="form-control w-full">
                   <span className="text-[#004368] text-base font-semibold">
-                    {selectedLanguage === "zh-CN"
-                      ? "确认密码"
-                      : "Confirm Password"}
+                    {t("confirm_password")}
                   </span>
                   <div className="relative">
                     <input
@@ -325,11 +309,7 @@ const Registration = () => {
                       required
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      placeholder={
-                        selectedLanguage === "zh-CN"
-                          ? "确认密码"
-                          : "confirm your password"
-                      }
+                      placeholder={t("confirm_password")}
                       className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg"
                     />
                     <button
@@ -343,9 +323,7 @@ const Registration = () => {
                 </label>
                 {passwordMatchError && (
                   <p className="text-red-500 text-xs mt-1 font-bold">
-                    {selectedLanguage === "zh-CN"
-                      ? "密码不匹配"
-                      : "Passwords do not match"}
+                    {t("passwords_do_not_match")}
                   </p>
                 )}
               </div>
@@ -355,7 +333,7 @@ const Registration = () => {
             <div className="my-[10px]">
               <label className="form-control w-full">
                 <span className="text-[#004368] text-base font-semibold">
-                  {selectedLanguage === "zh-CN" ? "店铺名称" : "Shop Name"}
+                  {t("shop_name")}
                 </span>
                 <input
                   type="text"
@@ -363,11 +341,7 @@ const Registration = () => {
                   required
                   value={formData.shopName}
                   onChange={handleChange}
-                  placeholder={
-                    selectedLanguage === "zh-CN"
-                      ? "输入您的店铺名称"
-                      : "enter your shop name"
-                  }
+                  placeholder={t("enter_shop_name")}
                   className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg"
                 />
               </label>
@@ -379,16 +353,14 @@ const Registration = () => {
               <div>
                 <label className="form-control w-full">
                   <span className="text-[#004368] text-base font-semibold">
-                    {selectedLanguage === "zh-CN" ? "国家" : "Country"}
+                    {t("Country")}
                   </span>
                   <input
                     type="text"
                     name="region"
                     value={formData.region}
                     onChange={handleChange}
-                    placeholder={
-                      selectedLanguage === "zh-CN" ? "中国" : "China"
-                    }
+                    placeholder={t("Country")}
                     className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg"
                   />
                 </label>
@@ -398,16 +370,14 @@ const Registration = () => {
               <div>
                 <label className="form-control w-full">
                   <span className="text-[#004368] text-base font-semibold">
-                    {selectedLanguage === "zh-CN" ? "省份" : "Province"}
+                    {t("Province")}
                   </span>
                   <input
                     type="text"
                     name="province"
                     value={formData.province}
                     onChange={handleChange}
-                    placeholder={
-                      selectedLanguage === "zh-CN" ? "省份" : "Province Name"
-                    }
+                    placeholder={t("province_name")}
                     className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg"
                   />
                 </label>
@@ -417,16 +387,14 @@ const Registration = () => {
               <div>
                 <label className="form-control w-full">
                   <span className="text-[#004368] text-base font-semibold">
-                    {selectedLanguage === "zh-CN" ? "城市" : "City"}
+                    {t("City")}
                   </span>
                   <input
                     type="text"
                     name="city"
                     value={formData.city}
                     onChange={handleChange}
-                    placeholder={
-                      selectedLanguage === "zh-CN" ? "城市" : "City Name"
-                    }
+                    placeholder={t("city_name")}
                     className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg"
                   />
                 </label>
@@ -436,16 +404,14 @@ const Registration = () => {
               <div>
                 <label className="form-control w-full">
                   <span className="text-[#004368] text-base font-semibold">
-                    {selectedLanguage === "zh-CN" ? "区" : "District"}
+                    {t("District")}
                   </span>
                   <input
                     type="text"
                     name="district"
                     value={formData.district}
                     onChange={handleChange}
-                    placeholder={
-                      selectedLanguage === "zh-CN" ? "区" : "District Name"
-                    }
+                    placeholder={t("district_name")}
                     className="h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg"
                   />
                 </label>
@@ -455,7 +421,7 @@ const Registration = () => {
               <div>
                 <label className="form-control w-full">
                   <span className="text-[#004368] text-base font-semibold">
-                    {selectedLanguage === "zh-CN" ? "地区" : "Area"}
+                    {t("area")}
                   </span>
                   <input
                     type="text"
@@ -477,7 +443,7 @@ const Registration = () => {
               <div>
                 <label className="form-control w-full">
                   <span className="text-[#004368] text-base font-semibold">
-                    {selectedLanguage === "zh-CN" ? "邮政编码" : "Postal Code"}
+                    {t("PostCode")}
                   </span>
                   <input
                     type="text"
@@ -496,7 +462,7 @@ const Registration = () => {
             <div className="mt-4">
               <label className="form-control w-full">
                 <span className="text-[#004368] text-base font-semibold mb-[2px]">
-                  {selectedLanguage === "zh-CN" ? "添加图片" : "Add Image"}
+                  {t("add_image")}
                 </span>
                 <input
                   type="file"
@@ -516,20 +482,16 @@ const Registration = () => {
               >
                 {loading ? (
                   <ClipLoader color="#c3c1c8" size={28} />
-                ) : selectedLanguage === "zh-CN" ? (
-                  "注册"
                 ) : (
-                  "Register"
+                  t("register")
                 )}
               </button>
             </div>
           </form>
           <p className="text-black text-opacity-60">
-            {selectedLanguage === "zh-CN"
-              ? "已经有账号了吗？"
-              : "Already have an account? "}
+            {t("already_have_account")}
             <Link to="/login" className="font-semibold text-[#004368]">
-              {selectedLanguage === "zh-CN" ? "登录" : "Log In"}
+              {t("login")}
             </Link>
           </p>
         </div>

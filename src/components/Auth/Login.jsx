@@ -9,6 +9,7 @@ import {
 } from "../../features/slice/userSlice";
 import ClipLoader from "react-spinners/ClipLoader";
 import axios from "axios";
+import { useTranslation } from "react-i18next";
 
 const Login = () => {
   const selectedLanguage = useSelector(
@@ -27,6 +28,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const { t } = useTranslation();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -49,13 +51,16 @@ const Login = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await fetch("http://192.168.1.16:8888/user/signin", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const response = await fetch(
+        "https://grozziieget.zjweiting.com:3091/tiktokshop-print/user/signin",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const res = await response.json();
       // console.log("response", response);
@@ -67,16 +72,6 @@ const Login = () => {
         dispatch(accountUserChange(formData.email));
         dispatch(paymentUserChange(res));
         navigate("/");
-        // const response = await axios.get(
-        //   "https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/details",
-        //   { params: { token: res.token } }
-        // );
-
-        // const userData = response.data;
-
-        // // Dispatch user email change (assuming userEmail is in userData)
-        // dispatch(paymentUserChange(userData));
-        // navigate("/");
       } else if (response.status === 400) {
         res.message === "User Email Not Found" &&
           setEmailError("Incorrect email. Please try again");
@@ -96,6 +91,9 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Error occurred:", error);
+      setPasswordError(
+        "Your password did not match Or Somethingse else. Please try again"
+      );
     } finally {
       setLoading(false);
     }
@@ -103,9 +101,10 @@ const Login = () => {
 
   const handleModalSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     try {
       const response = await fetch(
-        `https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/forgot?email=${forgotEmail}`,
+        `https://grozziie.zjweiting.com:3091/tiktokshop-print/user/forgot?email=${forgotEmail}`,
         {
           method: "GET",
           headers: {
@@ -118,12 +117,15 @@ const Login = () => {
       // console.log(res);
 
       if (response.status === 200) {
+        setLoading(false);
         navigate("/forgotpassword");
       } else {
         setForgotPasswordError("This email is not valid. Please try another");
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error occurred:", error);
+      setLoading(false);
     }
     // You can perform further actions here, such as sending the email for password reset
     setForgotEmail("");
@@ -143,9 +145,7 @@ const Login = () => {
             <div className="flex flex-col items-center gap-y-7">
               <h1 className="text-[#004368] text-6xl font-bold">Grozziie</h1>
               <p className="text-[#004368] text-xl font-normal">
-                {selectedLanguage === "zh-CN"
-                  ? "注册以探索我们的网站"
-                  : "Register to explore our site"}
+                {t("register_to_explore")}
               </p>
             </div>
             <div>
@@ -155,14 +155,14 @@ const Login = () => {
         </div>
         <div className="col-span-4 bg-white flex flex-col items-center py-20 relative rounded-r-2xl">
           <h1 className="text-[#004368] text-3xl font-semibold mb-7">
-            {selectedLanguage === "zh-CN" ? "登录" : "Log In"}
+            {t("login")}
           </h1>
           <form className="w-full px-20" onSubmit={handleSubmit}>
             {/* Email */}
             <div className="mb-[10px]">
               <label className="form-control w-full">
                 <span className="text-[#004368] text-base font-semibold">
-                  {selectedLanguage === "zh-CN" ? "电子邮件" : "Email"}
+                  {t("email")}
                 </span>
                 <input
                   type="email"
@@ -170,11 +170,7 @@ const Login = () => {
                   required
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder={
-                    selectedLanguage === "zh-CN"
-                      ? "输入您的电子邮件"
-                      : "enter your email"
-                  }
+                  placeholder={t("enter_email")}
                   className={`h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg ${
                     emailError || forbiddenError ? "border-red-500" : ""
                   }`}
@@ -192,7 +188,7 @@ const Login = () => {
             <div className="my-[10px]">
               <label className="form-control w-full">
                 <span className="text-[#004368] text-base font-semibold">
-                  {selectedLanguage === "zh-CN" ? "密码" : "Password"}
+                  {t("password")}
                 </span>
                 <div className="relative">
                   <input
@@ -201,11 +197,7 @@ const Login = () => {
                     required
                     value={formData.password}
                     onChange={handleChange}
-                    placeholder={
-                      selectedLanguage === "zh-CN"
-                        ? "输入密码"
-                        : "enter password"
-                    }
+                    placeholder={t("enter_password")}
                     className={`h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg ${
                       passwordError ? "border-red-500" : ""
                     }`}
@@ -232,10 +224,8 @@ const Login = () => {
               >
                 {loading ? (
                   <ClipLoader color="#c3c1c8" size={28} />
-                ) : selectedLanguage === "zh-CN" ? (
-                  "登录"
                 ) : (
-                  "Log In"
+                  t("login")
                 )}
               </button>
             </div>
@@ -249,14 +239,12 @@ const Login = () => {
                 document.getElementById("my_modal_settings").showModal()
               }
             >
-              {selectedLanguage === "zh-CN" ? "忘记密码？" : "Forgot Password?"}
+              {t("forgot_password")}
             </button>
             <dialog id="my_modal_settings" className="modal">
               <div className="bg-white w-[500px] h-[240px] rounded-md pt-10">
                 <h1 className="text-center text-2xl font-bold text-[#004368]">
-                  {selectedLanguage === "zh-CN"
-                    ? "输入您的电子邮件"
-                    : "Enter your Email"}
+                  {t("enter_email")}
                 </h1>
                 <div className="modal-action w-full text-center flex items-center justify-center">
                   <form method="dialog" onSubmit={handleModalSubmit}>
@@ -264,11 +252,7 @@ const Login = () => {
                       <input
                         type="email"
                         name="forgotEmail"
-                        placeholder={
-                          selectedLanguage === "zh-CN"
-                            ? "输入您的电子邮件"
-                            : "enter your email"
-                        }
+                        placeholder={t("enter_email")}
                         required
                         className={`w-80 text-black text-opacity-55 text-[15px] font-normal leading-normal pl-2 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg ${
                           forgotPasswordError ? "border-red-500" : ""
@@ -287,13 +271,19 @@ const Login = () => {
                           document.getElementById("my_modal_settings").close()
                         }
                       >
-                        {selectedLanguage === "zh-CN" ? "关闭" : "Close"}
+                        {t("close")}
                       </p>
                       <button
-                        className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[100px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mt-5"
+                        className="bg-[#004368] hover:bg-opacity-60 text-white hover:text-black w-[100px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mt-5"
                         type="submit"
                       >
-                        {selectedLanguage === "zh-CN" ? "提交" : "Submit"}
+                        {loading ? (
+                          <ClipLoader color="#c3c1c8" size={28} />
+                        ) : (
+                          t("submit")
+                        )}
+
+                        {/* {selectedLanguage === "zh-CN" ? "提交" : "Submit"} */}
                       </button>
                     </div>
                   </form>
@@ -302,11 +292,9 @@ const Login = () => {
             </dialog>
           </div>
           <p className="mt-24 text-black text-opacity-60">
-            {selectedLanguage === "zh-CN"
-              ? "没有账号？"
-              : "Don't have any account?"}{" "}
+            {t("no_account")}{" "}
             <Link to="/register" className="font-semibold text-[#004368]">
-              {selectedLanguage === "zh-CN" ? "创建账号" : "Create Account"}
+              {t("create_account")}
             </Link>
           </p>
         </div>

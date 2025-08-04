@@ -21,7 +21,7 @@ const logisticCompaniesApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getShippingProviders: builder.query({
       query: ({ deliveryOptionId, cipher }) => ({
-        url: `/logistics/shipping-provider`,
+        url: `/tiktokshop-partner/api/dev/logistics/shipping-provider`,
         method: "GET",
         params: { deliveryOptionId, cipher },
       }),

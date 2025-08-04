@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { tikTokOrderStatusOptions } from "../../Share/Data/ClientData";
-import { useSelector } from "react-redux";
+import { lazadaOrderStatusOptions } from "../../Share/Data/ClientData";
+import { useDispatch, useSelector } from "react-redux";
 import { MdDateRange } from "react-icons/md";
 import { format } from "date-fns";
 import { DateRange } from "react-date-range";
@@ -8,10 +9,16 @@ import { CiSearch } from "react-icons/ci";
 import { RxReset } from "react-icons/rx";
 import { filterDataByDateRange } from "./SearchComponentFunction";
 import { useTranslation } from "react-i18next";
+import {
+  lazadaSelectStatusChange,
+  tikTokSelectStatusChange,
+} from "../../features/slice/userSlice";
 
 const NewSearchComponent = ({
   setTikTokOrderStatusCheck,
   tikTokOrderStatusCheck,
+  setLazadaOrderStatusCheck,
+  lazadaOrderStatusCheck,
   setStartDate,
   setEndDate,
   startDate,
@@ -33,6 +40,7 @@ const NewSearchComponent = ({
   setIsActiveBtnProduct,
   isActiveBtnAmount,
   setIsActiveBtnAmount,
+  currentShop,
 }) => {
   const [orderSource, setOrderSource] = useState("");
   const [pendingDelivery, setPendingDelivery] = useState("");
@@ -47,6 +55,7 @@ const NewSearchComponent = ({
   const [activeButton, setActiveButton] = useState("");
   const [currentActiveButton, setCurrentActiveButton] = useState(false);
   const { t } = useTranslation();
+  const dispatch = useDispatch();
 
   const handleSelect = (date) => {
     setStartDate(date.selection.startDate);
@@ -180,13 +189,21 @@ const NewSearchComponent = ({
 
   const handleRefundStatusChange = (event) => {
     const selectedValue = event.target.value;
+    console.log(event.target.value, "tiktok", currentShop);
 
     const selectedStatusObj = tikTokOrderStatusOptions.find(
       (status) => status.value === selectedValue
     );
 
     setRefundStatus(selectedValue);
-    setTikTokOrderStatusCheck(selectedValue);
+    if (currentShop === "TikTok") {
+      setTikTokOrderStatusCheck(selectedValue);
+      dispatch(tikTokSelectStatusChange(selectedValue));
+    } else if (currentShop === "Lazada") {
+      console.log("lazada");
+      setLazadaOrderStatusCheck(selectedValue);
+      dispatch(lazadaSelectStatusChange(selectedValue));
+    }
   };
 
   const selectionRange = {
@@ -381,17 +398,6 @@ const NewSearchComponent = ({
             {t("Amount")}
           </button>
         </div>
-
-        {/* <div className="">
-              <input
-                type="date"
-                id=""
-                name=""
-                value=""
-                placeholder="Select delivery time"
-                className="w-[355px] h-12 bg-[#0043681A] outline-none text-[#00000099] font-normal text-[15px] uppercase text-center rounded-md px-[15px] py-2"
-              />
-            </div> */}
       </div>
 
       <div className="flex items-center mt-5 space-x-2">
@@ -406,11 +412,18 @@ const NewSearchComponent = ({
             </button>
           ) : (
             <select
-              value={tikTokOrderStatusCheck} // <-- This ensures correct default
+              value={
+                currentShop === "TikTok"
+                  ? tikTokOrderStatusCheck
+                  : lazadaOrderStatusCheck
+              } // <-- This ensures correct default
               onChange={handleRefundStatusChange}
               className="select w-[220px] h-10 rounded-md outline-none text-[#00000099] font-normal text-[15px] capitalize px-[15px] py-2 text-center inline-flex items-center bg-[#0043681A]"
             >
-              {tikTokOrderStatusOptions.map((status, index) => (
+              {(currentShop === "TikTok"
+                ? tikTokOrderStatusOptions
+                : lazadaOrderStatusOptions
+              ).map((status, index) => (
                 <option
                   key={index}
                   value={status?.value}
