@@ -60,7 +60,7 @@ const TopNavbar = () => {
   const navItems = [
     { key: "home", path: "/home" },
     { key: "batchPrint", path: "/batchprint" },
-    // { key: "Lazada", path: "/LazadaOrderManagement" },
+    { key: "Lazada", path: "/LazadaOrderManagement" },
     // { key: "singlePrint", path: "/singleprint" },
     // { key: "settings", path: "/settings/recipient information" },
     // { key: "utility", path: "/utility/delivery record" },

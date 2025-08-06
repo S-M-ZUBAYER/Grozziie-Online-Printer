@@ -5,15 +5,16 @@ import { HiOutlinePrinter } from "react-icons/hi2";
 import { checkedItemsChange } from "../../features/slice/userSlice";
 import { useTranslation } from "react-i18next";
 
-const BatchPrintPrinting = () => {
+const LazadaAWBPrinting = () => {
   const checkedItems = useSelector((state) => state.user.checkedItemsFromRedux);
   const selectedLanguage = useSelector(
     (state) => state.user.selectedLanguageRedux
   );
   const currentUser = useSelector((state) => state.user.accountUser);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const [tikTokPdf, setTikTokPdf] = useState(null);
+  const [lazadaPdf, setLazadaPdf] = useState(null);
   const [warehouses, setWarehouses] = useState([]);
   const [shipmentProviders, setShipmentProviders] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,120 +52,161 @@ const BatchPrintPrinting = () => {
     }
   };
 
-  // const handleMergeAndPrint = async () => {
-  //   try {
-  //     setIsLoading(true);
-
-  //     if (!cipher?.[0]?.cipher || !checkedItems?.items?.length) {
-  //       alert("Missing cipher or no items selected.");
-  //       setIsLoading(false);
-  //       return;
-  //     }
-
-  //     const docUrls = await Promise.all(
-  //       checkedItems.items.map(async (item) => {
-  //         const packageId = item.lineItems?.[0]?.packageId;
-  //         const res = await fetch(
-  //           `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-doc?cipher=${encodeURIComponent(
-  //             cipher[0].cipher
-  //           )}&packageId=${encodeURIComponent(packageId)}`
-  //         );
-  //         const data = await res.json();
-  //         return data?.data?.docUrl;
-  //       })
-  //     );
-
-  //     const validUrls = docUrls.filter(Boolean);
-  //     if (validUrls.length === 0) {
-  //       alert("No valid shipping labels found.");
-  //       setIsLoading(false);
-  //       return;
-  //     }
-
-  //     const mergeRes = await fetch(
-  //       "https://grozziieget.zjweiting.com:8033/tht/merge-pdfs",
-  //       {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify({ urls: validUrls }),
-  //       }
-  //     );
-
-  //     if (!mergeRes.ok) throw new Error("Failed to merge PDFs");
-
-  //     const blob = await mergeRes.blob();
-  //     const pdfUrl = URL.createObjectURL(blob);
-  //     setTikTokPdf(pdfUrl);
-  //   } catch (err) {
-  //     console.error("❌ Merge print failed:", err);
-  //     alert("Something went wrong while generating the merged PDF.");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
-
   const handleMergeAndPrint = async () => {
     try {
       setIsLoading(true);
 
-      if (!cipher?.[0]?.cipher || !checkedItems?.items?.length) {
-        alert("Missing cipher or no items selected.");
+      if (!checkedItems?.items?.length) {
+        alert("No orders selected.");
         setIsLoading(false);
         return;
       }
 
-      const docUrls = await Promise.all(
-        checkedItems.items.map(async (item) => {
-          const packageId = item.lineItems?.[0]?.packageId;
-          const itemId = item.id;
+      const docUrls = [];
+      const printedOrderIds = [];
 
-          try {
-            const res = await fetch(
-              `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-doc?cipher=${encodeURIComponent(
-                cipher[0].cipher
-              )}&packageId=${encodeURIComponent(packageId)}`
-            );
-            const data = await res.json();
-            const docUrl = data?.data?.docUrl;
+      //   for (const order of checkedItems.items) {
+      //     const { order_id, data } = order;
 
-            // ✅ Save printedId if docUrl exists
-            if (
-              docUrl &&
-              itemId &&
-              checkedItems?.from !== "AWAITING_COLLECTION_PRINTED"
-            ) {
-              const url = new URL(
-                "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds/add"
-              );
-              url.searchParams.append("tikTokPrintedId", itemId);
-              url.searchParams.append("email", currentUser); // this can be encodeURIComponent(currentUser) if not already encoded
+      //     const packages = data
+      //       .map((item) => item?.package_id)
+      //       .filter(Boolean)
+      //       .map((id) => ({ package_id: id }));
 
-              await fetch(url, {
-                method: "POST",
-              });
+      //     if (!packages.length) {
+      //       toast.error(`No valid package_id found for order ${order_id}`);
+      //       continue;
+      //     }
+
+      //     try {
+      //       const response = await fetch(
+      //         "https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/print-awb",
+      //         {
+      //           method: "POST",
+      //           headers: {
+      //             Accept: "*/*",
+      //             "Content-Type": "application/json",
+      //           },
+      //           body: JSON.stringify({
+      //             doc_type: "PDF",
+      //             print_item_list: true,
+      //             packages,
+      //           }),
+      //         }
+      //       );
+
+      //       const result = await response.json();
+      //       const pdfUrl = result?.result?.data?.pdf_url;
+
+      //       if (pdfUrl) {
+      //         docUrls.push(pdfUrl);
+      //         printedOrderIds.push(order_id); // ✅ Save order_id for storing later
+      //       } else {
+      //         toast.error(`No PDF URL returned for order ${order_id}`);
+      //       }
+      //     } catch (error) {
+      //       console.error(`❌ Error printing AWB for order ${order_id}`, error);
+      //       toast.error(`Failed to print AWB for order ${order_id}`);
+      //       continue;
+      //     }
+      //   }
+
+      for (const order of checkedItems.items) {
+        const { order_id, data } = order;
+
+        const packages = data
+          .map((item) => item?.package_id)
+          .filter(Boolean)
+          .map((id) => ({ package_id: id }));
+
+        if (!packages.length) {
+          toast.error(`No valid package_id found for order ${order_id}`);
+          continue;
+        }
+
+        try {
+          // 🟠 Step 1: Print AWB
+          const response = await fetch(
+            "https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/print-awb",
+            {
+              method: "POST",
+              headers: {
+                Accept: "*/*",
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                doc_type: "PDF",
+                print_item_list: true,
+                packages,
+              }),
             }
+          );
 
-            return docUrl || null;
-          } catch (err) {
-            console.error(`❌ Failed for packageId: ${packageId}`, err);
-            return null;
+          const result = await response.json();
+          const pdfUrl = result?.result?.data?.pdf_url;
+
+          if (pdfUrl) {
+            docUrls.push(pdfUrl);
+            printedOrderIds.push(order_id);
+
+            // 🟢 Step 2: Call "ready to ship" API for each package
+
+            const skipStatuses = [
+              "Packed_Printed",
+              "ready_to_ship",
+              "ready_to_ship_pending",
+            ];
+
+            if (!skipStatuses.includes(checkedItems?.from)) {
+              console.log(checkedItems?.from, "from");
+
+              for (const pkg of packages) {
+                try {
+                  const deliveryRes = await fetch(
+                    "https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/order/package/sof/delivered",
+                    {
+                      method: "POST",
+                      headers: {
+                        Accept: "*/*",
+                        "Content-Type": "application/json",
+                      },
+                      body: JSON.stringify({ packages: [pkg] }),
+                    }
+                  );
+
+                  const deliveryData = await deliveryRes.json();
+                  console.log("✅ Delivery API Response", deliveryData);
+                } catch (deliveryErr) {
+                  console.error(
+                    `❌ Failed to mark package ${pkg.package_id} as delivered`,
+                    deliveryErr
+                  );
+                }
+              }
+            }
+          } else {
+            toast.error(`No PDF URL returned for order ${order_id}`);
           }
-        })
-      );
+        } catch (error) {
+          console.error(`❌ Error printing AWB for order ${order_id}`, error);
+          toast.error(`Failed to print AWB for order ${order_id}`);
+          continue;
+        }
+      }
 
-      const validUrls = docUrls.filter(Boolean);
-      if (validUrls.length === 0) {
+      if (!docUrls.length) {
         alert("No valid shipping labels found.");
         setIsLoading(false);
         return;
       }
 
+      // Merge all collected PDFs
       const mergeRes = await fetch(
         "https://grozziieget.zjweiting.com:8033/tht/merge-pdfs",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ urls: validUrls }),
+          body: JSON.stringify({ urls: docUrls }),
         }
       );
 
@@ -172,7 +214,29 @@ const BatchPrintPrinting = () => {
 
       const blob = await mergeRes.blob();
       const pdfUrl = URL.createObjectURL(blob);
-      setTikTokPdf(pdfUrl);
+      setLazadaPdf(pdfUrl);
+
+      // ✅ Call store API for each printed order_id
+      if (checkedItems?.from !== "Packed_Printed") {
+        for (const lazadaId of printedOrderIds) {
+          try {
+            await fetch(
+              `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds/add?LazadaPrintedId=${lazadaId}&email=${encodeURIComponent(
+                currentUser
+              )}`,
+              {
+                method: "POST",
+              }
+            );
+            console.log(`✅ Stored LazadaPrintedId ${lazadaId}`);
+          } catch (err) {
+            console.error(
+              `❌ Failed to store LazadaPrintedId ${lazadaId}`,
+              err
+            );
+          }
+        }
+      }
     } catch (err) {
       console.error("❌ Merge print failed:", err);
       alert("Something went wrong while generating the merged PDF.");
@@ -190,11 +254,11 @@ const BatchPrintPrinting = () => {
   };
 
   useEffect(() => {
-    if (!cipher?.[0]?.cipher || !checkedItems?.items?.length) return;
+    if (!checkedItems?.items?.length) return;
     fetchWarehouses();
     fetchShipmentProviders();
     handleMergeAndPrint();
-  }, [cipher]);
+  }, [checkedItems]);
 
   return (
     <div className="w-full h-screen pb-16 mb-10">
@@ -230,9 +294,9 @@ const BatchPrintPrinting = () => {
             ) : (
               <>
                 <div className="w-[375px] h-[570px] border rounded shadow overflow-hidden mx-auto">
-                  {tikTokPdf ? (
+                  {lazadaPdf ? (
                     <iframe
-                      src={tikTokPdf}
+                      src={lazadaPdf}
                       title="Label Preview"
                       className="w-full h-full"
                       referrerPolicy="no-referrer"
@@ -247,7 +311,7 @@ const BatchPrintPrinting = () => {
                 <div className="flex justify-center mt-6">
                   <button
                     onClick={handlePrintAll}
-                    disabled={!tikTokPdf}
+                    disabled={!lazadaPdf}
                     className="bg-[#004368] text-white px-4 py-2 rounded hover:bg-[#0d2735]"
                   >
                     <div className=" flex">
@@ -286,4 +350,4 @@ const BatchPrintPrinting = () => {
   );
 };
 
-export default BatchPrintPrinting;
+export default LazadaAWBPrinting;
