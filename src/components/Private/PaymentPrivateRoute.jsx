@@ -26,7 +26,6 @@ const PaymentPrivateRoute = ({ children }) => {
     const stored = localStorage.getItem("tiktokShopInfo");
     return stored ? JSON.parse(stored) : [];
   });
-  console.log(cipher, currentUser);
 
   //pin dou dou
   // useEffect(() => {
@@ -101,8 +100,6 @@ const PaymentPrivateRoute = ({ children }) => {
 
         const result = res.data?.result?.TikTok;
         const currentShopName = cipher[0]?.name;
-        console.log(currentShopName, ",,,,,,,,,,,,,,,,,,,,,,,,,,shop", result);
-
         const matched = result?.find(
           (entry) => entry.shopName === currentShopName
         );

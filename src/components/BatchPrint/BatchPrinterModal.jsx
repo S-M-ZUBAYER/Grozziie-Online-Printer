@@ -39,13 +39,10 @@ const BatchPrinterModal = () => {
 
   // modal submit function
   const handleModalSubmit = (e) => {
-    console.log("modalllll");
     e.preventDefault();
 
     document.getElementById("my_modal_BatchPrint").close();
   };
-
-  console.log(previewImg, "preview image");
 
   // convert part start in here
   const [capturedImage, setCapturedImage] = useState(null);
@@ -281,7 +278,6 @@ const BatchPrinterModal = () => {
     };
 
     ws.onmessage = (message) => {
-      console.log("onmessage start");
       const data = JSON.parse(message.data);
       setPreviewImg(data?.previewURL);
       switch (data.cmd) {

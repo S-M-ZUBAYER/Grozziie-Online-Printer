@@ -164,7 +164,7 @@ const BatchPrintTable = ({
                         />
                         <span className="text-black opacity-80 text-xs font-normal capitalize ml-[6px] mr-6">
                           {formatText(item.productName)
-                            ? item.productName.slice(0, 15) + "..."
+                            ? item?.productName?.slice(0, 15) + "..."
                             : t("NoData")}
                         </span>
                       </div>

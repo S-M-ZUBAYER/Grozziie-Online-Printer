@@ -60,7 +60,8 @@ import VerifyEmailPage from "../components/Auth/VerifyEmailPage";
 import BatchPrintPrinting from "../components/BatchPrintExpressDelivery/BatchPrintPrinting";
 import WrappedPaymentPage from "../components/Pricing/PaymentPage";
 import SuccessPage from "../components/Pricing/SuccessPage";
-// import LazadaBatchPrint from "../components/LazadaShop/LazadaBatchPrint";
+import LazadaBatchPrint from "../components/LazadaShop/LazadaBatchPrint";
+import LazadaAWBPrinting from "../components/LazadaShop/LazadaAWBPrinting";
 
 export const routes = createBrowserRouter([
   {
@@ -147,16 +148,16 @@ export const routes = createBrowserRouter([
           </PrivateRoute>
         ),
       },
-      // {
-      //   path: "/LazadaOrderManagement",
-      //   element: (
-      //     // <PrivateRoute>
-      //     <PaymentPrivateRoute>
-      //       <LazadaBatchPrint />
-      //     </PaymentPrivateRoute>
-      //     // </PrivateRoute>
-      //   ),
-      // },
+      {
+        path: "/LazadaOrderManagement",
+        element: (
+          // <PrivateRoute>
+          <PaymentPrivateRoute>
+            <LazadaBatchPrint />
+          </PaymentPrivateRoute>
+          // </PrivateRoute>
+        ),
+      },
       {
         path: "/singlePrint",
         element: (
@@ -225,6 +226,16 @@ export const routes = createBrowserRouter([
           // <PrivateRoute>
           // <PaymentPrivateRoute>
           <BatchPrintPrinting />
+          // </PaymentPrivateRoute>
+          // </PrivateRoute>
+        ),
+      },
+      {
+        path: "/lazadaAWBPrinting",
+        element: (
+          // <PrivateRoute>
+          // <PaymentPrivateRoute>
+          <LazadaAWBPrinting />
           // </PaymentPrivateRoute>
           // </PrivateRoute>
         ),
