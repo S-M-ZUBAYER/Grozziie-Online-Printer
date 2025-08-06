@@ -61,7 +61,6 @@ const NewSearchComponent = ({
     setStartDate(date.selection.startDate);
     setEndDate(date.selection.endDate);
     if ((date.selection.startDate, date.selection.endDate)) {
-      console.log("got 2 value");
       setFilteredData(
         filterDataByDateRange(
           customersData,
@@ -189,8 +188,6 @@ const NewSearchComponent = ({
 
   const handleRefundStatusChange = (event) => {
     const selectedValue = event.target.value;
-    console.log(event.target.value, "tiktok", currentShop);
-
     const selectedStatusObj = tikTokOrderStatusOptions.find(
       (status) => status.value === selectedValue
     );
@@ -200,7 +197,6 @@ const NewSearchComponent = ({
       setTikTokOrderStatusCheck(selectedValue);
       dispatch(tikTokSelectStatusChange(selectedValue));
     } else if (currentShop === "Lazada") {
-      console.log("lazada");
       setLazadaOrderStatusCheck(selectedValue);
       dispatch(lazadaSelectStatusChange(selectedValue));
     }
