@@ -28,6 +28,7 @@ import DashboardCard from "./HomeComponents/DashboardCard";
 import ActivityRow from "./HomeComponents/ActivityRow";
 import ShopSelector from "./HomeComponents/ShopSelector";
 import { useLoadOrderListMutation } from "../../features/allApis/batchPrintApi";
+import { useLazyGetLazadaOrdersQuery } from "../../features/allApis/lazadaApi";
 
 const Home = () => {
   const { t } = useTranslation();
@@ -35,6 +36,15 @@ const Home = () => {
     const stored = localStorage.getItem("tiktokShopInfo");
     return stored ? JSON.parse(stored) : [];
   });
+  const storedShopPlatform = localStorage.getItem("SelectedPlatform");
+  const [selectedPlatform, setSelectedPlatform] = useState(
+    storedShopPlatform || "tiktok"
+  );
+  useEffect(() => {
+    localStorage.setItem("SelectedPlatform", selectedPlatform);
+  }, [selectedPlatform]);
+  const [selectedStore, setSelectedStore] = useState(null);
+  const [openShop, setOpenShop] = useState(null);
   const [currentDate, setCurrentDate] = useState("");
   const now = new Date();
   const sevenDaysAgo = new Date(now);
@@ -42,6 +52,7 @@ const Home = () => {
   const start = startOfDay(now);
   const end = endOfDay(now);
 
+  // TikTok Info
   const [tikTokPrintedIds, setTikTokPrintedIds] = useState([]);
   const [tikTokShippedToday, setTikTokShippedToday] = useState([]);
   const [tikTokPrintedToday, setTikTokPrintedToday] = useState([]);
@@ -54,26 +65,53 @@ const Home = () => {
     useState([]);
   const [deliveredOrders, setDeliveredOrders] = useState([]);
   const [cancelledOrders, setCancelledOrders] = useState([]);
+
+  // Lazada Info
+  const [lazadaPrintedIds, setLazadaPrintedIds] = useState([]);
+  const [lazadaShippedToday, setLazadaShippedToday] = useState([]);
+  const [lazadaOnShipping, setLazadaOnShipping] = useState([]);
+  const [lazadaPrintedToday, setLazadaPrintedToday] = useState([]);
+  const [lazadaNewOrders, setLazadaNewOrders] = useState([]);
+  const [lazadaPacked, setLazadaPacked] = useState([]);
+  const [lazadaPackedPrinted, setLazadaPackedPrinted] = useState([]);
+  const [lazadaPackedUnprinted, setLazadaPackedUnprinted] = useState([]);
+  const [lazadaDeliveredOrders, setLazadaDeliveredOrders] = useState([]);
+  const [lazadacancelledOrders, setLazadacancelledOrders] = useState([]);
+
   const [loadOrderList] = useLoadOrderListMutation();
+  const [getLazadaOrders, { isLoading, isError }] =
+    useLazyGetLazadaOrdersQuery();
 
   const COLORS = ["#34D399", "#FBBF24", "#F87171", "#60A5FA"];
 
   const chartData = [
     {
       name: t("Printed"),
-      value: awaitingCollectionPrinted?.length || 0,
+      value:
+        selectedPlatform === "tiktok"
+          ? awaitingCollectionPrinted?.length || 0
+          : lazadaPackedPrinted?.length || 0,
     },
     {
       name: t("New Orders"),
-      value: awaitingShipment?.length || 0,
+      value:
+        selectedPlatform === "tiktok"
+          ? awaitingShipment?.length || 0
+          : lazadaNewOrders?.length || 0,
     },
     {
       name: t("Cancelled"),
-      value: cancelledOrders?.length || 0,
+      value:
+        selectedPlatform === "tiktok"
+          ? cancelledOrders?.length || 0
+          : lazadacancelledOrders?.length,
     },
     {
       name: t("Processing for Delivery"),
-      value: awaitingCollection?.length || 0,
+      value:
+        selectedPlatform === "tiktok"
+          ? awaitingCollection?.length || 0
+          : lazadaOnShipping?.length || 0,
     },
   ];
 
@@ -98,6 +136,7 @@ const Home = () => {
     return null;
   };
 
+  // TikTok Call API
   useEffect(() => {
     const fetchPrintedIds = async () => {
       try {
@@ -122,11 +161,11 @@ const Home = () => {
     if (cipher.length > 0) {
       fetchPrintedIds();
     }
-  }, [cipher]);
+  }, [cipher, selectedStore]);
 
   useEffect(() => {
     const fetchStatusOrders = async () => {
-      if (!cipher[0]?.cipher || tikTokPrintedIds.length === 0) return;
+      if (!cipher[0]?.cipher) return;
 
       const statuses = [
         "AWAITING_SHIPMENT",
@@ -189,7 +228,113 @@ const Home = () => {
     };
 
     fetchStatusOrders();
-  }, [cipher, tikTokPrintedIds]);
+  }, [cipher, tikTokPrintedIds, selectedStore]);
+
+  // Lazada Call API
+  useEffect(() => {
+    const fetchPrintedIds = async () => {
+      try {
+        const res = await fetch(
+          // "https://grozziieget.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds"
+          "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds"
+        );
+        const data = await res.json();
+
+        if (Array.isArray(data)) {
+          setLazadaPrintedIds(data);
+          const todayPrinted = data.filter((item) =>
+            isSameDay(parseISO(item.createdAt), now)
+          );
+          setLazadaPrintedToday(todayPrinted);
+        }
+      } catch (err) {
+        console.error("❌ Failed to fetch printed IDs:", err);
+      }
+    };
+
+    if (cipher.length > 0) {
+      fetchPrintedIds();
+    }
+  }, [selectedStore]);
+
+  useEffect(() => {
+    const fetchLazadaStatusOrders = async () => {
+      const statuses = [
+        "pending",
+        "Packed",
+        "ready_to_ship",
+        "shipped",
+        "delivered",
+        "Canceled",
+      ];
+
+      const now = new Date();
+      const tenDaysAgo = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000);
+      const toISOString = (date) => date.toISOString().split(".")[0] + "Z";
+
+      // Precompute printed set
+      const printedSet = new Set(
+        lazadaPrintedIds.map((item) => String(item.lazadaPrintedId))
+      );
+
+      for (const status of statuses) {
+        try {
+          const response = await getLazadaOrders({
+            sortBy: "updated_at",
+            createdAfter: toISOString(tenDaysAgo),
+            createdBefore: toISOString(now),
+            updateAfter: toISOString(tenDaysAgo),
+            updateBefore: toISOString(now),
+            status,
+            sortDirection: "DESC",
+            offset: 0,
+            limit: 100,
+          }).unwrap();
+
+          const parsedBody = JSON.parse(response?.body || "{}");
+          const orderList = parsedBody?.data?.orders || [];
+
+          const printedOrders = orderList.filter((item) =>
+            printedSet.has(String(item.order_id))
+          );
+          const unprintedOrders = orderList.filter(
+            (item) => !printedSet.has(String(item.order_id))
+          );
+
+          // Assign to relevant state
+          if (status === "pending") {
+            setLazadaNewOrders(orderList);
+          } else if (status === "Packed") {
+            setLazadaPacked(orderList);
+            setLazadaPackedPrinted(printedOrders);
+            setLazadaPackedUnprinted(unprintedOrders);
+          } else if (status === "ready_to_ship") {
+            const today = new Date();
+            const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+            const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+            const todayShipped = orderList.filter((order) => {
+              const updatedAt = new Date(order.updated_at);
+              return updatedAt >= startOfDay && updatedAt <= endOfDay;
+            });
+            setLazadaShippedToday(todayShipped);
+          } else if (status === "shipped") {
+            // Optional: Could also capture "shipped" separately
+          } else if (status === "delivered") {
+            setLazadaDeliveredOrders(orderList);
+          } else if (status === "Canceled") {
+            setLazadacancelledOrders(orderList);
+          }
+        } catch (error) {
+          console.error(
+            `❌ Failed to load Lazada orders for status: ${status}`,
+            error
+          );
+        }
+      }
+    };
+
+    fetchLazadaStatusOrders();
+  }, [lazadaPrintedIds, selectedStore]);
 
   return (
     <div className="bg-[#0043680D] grid grid-cols-6">
@@ -197,7 +342,14 @@ const Home = () => {
         <HomeSideNavbar />
       </div>
       <div className="pt-11 pl-[62px] mb-[17px] col-span-5">
-        <ShopSelector />
+        <ShopSelector
+          openShop={openShop}
+          setOpenShop={setOpenShop}
+          selectedStore={selectedStore}
+          setSelectedStore={setSelectedStore}
+          selectedPlatform={selectedPlatform}
+          setSelectedPlatform={setSelectedPlatform}
+        />
         <div className="flex items-center justify-between">
           <h3 className="text-[#004368] text-[25px] font-[500] capitalize">
             {t("Dashboard")}
@@ -214,22 +366,29 @@ const Home = () => {
           <DashboardCard
             title={t("Printed Today")}
             count={
-              tikTokPrintedToday?.length.toString().padStart(2, "0") || "00"
+              selectedPlatform === "tiktok"
+                ? tikTokPrintedToday?.length.toString().padStart(2, "0") || "00"
+                : lazadaPrintedToday?.length.toString().padStart(2, "0") || "00"
             }
             image={print}
           />
           <DashboardCard
             title={t("Shipped Today")}
             count={
-              tikTokShippedToday?.length.toString().padStart(2, "0") || "00"
+              selectedPlatform === "tiktok"
+                ? tikTokShippedToday?.length.toString().padStart(2, "0") || "00"
+                : lazadaShippedToday?.length.toString().padStart(2, "0") || "00"
             }
             image={shipped}
           />
           <DashboardCard
             title={t("Need To Print")}
             count={
-              awaitingCollectionUnprinted?.length.toString().padStart(2, "0") ||
-              "00"
+              selectedPlatform === "tiktok"
+                ? awaitingCollectionUnprinted?.length
+                    .toString()
+                    .padStart(2, "0") || "00"
+                : lazadaNewOrders?.length.toString().padStart(2, "0") || "00"
             }
             image={needPrint}
           />
@@ -311,31 +470,48 @@ const Home = () => {
                   icon={FiPrinter}
                   label={t("Printed")}
                   value={
-                    awaitingCollectionPrinted?.length
-                      .toString()
-                      .padStart(2, "0") || "00"
+                    selectedPlatform === "tiktok"
+                      ? awaitingCollectionPrinted?.length
+                          .toString()
+                          .padStart(2, "0") || "00"
+                      : lazadaPackedPrinted?.length
+                          .toString()
+                          .padStart(2, "0") || "00"
                   }
                 />
                 <ActivityRow
                   icon={CiTimer}
                   label={t("New Orders")}
                   value={
-                    awaitingShipment?.length.toString().padStart(2, "0") || "00"
+                    selectedPlatform === "tiktok"
+                      ? awaitingShipment?.length.toString().padStart(2, "0") ||
+                        "00"
+                      : lazadaNewOrders?.length.toString().padStart(2, "0") ||
+                        "00"
                   }
                 />
                 <ActivityRow
                   icon={HiOutlineReceiptRefund}
                   label={t("Cancelled")}
                   value={
-                    cancelledOrders?.length.toString().padStart(2, "0") || "00"
+                    selectedPlatform === "tiktok"
+                      ? cancelledOrders?.length.toString().padStart(2, "0") ||
+                        "00"
+                      : lazadacancelledOrders?.length
+                          .toString()
+                          .padStart(2, "0") || "00"
                   }
                 />
                 <ActivityRow
                   icon={CiDeliveryTruck}
                   label={t("Processing for Delivery")}
                   value={
-                    awaitingCollection?.length.toString().padStart(2, "0") ||
-                    "00"
+                    selectedPlatform === "tiktok"
+                      ? awaitingCollection?.length
+                          .toString()
+                          .padStart(2, "0") || "00"
+                      : lazadaOnShipping?.length.toString().padStart(2, "0") ||
+                        "00"
                   }
                 />
               </div>

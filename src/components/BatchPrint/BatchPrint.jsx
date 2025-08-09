@@ -419,7 +419,9 @@ const BatchPrint = () => {
       );
       setModalMessage(
         <p className="text-xl font-semibold">
-          {t("AreYouSureToAcceptThisOrder")}
+          {tikTokOrderStatusCheck === "AWAITING_COLLECTION"
+            ? t("AreYouSureToAcceptThisOrder")
+            : t("DoYouWantPrintAWBAgain")}
         </p>
       );
       setConfirmAction(() => handleConfirmShipping);
@@ -485,7 +487,7 @@ const BatchPrint = () => {
     dispatch(
       checkedItemsChange({ items: checkedItems, from: tikTokOrderStatusCheck })
     );
-    navigate("/batchPrintPrinting");
+    navigate("/tikTokPrintPrinting");
   };
 
   const handleFileChange = async (e) => {
@@ -837,7 +839,9 @@ const BatchPrint = () => {
             >
               <MdOutlineLocalPrintshop className="w-[18px] h-[18px]" />
               <p className="text-[15px] font-medium leading-normal capitalize pl-1">
-                {t("OrderShippingAndPrint")}
+                {tikTokOrderStatusCheck === "AWAITING_COLLECTION"
+                  ? t("OrderShippingAndPrint")
+                  : t("PrintAWBAgain")}
               </p>
             </button>
           )}

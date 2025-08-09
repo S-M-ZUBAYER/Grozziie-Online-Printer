@@ -92,54 +92,111 @@ export function filterDataBySearchFields(customersData, searchFields) {
     return isMatch;
   });
 }
+// export function filterDataBySearchFieldsBatchPrint(
+//   customersData,
+//   searchFields
+// ) {
+//   return customersData.filter((customer) => {
+//     let isMatch = true;
+//     // Check if isActiveRecipientAddress is true and RecipientAddress matches
+//     if (
+//       searchFields.isActiveRecipientAddress &&
+//       searchFields.RecipientAddress
+//     ) {
+//       isMatch =
+//         isMatch &&
+//         customer?.receiver_address
+//           ?.toLowerCase()
+//           .includes(searchFields.RecipientAddress.toLowerCase());
+//     }
+
+//     // Check if isActiveAccountName is true and AccountName matches
+//     if (searchFields.isActiveAccountName && searchFields.AccountName) {
+//       isMatch =
+//         isMatch &&
+//         customer?.receiver_name_mask
+//           ?.toLowerCase()
+//           .includes(searchFields.AccountName.toLowerCase());
+//     }
+
+//     // Check if isActiveOrderId is true and OrderId matches
+//     if (searchFields.isActiveOrderId && searchFields.OrderId) {
+//       isMatch = isMatch && customer?.order_sn?.includes(searchFields.OrderId);
+//     }
+
+//     // Check if isActiveAmount is true and Amount matches
+//     if (searchFields.isActiveAmount && searchFields.Amount) {
+//       isMatch =
+//         isMatch &&
+//         customer?.item_list[0]?.goods_count
+//           ?.toString()
+//           ?.toLowerCase()
+//           ?.includes(searchFields.Amount.toLowerCase());
+//     }
+
+//     // Check if isActiveProduct is true and Product matches
+//     if (searchFields.isActiveProduct && searchFields.Product) {
+//       isMatch =
+//         isMatch &&
+//         customer?.item_list[0]?.goods_spec
+//           .toLowerCase()
+//           .includes(searchFields.Product.toLowerCase());
+//     }
+
+//     return isMatch;
+//   });
+// }
+
 export function filterDataBySearchFieldsBatchPrint(
   customersData,
   searchFields
 ) {
   return customersData.filter((customer) => {
     let isMatch = true;
-    // Check if isActiveRecipientAddress is true and RecipientAddress matches
+
+    // Check Recipient Address
     if (
       searchFields.isActiveRecipientAddress &&
       searchFields.RecipientAddress
     ) {
       isMatch =
         isMatch &&
-        customer?.receiver_address
+        customer?.recipientAddress?.fullAddress
           ?.toLowerCase()
           .includes(searchFields.RecipientAddress.toLowerCase());
     }
 
-    // Check if isActiveAccountName is true and AccountName matches
+    // Check Account Name
     if (searchFields.isActiveAccountName && searchFields.AccountName) {
       isMatch =
         isMatch &&
-        customer?.receiver_name_mask
+        customer?.buyerEmail
           ?.toLowerCase()
           .includes(searchFields.AccountName.toLowerCase());
     }
 
-    // Check if isActiveOrderId is true and OrderId matches
+    // Check Order ID
     if (searchFields.isActiveOrderId && searchFields.OrderId) {
-      isMatch = isMatch && customer?.order_sn?.includes(searchFields.OrderId);
+      isMatch =
+        isMatch && customer?.id?.toString().includes(searchFields.OrderId);
     }
 
-    // Check if isActiveAmount is true and Amount matches
+    // Check Amount (product quantity)
     if (searchFields.isActiveAmount && searchFields.Amount) {
       isMatch =
         isMatch &&
-        customer?.item_list[0]?.goods_count
+        customer?.lineItems?.length
           ?.toString()
           ?.toLowerCase()
           ?.includes(searchFields.Amount.toLowerCase());
     }
 
-    // Check if isActiveProduct is true and Product matches
+    // Check Product
     if (searchFields.isActiveProduct && searchFields.Product) {
       isMatch =
         isMatch &&
-        customer?.item_list[0]?.goods_spec
-          .toLowerCase()
+        customer?.lineItems?.[0]?.productName
+          ?.toLowerCase()
           .includes(searchFields.Product.toLowerCase());
     }
 

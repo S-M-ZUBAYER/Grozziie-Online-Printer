@@ -129,7 +129,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/batchPrint",
+        path: "/TikTokOrderManagemnt",
         element: (
           <PrivateRoute>
             <PaymentPrivateRoute>
@@ -221,7 +221,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/batchPrintPrinting",
+        path: "/tikTokPrintPrinting",
         element: (
           // <PrivateRoute>
           // <PaymentPrivateRoute>

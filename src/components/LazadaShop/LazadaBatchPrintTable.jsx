@@ -11,7 +11,7 @@ const LazadaBatchPrintTable = ({
   handleDetailsClick,
   checkedItems,
   handleCheckboxChange,
-  tikTokOrderStatusCheck,
+  lazadaOrderStatusCheck,
   cipher,
   detailsLoading,
 }) => {
@@ -31,28 +31,61 @@ const LazadaBatchPrintTable = ({
     setLoading(true);
     setError("");
     setTrackingInfo(null);
+
     try {
-      const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/tracking?cipher=${encodeURIComponent(
-        cipher[0]?.cipher
-      )}&orderId=${encodeURIComponent(order?.id)}`;
+      const orderId = order?.order_id;
+      if (!orderId) {
+        setError("Missing order ID.");
+        return;
+      }
 
-      const res = await fetch(url);
-      const json = await res.json();
+      // Step 1: Get item data to extract package_id(s)
+      const itemRes = await fetch(
+        `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}`
+      );
+      const itemJson = await itemRes.json();
+      const parsedItemData = JSON.parse(itemJson?.body || "{}");
+      const items = parsedItemData?.data || [];
+      console.log("item", items);
+      // Step 2: Collect all valid package_ids
+      const ofcPackageIdList = items
+        .map((item) => item?.package_id)
+        .filter(Boolean); // remove undefined/null
 
-      if (json.code === 0 && json.data?.tracking?.length) {
-        setTrackingInfo(json.data.tracking);
+      if (!ofcPackageIdList.length) {
+        setError(t("No package IDs found for tracking."));
+        return;
+      }
+
+      // Step 3: Build query string with multiple ofcPackageIdList
+      const queryParams = new URLSearchParams({ orderId });
+      ofcPackageIdList.forEach((id) =>
+        queryParams.append("ofcPackageIdList", id)
+      );
+
+      const trackingUrl = `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/logistic/order/trace?${queryParams.toString()}`;
+
+      // Step 4: Call tracking API
+      const traceRes = await fetch(trackingUrl);
+      const traceJson = await traceRes.json();
+      console.log(
+        "tracking end",
+        `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/logistic/order/trace?${queryParams.toString()}`,
+        traceJson
+      );
+      if (traceJson.code === 0 && traceJson.data) {
+        setTrackingInfo(traceJson.data);
         setShowModal(true);
       } else {
         setError(t("No tracking data available."));
       }
     } catch (err) {
+      console.error("Failed to fetch tracking data:", err);
       setError(t("Failed to fetch tracking data."));
-      console.error(err);
     } finally {
       setLoading(false);
     }
   };
-  console.log(filteredData, "data");
 
   return (
     <div className="mt-6">
@@ -92,15 +125,17 @@ const LazadaBatchPrintTable = ({
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                <span className="mr-[10px]">{t("DeliveryCode")}</span>
+                <span className="mr-[10px]">{t("orderId")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                 {t("ProductDetails")}
               </th>
-              {(tikTokOrderStatusCheck === "AWAITING_COLLECTION" ||
-                tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") && (
+              {(lazadaOrderStatusCheck === "Packed" ||
+                lazadaOrderStatusCheck === "ready_to_ship" ||
+                lazadaOrderStatusCheck === "shipped" ||
+                lazadaOrderStatusCheck === "Packed_Printed") && (
                 <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-r-md">
                   <span className="mr-[10px]">{t("Tracking")}</span>
                 </th>
@@ -186,9 +221,10 @@ const LazadaBatchPrintTable = ({
                   </td>
 
                   {/* Optional Tracking Button */}
-                  {(tikTokOrderStatusCheck === "AWAITING_COLLECTION" ||
-                    tikTokOrderStatusCheck ===
-                      "AWAITING_COLLECTION_PRINTED") && (
+                  {(lazadaOrderStatusCheck === "Packed" ||
+                    lazadaOrderStatusCheck === "ready_to_ship" ||
+                    lazadaOrderStatusCheck === "shipped" ||
+                    lazadaOrderStatusCheck === "Packed_Printed") && (
                     <td className="text-black opacity-80 text-sm font-normal leading-4">
                       <p
                         className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"

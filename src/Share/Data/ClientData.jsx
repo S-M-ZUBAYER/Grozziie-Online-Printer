@@ -86,10 +86,10 @@ export const lazadaOrderStatusOptions = [
     status: "Printed",
     value: "Packed_Printed",
   },
-  {
-    status: "Ready To Ship Pending",
-    value: "ready_to_ship_pending",
-  },
+  // {
+  //   status: "Ready To Ship Pending",
+  //   value: "ready_to_ship_pending",
+  // },
   {
     status: "Ready To Ship",
     value: "ready_to_ship",
