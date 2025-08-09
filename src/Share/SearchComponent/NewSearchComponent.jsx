@@ -61,7 +61,6 @@ const NewSearchComponent = ({
     setStartDate(date.selection.startDate);
     setEndDate(date.selection.endDate);
     if ((date.selection.startDate, date.selection.endDate)) {
-      console.log("got 2 value");
       setFilteredData(
         filterDataByDateRange(
           customersData,
@@ -189,8 +188,6 @@ const NewSearchComponent = ({
 
   const handleRefundStatusChange = (event) => {
     const selectedValue = event.target.value;
-    console.log(event.target.value, "tiktok", currentShop);
-
     const selectedStatusObj = tikTokOrderStatusOptions.find(
       (status) => status.value === selectedValue
     );
@@ -200,7 +197,6 @@ const NewSearchComponent = ({
       setTikTokOrderStatusCheck(selectedValue);
       dispatch(tikTokSelectStatusChange(selectedValue));
     } else if (currentShop === "Lazada") {
-      console.log("lazada");
       setLazadaOrderStatusCheck(selectedValue);
       dispatch(lazadaSelectStatusChange(selectedValue));
     }
@@ -214,48 +210,51 @@ const NewSearchComponent = ({
 
   // search all data
   // pin dou dou
-  // const handleSearchAllChange = (event) => {
-  //   if (currentActiveButton === true) {
-  //     setSearchFields({
-  //       ...searchFields,
-  //       [activeButton]: event.target.value,
-  //       [`isActive${activeButton}`]: true,
-  //     });
-  //   }
-  // };
-
   const handleSearchAllChange = (event) => {
-    const searchTerm = event.target.value.toLowerCase();
-
-    const filtered = customersData.filter((item) => {
-      switch (activeButton) {
-        case "RecipientAddress":
-          return item.recipientAddress?.fullAddress
-            ?.toLowerCase()
-            .includes(searchTerm);
-        case "OrderId":
-          return item.id?.toLowerCase().includes(searchTerm);
-        case "AccountName":
-          return item.buyerEmail?.toLowerCase().includes(searchTerm);
-        case "Product":
-          return (
-            item.lineItems?.[0]?.productName
-              ?.toLowerCase()
-              .includes(searchTerm) ||
-            item.lineItems?.[0]?.skuName?.toLowerCase().includes(searchTerm)
-          );
-        case "Amount":
-          return item.payment?.totalAmount
-            ?.toString()
-            .toLowerCase()
-            .includes(searchTerm);
-        default:
-          return false;
-      }
-    });
-
-    setFilteredData(filtered);
+    if (currentActiveButton === true) {
+      setSearchFields({
+        ...searchFields,
+        [activeButton]: event.target.value,
+        [`isActive${activeButton}`]: true,
+      });
+    }
   };
+
+  // const handleSearchAllChange = (event) => {
+  //   const searchTerm = event.target.value.toLowerCase();
+
+  //   // Decide whether to search in full data or already filtered data
+  //   const baseData = customersData.length > 0 ? customersData : customersData;
+
+  //   const filtered = baseData.filter((item) => {
+  //     switch (activeButton) {
+  //       case "RecipientAddress":
+  //         return item.recipientAddress?.fullAddress
+  //           ?.toLowerCase()
+  //           .includes(searchTerm);
+  //       case "OrderId":
+  //         return item.id?.toString().toLowerCase().includes(searchTerm);
+  //       case "AccountName":
+  //         return item.buyerEmail?.toLowerCase().includes(searchTerm);
+  //       case "Product":
+  //         return (
+  //           item.lineItems?.[0]?.productName
+  //             ?.toLowerCase()
+  //             .includes(searchTerm) ||
+  //           item.lineItems?.[0]?.skuName?.toLowerCase().includes(searchTerm)
+  //         );
+  //       case "Amount":
+  //         return item.payment?.totalAmount
+  //           ?.toString()
+  //           .toLowerCase()
+  //           .includes(searchTerm);
+  //       default:
+  //         return false;
+  //     }
+  //   });
+
+  //   setFilteredData(filtered);
+  // };
 
   return (
     <div className="bg-white rounded-[17px] shadow-[6px 9px 16.4px 0px rgba(0, 0, 0, 0.04)] py-4 pl-3 pr-2">

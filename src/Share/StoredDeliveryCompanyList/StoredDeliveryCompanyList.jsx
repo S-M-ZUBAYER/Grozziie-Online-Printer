@@ -70,8 +70,6 @@ const StoredDeliveryCompanyList = () => {
     dispatch(checkedExpressChange(company));
   };
 
-  console.log(deliveryCompanies, "DeliveryCompany");
-
   return (
     <div className="flex items-center justify-evenly pl-4">
       {isLoading ? (

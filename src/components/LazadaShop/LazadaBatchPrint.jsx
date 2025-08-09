@@ -5,10 +5,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { checkedItemsChange } from "../../features/slice/userSlice";
 import * as XLSX from "xlsx";
-// import {
-//   useLazyGetLazadaOrdersQuery,
-//   useLoadOrderListMutation,
-// } from "../../features/allApis/batchPrintApi";
 import NewSearchComponent from "../../Share/SearchComponent/NewSearchComponent";
 import { filterDataBySearchFieldsBatchPrint } from "../../Share/SearchComponent/SearchComponentFunction";
 import toast from "react-hot-toast";
@@ -21,6 +17,7 @@ import LazadaBatchPrintTable from "./LazadaBatchPrintTable";
 import StoredDeliveryCompanyList from "../../Share/StoredDeliveryCompanyList/StoredDeliveryCompanyList";
 import BatchPrinterModal from "../BatchPrint/BatchPrinterModal";
 import { useLazyGetLazadaOrdersQuery } from "../../features/allApis/lazadaApi";
+import axios from "axios";
 
 const LazadaBatchPrint = () => {
   const [selectAll, setSelectAll] = useState(false);
@@ -58,6 +55,7 @@ const LazadaBatchPrint = () => {
   const [isActiveBtnAccountName, setIsActiveBtnAccountName] = useState(false);
   const [isActiveBtnProduct, setIsActiveBtnProduct] = useState(false);
   const [isActiveBtnAmount, setIsActiveBtnAmount] = useState(false);
+  const [lazadaPrintedIds, setLazadaPrintedIds] = useState([]);
   const [cipher, setCipher] = useState(() => {
     const stored = localStorage.getItem("tiktokShopInfo");
     return stored ? JSON.parse(stored) : [];
@@ -75,8 +73,6 @@ const LazadaBatchPrint = () => {
   const selectedLanguage = useSelector(
     (state) => state.user.selectedLanguageRedux
   );
-
-  console.log(isLoading, "klsjdflkjadslkjfljasljflj");
 
   const handleToReset = () => {
     setFilteredData(customersData?.slice(0, 5));
@@ -147,13 +143,33 @@ const LazadaBatchPrint = () => {
   const [leftPaginationBtn, setLeftPaginationBtn] = useState(false);
   const [rightPaginationBtn, setRightPaginationBtn] = useState(true);
 
-  // const [getLazadaOrders] = useLazyGetLazadaOrdersQuery();
+  useEffect(() => {
+    const fetchPrintedIds = async () => {
+      try {
+        const res = await fetch(
+          "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds"
+        );
+        const data = await res.json();
+        console.log(data, "✅ Fetched printed IDs");
+
+        if (Array.isArray(data)) {
+          setLazadaPrintedIds(data);
+        } else {
+          throw new Error("Expected array but got invalid response");
+        }
+      } catch (err) {
+        console.error("❌ Failed to fetch printed IDs:", err);
+      }
+    };
+
+    fetchPrintedIds();
+  }, [lazadaOrderStatusCheck]);
 
   useEffect(() => {
     const fetchLazadaOrders = async () => {
       try {
         const now = new Date();
-        const fiveDaysAgo = new Date(now.getTime() - 100 * 24 * 60 * 60 * 1000);
+        const fiveDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
         const toISOString = (date) => date.toISOString().split(".")[0] + "Z";
         dispatch(
@@ -161,7 +177,6 @@ const LazadaBatchPrint = () => {
         );
         setCheckedItems([]);
         setSelectAll(false);
-
         setLazadaLoading(true); // ✅ set before trigger
 
         const response = await getLazadaOrders({
@@ -170,14 +185,41 @@ const LazadaBatchPrint = () => {
           createdBefore: toISOString(now),
           updateAfter: toISOString(fiveDaysAgo),
           updateBefore: toISOString(now),
-          status: lazadaOrderStatusCheck,
+          status:
+            lazadaOrderStatusCheck === "Packed_Printed"
+              ? "Packed"
+              : lazadaOrderStatusCheck,
           sortDirection: "DESC",
           offset: 0,
           limit: 100,
         }).unwrap();
 
         const parsedBody = JSON.parse(response?.body || "{}");
-        setTotalOrderData(parsedBody?.data?.orders);
+        let filteredOrderList = parsedBody?.data?.orders;
+        // Filter based on printed ID status
+        const printedIdSet = new Set(
+          lazadaPrintedIds.map((item) => item.lazadaPrintedId)
+        );
+        console.log(
+          lazadaPrintedIds,
+          printedIdSet,
+          "printedIdSet",
+          filteredOrderList,
+          "filterd data"
+        );
+
+        if (lazadaOrderStatusCheck === "Packed") {
+          filteredOrderList = filteredOrderList.filter(
+            (item) => !printedIdSet.has(String(item.order_id))
+          );
+        } else if (lazadaOrderStatusCheck === "Packed_Printed") {
+          filteredOrderList = filteredOrderList.filter((item) =>
+            printedIdSet.has(String(item.order_id))
+          );
+        }
+
+        dispatch(orderListData(filteredOrderList));
+        setTotalOrderData(filteredOrderList);
       } catch (error) {
         console.error("❌ Lazada Order Fetch Error:", error);
       } finally {
@@ -188,7 +230,7 @@ const LazadaBatchPrint = () => {
     if (lazadaOrderStatusCheck) {
       fetchLazadaOrders();
     }
-  }, [getLazadaOrders, lazadaOrderStatusCheck]);
+  }, [getLazadaOrders, lazadaOrderStatusCheck, lazadaPrintedIds]);
 
   useEffect(() => {
     const firstPageData = data?.slice(0, 5);
@@ -217,7 +259,6 @@ const LazadaBatchPrint = () => {
 
   // 5 data show in table function
   const handleToShowCurrentBarData = (count) => {
-    // console.log(customersData, "currentShowBar");
     if (count <= totalPart) {
       const data = totalOrderData;
       const currentData = count * 5;
@@ -281,9 +322,8 @@ const LazadaBatchPrint = () => {
 
       const result = await response.json();
       const parsedBody = JSON.parse(result.body);
-      console.log("parseBody", parsedBody);
-
       const itemDetails = parsedBody.data?.[0]; // Assuming you want the first item
+      console.log(itemDetails, "details");
 
       setSelectedCustomer(itemDetails);
       setIsModalOpen(true);
@@ -358,7 +398,9 @@ const LazadaBatchPrint = () => {
       );
       setModalMessage(
         <p className="text-xl font-semibold">
-          {t("AreYouSureToPrintForReadyToShip")}
+          {lazadaOrderStatusCheck === "Packed"
+            ? t("AreYouSureToPrintForReadyToShip")
+            : t("DoYouWantPrintAWBAgain")}
         </p>
       );
       setConfirmAction(() => handleConfirmShipping);
@@ -370,8 +412,6 @@ const LazadaBatchPrint = () => {
   const createPackage = async () => {
     const packageId = checkedItems[0]?.lineItems[0]?.packageId;
     const cipherValue = cipher[0]?.cipher;
-
-    console.log({ packageId, cipher: cipherValue }, "ship package");
 
     try {
       const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package?cipher=${encodeURIComponent(
@@ -395,63 +435,192 @@ const LazadaBatchPrint = () => {
   };
 
   const handleConfirmShipping = async () => {
+    const allOrderItems = [];
+
+    for (const item of checkedItems) {
+      const { order_id } = item;
+
+      try {
+        const response = await axios.get(
+          `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items`,
+          {
+            params: { orderId: order_id },
+            headers: {
+              Accept: "*/*",
+            },
+          }
+        );
+
+        const rawBody = response?.data?.body;
+        const parsedBody = JSON.parse(rawBody);
+        const data = parsedBody?.data;
+
+        if (!Array.isArray(data)) {
+          throw new Error("Invalid data format for order_id: " + order_id);
+        }
+
+        // Push as grouped data under each order_id
+        allOrderItems.push({ order_id, data });
+      } catch (error) {
+        console.error("❌ Error fetching order:", order_id, error);
+        toast.error(`Failed to fetch order ${order_id}`);
+        return; // Stop on first error
+      }
+    }
+
+    // All requests succeeded, now dispatch and navigate
     dispatch(
-      checkedItemsChange({ items: checkedItems, from: lazadaOrderStatusCheck })
+      checkedItemsChange({
+        items: allOrderItems, // Now an array of { order_id, data }
+        from: lazadaOrderStatusCheck,
+      })
     );
-    navigate("/batchPrintPrinting");
+
+    navigate("/lazadaAWBPrinting");
   };
 
   const handleConfirmPackage = async () => {
-    const cipherValue = cipher[0]?.cipher;
-
-    if (!cipherValue || checkedItems.length === 0) {
-      console.warn("Missing cipher or no checked items");
-      return;
-    }
+    const successfulIds = [];
+    const failedOrders = [];
 
     try {
-      const responses = await Promise.all(
-        checkedItems.map(async (item) => {
-          const packageId = item?.lineItems?.[0]?.packageId;
+      for (const item of checkedItems) {
+        const orderId = item?.order_id;
 
-          if (!packageId) {
-            console.warn(`Missing packageId for item with id ${item?.id}`);
-            return null;
-          }
+        if (!orderId) {
+          console.warn("Missing orderId");
+          failedOrders.push({ orderId: "Unknown", reason: "Missing order ID" });
+          continue;
+        }
 
-          const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package?cipher=${encodeURIComponent(
-            cipherValue
-          )}&packageId=${encodeURIComponent(packageId)}`;
+        // Step 1: Get order item ID
+        const itemRes = await fetch(
+          `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}`
+        );
+        const itemData = await itemRes.json();
+        const parsedBody = JSON.parse(itemData?.body ?? "{}");
+        const orderItemId = parsedBody?.data?.[0]?.order_item_id;
 
-          const res = await fetch(url, {
+        if (!orderItemId) {
+          console.warn("No order_item_id found for order", orderId);
+          failedOrders.push({ orderId, reason: "No order_item_id found" });
+          continue;
+        }
+
+        // Step 2: Get shipment provider
+        const shipmentRes = await fetch(
+          `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/order/shipment-provider`,
+          {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
+              Accept: "*/*",
             },
-          });
+            body: JSON.stringify({
+              orders: [
+                {
+                  order_id: orderId,
+                  order_item_ids: [orderItemId],
+                },
+              ],
+            }),
+          }
+        );
+        const shipmentData = await shipmentRes.json();
+        const providerInfo = shipmentData?.result?.data;
 
-          const result = await res.json();
-          console.log(`📦 Package created for order ${item?.id}:`, result);
-          dispatch(
-            checkedItemsChange({ items: [], from: lazadaOrderStatusCheck })
+        if (!providerInfo?.shipment_providers?.length) {
+          console.warn("No shipment providers found for order", orderId);
+          failedOrders.push({ orderId, reason: "No shipment providers found" });
+          continue;
+        }
+
+        const shipmentProviderCode =
+          providerInfo.shipment_providers[0].provider_code;
+        const shippingAllocateType = providerInfo.shipping_allocate_type;
+
+        // Step 3: Pack the order
+        const packRes = await fetch(
+          `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/pack2`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Accept: "*/*",
+            },
+            body: JSON.stringify({
+              pack_order_list: [
+                {
+                  order_item_list: [orderItemId],
+                  order_id: orderId,
+                },
+              ],
+              delivery_type: "dropship",
+              shipment_provider_code: shipmentProviderCode,
+              shipping_allocate_type: shippingAllocateType,
+            }),
+          }
+        );
+
+        const packResult = await packRes.json();
+
+        if (packResult?.result?.success) {
+          console.log(`✅ Packed order ${orderId}`, packResult);
+          successfulIds.push(orderId);
+        } else {
+          console.warn(
+            `❌ Failed to pack order ${orderId}`,
+            packResult?.result?.error_msg
           );
-          setCheckedItems([]);
-          setSelectAll(false);
-          return result;
-        })
-      );
+          failedOrders.push({
+            orderId,
+            reason: packResult?.result?.error_msg || "Packing failed",
+          });
+        }
+      }
 
-      // Optional: Filter out successfully processed items
-      const successfulIds = checkedItems.map((item) => item.id);
+      // ✅ Remove only successful
       const restOfOrders = filteredData.filter(
         (item) => !successfulIds.includes(item?.id)
       );
       setFilteredData(restOfOrders.slice(0, 5));
-      setIsConfirmModalOpen(false); // close the modal
       dispatch(checkedItemsChange({ items: [], from: lazadaOrderStatusCheck }));
       setCheckedItems([]);
+      setSelectAll(false);
+      setIsConfirmModalOpen(false);
+
+      if (failedOrders.length > 0) {
+        setModalTitle(
+          <div className="bg-red-200 w-16 h-16 rounded-full flex items-center justify-center">
+            <TiInfoOutline className="w-10 h-10 text-red-600" />
+          </div>
+        );
+        setModalMessage(
+          <div>
+            <p className="text-red-600 flex justify-center font-semibold mb-2">
+              ⚠️ {failedOrders.length} {t("ordersFailedToPack")}
+            </p>
+            <ul className="list-disc pl-5 text-sm text-gray-700 max-h-60 overflow-y-auto">
+              {failedOrders.map((f, index) => (
+                <li key={index}>
+                  <strong>{f.orderId}:</strong> {f.reason}
+                </li>
+              ))}
+            </ul>
+          </div>
+        );
+        setConfirmAction(null);
+        setShowConfirmButton(false);
+        setIsConfirmModalOpen(true);
+      } else {
+        console.log("✅ All selected orders packed successfully!");
+      }
     } catch (error) {
-      console.error("🚨 Error creating packages:", error);
+      console.error("🚨 Error packing orders:", error);
+      toast.error("Unexpected error occurred. Please try again.", {
+        autoClose: false,
+        position: "top-right",
+      });
     }
   };
 
@@ -514,7 +683,6 @@ const LazadaBatchPrint = () => {
         );
       }
       if (lazadaOrderStatusCheck === "shipped") {
-        // console.log(updateJsonData, "jsonData");
         if (response.error) {
           console.error("Error storing data:", response.error);
           toast.error("Failed To Store Import file Printing Data");
@@ -763,19 +931,23 @@ const LazadaBatchPrint = () => {
       {/* end section button */}
       <div className="mt-4 mr-8">
         <div className="flex items-center justify-end">
-          {lazadaOrderStatusCheck === "Packed" && (
-            // ||lazadaOrderStatusCheck === "AWAITING_COLLECTION_PRINTED"
+          {(lazadaOrderStatusCheck === "Packed" ||
+            lazadaOrderStatusCheck === "ready_to_ship" ||
+            lazadaOrderStatusCheck === "Packed_Printed") && (
             <button
               onClick={handleToCheckItemsShippingUpdate}
-              className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto  h-10 px-4 gap-2 py-2 rounded-md cursor-pointer flex items-center justify-center"
+              className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto h-10 px-4 gap-2 py-2 rounded-md cursor-pointer flex items-center justify-center"
             >
               <MdOutlineLocalPrintshop className="w-[18px] h-[18px]" />
               <p className="text-[15px] font-medium leading-normal capitalize pl-1">
-                {t("OrderShippingAndPrint")}
+                {lazadaOrderStatusCheck === "Packed"
+                  ? t("OrderShippingAndPrint")
+                  : t("PrintAWBAgain")}
               </p>
             </button>
           )}
-          {lazadaOrderStatusCheck === "AWAITING_SHIPMENT" && (
+
+          {lazadaOrderStatusCheck === "pending" && (
             <button
               onClick={handleToCheckItemsPackageUpdate}
               className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto  h-10 px-4 gap-2 py-2 rounded-md cursor-pointer flex items-center justify-center"

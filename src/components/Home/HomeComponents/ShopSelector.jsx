@@ -349,7 +349,14 @@ import { useTranslation } from "react-i18next";
 import AddShopeModal from "./AddShopeModal";
 import { useSelector } from "react-redux";
 
-const ShopSelector = () => {
+const ShopSelector = ({
+  openShop,
+  setOpenShop,
+  selectedStore,
+  setSelectedStore,
+  selectedPlatform,
+  setSelectedPlatform,
+}) => {
   const { t } = useTranslation();
   const TikTokShopList = useSelector((state) => state.allShopList.data);
 
@@ -402,14 +409,10 @@ const ShopSelector = () => {
     },
   ];
 
-  const [selectedPlatform, setSelectedPlatform] = useState("tiktok");
-  const [selectedStore, setSelectedStore] = useState(null);
-  const [openShop, setOpenShop] = useState(null);
-
   // Initialize with first TikTok shop if available
   useEffect(() => {
     if (TikTokShopList?.length > 0) {
-      setSelectedPlatform("tiktok");
+      setSelectedPlatform(selectedPlatform);
       setSelectedStore(TikTokShopList[0].name);
       saveShopToLocalStorage("tiktok", [TikTokShopList[0]]);
     }
@@ -424,7 +427,7 @@ const ShopSelector = () => {
   // When selecting platform, automatically select the first store of that platform
   const handlePlatformSelect = (platformId) => {
     setSelectedPlatform(platformId);
-
+    localStorage.setItem("SelectedPlatform", platformId);
     // Find the platform and get its first store
     const platformObj = shops.find((shop) => shop.id === platformId);
     if (platformObj && platformObj.stores.length > 0) {
@@ -439,6 +442,7 @@ const ShopSelector = () => {
   // Select a store under platform — save full object array with 1 selected object
   const handleStoreSelect = (platformId, storeName) => {
     setSelectedPlatform(platformId);
+    localStorage.setItem("SelectedPlatform", platformId);
     setSelectedStore(storeName);
 
     // Find the full shop object for that store name

@@ -76,7 +76,7 @@ export const tikTokOrderStatusOptions = [
 export const lazadaOrderStatusOptions = [
   {
     status: "Waiting For Shipment",
-    value: "pening",
+    value: "pending",
   },
   {
     status: "Packed",
@@ -84,12 +84,12 @@ export const lazadaOrderStatusOptions = [
   },
   {
     status: "Printed",
-    value: "AWAITING_COLLECTION_PRINTED",
+    value: "Packed_Printed",
   },
-  {
-    status: "Ready To Ship Pending",
-    value: "ready_to_ship_pending",
-  },
+  // {
+  //   status: "Ready To Ship Pending",
+  //   value: "ready_to_ship_pending",
+  // },
   {
     status: "Ready To Ship",
     value: "ready_to_ship",
