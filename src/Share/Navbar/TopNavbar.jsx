@@ -28,22 +28,38 @@ const TopNavbar = () => {
   const [activeLi, setActiveLi] = useState(null);
 
   // Update route state
+  // useEffect(() => {
+  //   const path = location.pathname;
+  //   if (path === "/" || path === "/home") {
+  //     dispatch(mainRouteStateFalseChange());
+  //   } else {
+  //     dispatch(mainRouteStateChange());
+  //   }
+
+  //   if (path.includes("settings")) setActiveLi(4);
+  //   else if (path.includes("utility")) setActiveLi(5);
+  //   else if (path.includes("batchprint")) setActiveLi(1);
+  //   else if (path.includes("singleprint")) setActiveLi(3);
+  //   else if (path.includes("manualOrder")) setActiveLi(6);
+  //   else if (path.includes("packages")) setActiveLi(2);
+  //   else if (path.includes("contact")) setActiveLi(7);
+  //   else setActiveLi(0);
+  // }, [location.pathname, dispatch]);
   useEffect(() => {
-    const path = location.pathname;
+    const path = location.pathname.toLowerCase();
+
     if (path === "/" || path === "/home") {
       dispatch(mainRouteStateFalseChange());
+      setActiveLi(0);
     } else {
       dispatch(mainRouteStateChange());
-    }
+      console.log(path, "patch");
 
-    if (path.includes("settings")) setActiveLi(4);
-    else if (path.includes("utility")) setActiveLi(5);
-    else if (path.includes("batchprint")) setActiveLi(1);
-    else if (path.includes("singleprint")) setActiveLi(3);
-    else if (path.includes("manualOrder")) setActiveLi(6);
-    else if (path.includes("packages")) setActiveLi(2);
-    else if (path.includes("contact")) setActiveLi(7);
-    else setActiveLi(0);
+      if (path.includes("tiktok")) setActiveLi(1);
+      else if (path.includes("lazada")) setActiveLi(2);
+      else if (path.includes("contact")) setActiveLi(3);
+      else setActiveLi(null); // If no match
+    }
   }, [location.pathname, dispatch]);
 
   const handleLanguageChange = (e) => {
@@ -59,7 +75,7 @@ const TopNavbar = () => {
 
   const navItems = [
     { key: "home", path: "/home" },
-    { key: "batchPrint", path: "/batchprint" },
+    { key: "TikTok", path: "/TikTokOrderManagemnt" },
     { key: "Lazada", path: "/LazadaOrderManagement" },
     // { key: "singlePrint", path: "/singleprint" },
     // { key: "settings", path: "/settings/recipient information" },

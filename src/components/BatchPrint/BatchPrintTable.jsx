@@ -54,6 +54,8 @@ const BatchPrintTable = ({
     }
   };
 
+  console.log(filteredData, "tittok");
+
   return (
     <div className="mt-6">
       {isLoading ? (
@@ -65,11 +67,11 @@ const BatchPrintTable = ({
         </div>
       ) : isError ? (
         <p className="text-center text-3xl text-red-500 font-medium py-20">
-          {t("NoData")}
+          {t("NoAvailableOrder")}
         </p>
       ) : filteredData?.length === 0 ? (
         <p className="text-center text-3xl text-red-500 font-medium py-20">
-          {t("NoData")}
+          {t("NoAvailableOrder")}
         </p>
       ) : (
         <table className="table">
@@ -92,7 +94,7 @@ const BatchPrintTable = ({
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                <span className="mr-[10px]">{t("DeliveryCode")}</span>
+                <span className="mr-[10px]">{t("orderId")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 ">
@@ -149,7 +151,7 @@ const BatchPrintTable = ({
 
                     {/* Delivery Code / Tracking Number */}
                     <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(order.trackingNumber) || t("NoData")}
+                      {formatText(order.id) || t("NoData")}
                     </td>
 
                     {/* Product Details */}

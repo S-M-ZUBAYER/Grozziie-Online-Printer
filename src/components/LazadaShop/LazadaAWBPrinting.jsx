@@ -65,52 +65,6 @@ const LazadaAWBPrinting = () => {
       const docUrls = [];
       const printedOrderIds = [];
 
-      //   for (const order of checkedItems.items) {
-      //     const { order_id, data } = order;
-
-      //     const packages = data
-      //       .map((item) => item?.package_id)
-      //       .filter(Boolean)
-      //       .map((id) => ({ package_id: id }));
-
-      //     if (!packages.length) {
-      //       toast.error(`No valid package_id found for order ${order_id}`);
-      //       continue;
-      //     }
-
-      //     try {
-      //       const response = await fetch(
-      //         "https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/print-awb",
-      //         {
-      //           method: "POST",
-      //           headers: {
-      //             Accept: "*/*",
-      //             "Content-Type": "application/json",
-      //           },
-      //           body: JSON.stringify({
-      //             doc_type: "PDF",
-      //             print_item_list: true,
-      //             packages,
-      //           }),
-      //         }
-      //       );
-
-      //       const result = await response.json();
-      //       const pdfUrl = result?.result?.data?.pdf_url;
-
-      //       if (pdfUrl) {
-      //         docUrls.push(pdfUrl);
-      //         printedOrderIds.push(order_id); // ✅ Save order_id for storing later
-      //       } else {
-      //         toast.error(`No PDF URL returned for order ${order_id}`);
-      //       }
-      //     } catch (error) {
-      //       console.error(`❌ Error printing AWB for order ${order_id}`, error);
-      //       toast.error(`Failed to print AWB for order ${order_id}`);
-      //       continue;
-      //     }
-      //   }
-
       for (const order of checkedItems.items) {
         const { order_id, data } = order;
 
@@ -120,7 +74,8 @@ const LazadaAWBPrinting = () => {
           .map((id) => ({ package_id: id }));
 
         if (!packages.length) {
-          toast.error(`No valid package_id found for order ${order_id}`);
+          // toast.error(`No valid package_id found for order ${order_id}`);
+          console.error(`No valid package_id found for order ${order_id}`);
           continue;
         }
 
@@ -185,11 +140,12 @@ const LazadaAWBPrinting = () => {
               }
             }
           } else {
-            toast.error(`No PDF URL returned for order ${order_id}`);
+            console.error(`No PDF URL returned for order ${order_id}`);
+            // toast.error(`No PDF URL returned for order ${order_id}`);
           }
         } catch (error) {
           console.error(`❌ Error printing AWB for order ${order_id}`, error);
-          toast.error(`Failed to print AWB for order ${order_id}`);
+          // toast.error(`Failed to print AWB for order ${order_id}`);
           continue;
         }
       }
