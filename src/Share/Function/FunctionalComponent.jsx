@@ -77,6 +77,83 @@ export const arrayToExcel = (data, fileName) => {
   XLSX.writeFile(wb, `${fileName}.xlsx`);
 };
 
+export const lazadaArrayToExcel = (data, fileName) => {
+  const updateData = data?.map((item) => {
+    const shippingAddress = item?.address_shipping || {};
+    const billingAddress = item?.address_billing || {};
+
+    return {
+      // Order-level fields
+      orderId: item.order_id,
+      orderNumber: item.order_number,
+      createdAt: item.created_at,
+      updatedAt: item.updated_at,
+      paymentMethod: item.payment_method,
+      price: item.price,
+      status: (item.statuses && item.statuses[0]) || "",
+
+      // Shipping details
+      shippingFee: item.shipping_fee,
+      shippingFeeOriginal: item.shipping_fee_original,
+      shippingFeeDiscountPlatform: item.shipping_fee_discount_platform,
+      shippingFeeDiscountSeller: item.shipping_fee_discount_seller,
+      warehouseCode: item.warehouse_code,
+
+      // Buyer info
+      customerFirstName: item.customer_first_name,
+      customerLastName: item.customer_last_name,
+      buyerNote: item.buyer_note,
+      remarks: item.remarks,
+
+      // Shipping address
+      shippingName: `${shippingAddress.first_name || ""} ${
+        shippingAddress.last_name || ""
+      }`.trim(),
+      shippingPhone: shippingAddress.phone,
+      shippingAddress1: shippingAddress.address1,
+      shippingAddress2: shippingAddress.address2,
+      shippingAddress3: shippingAddress.address3,
+      shippingAddress4: shippingAddress.address4,
+      shippingAddress5: shippingAddress.address5,
+      shippingCity: shippingAddress.city,
+      shippingPostCode: shippingAddress.post_code,
+      shippingCountry: shippingAddress.country,
+
+      // Billing address
+      billingName: `${billingAddress.first_name || ""} ${
+        billingAddress.last_name || ""
+      }`.trim(),
+      billingPhone: billingAddress.phone,
+      billingAddress1: billingAddress.address1,
+      billingAddress2: billingAddress.address2,
+      billingAddress3: billingAddress.address3,
+      billingAddress4: billingAddress.address4,
+      billingAddress5: billingAddress.address5,
+      billingCity: billingAddress.city,
+      billingPostCode: billingAddress.post_code,
+      billingCountry: billingAddress.country,
+
+      // Vouchers & tax
+      voucher: item.voucher,
+      voucherPlatform: item.voucher_platform,
+      voucherSeller: item.voucher_seller,
+      taxCode: item.tax_code,
+
+      // Misc
+      branchNumber: item.branch_number,
+      deliveryInfo: item.delivery_info,
+      promisedShippingTimes: item.promised_shipping_times,
+      giftOption: item.gift_option,
+      giftMessage: item.gift_message,
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(updateData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Sheet 1");
+  XLSX.writeFile(wb, `${fileName}.xlsx`);
+};
+
 export const generateRandomNumberWithTime = () => {
   // Get the current date and time
   const currentDate = new Date();

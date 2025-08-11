@@ -128,37 +128,33 @@ const BatchPrint = () => {
     }
   };
 
-  // Function to handle individual checkbox change
-
   useEffect(() => {
-    const fetchPrintedIds = async () => {
-      try {
-        const res = await fetch(
-          "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds"
-        );
-        const data = await res.json();
-        console.log(data, "✅ Fetched printed IDs");
+    let isMounted = true;
 
-        if (Array.isArray(data)) {
-          setTikTokPrintedIds(data);
-        } else {
-          throw new Error("Expected array but got invalid response");
-        }
-      } catch (err) {
-        console.error("❌ Failed to fetch printed IDs:", err);
-      }
-    };
-
-    fetchPrintedIds();
-  }, [tikTokOrderStatusCheck]);
-
-  useEffect(() => {
     const fetchData = async () => {
       try {
-        setTiktokLoading(true); // Start loading
+        setTiktokLoading(true);
+
+        // 1️⃣ Ensure printed IDs are loaded first
+        let printedIds = tikTokPrintedIds;
+        if (!printedIds || printedIds.length === 0) {
+          const res = await fetch(
+            "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds"
+          );
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            printedIds = data;
+            if (isMounted) setTikTokPrintedIds(data);
+          } else {
+            throw new Error("Expected array but got invalid response");
+          }
+        }
+
+        // 2️⃣ Only proceed if we have cipher & status
+        if (!cipher?.[0]?.cipher || !tikTokOrderStatusCheck) return;
 
         const now = Math.floor(Date.now() / 1000);
-        const fiveDaysAgo = now - 10 * 24 * 60 * 60;
+        const sevenDaysAgo = now - 7 * 24 * 60 * 60;
 
         dispatch(
           checkedItemsChange({ items: [], from: tikTokOrderStatusCheck })
@@ -169,9 +165,9 @@ const BatchPrint = () => {
         const response = await loadOrderList({
           cipher: cipher[0]?.cipher,
           shippingType: "TIKTOK",
-          createTimeGe: fiveDaysAgo,
+          createTimeGe: sevenDaysAgo,
           createTimeLt: now,
-          updateTimeGe: fiveDaysAgo,
+          updateTimeGe: sevenDaysAgo,
           updateTimeLt: now,
           orderStatus:
             tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED"
@@ -183,12 +179,10 @@ const BatchPrint = () => {
 
         const orders = response?.data?.orders ?? [];
 
-        // Filter orders with buyerEmail
+        // 3️⃣ Filter orders
         let filteredOrderList = orders.filter((item) => item?.buyerEmail);
-
-        // Filter based on printed ID status
         const printedIdSet = new Set(
-          tikTokPrintedIds.map((item) => item.tikTokPrintedId)
+          printedIds.map((item) => item.tikTokPrintedId)
         );
 
         if (tikTokOrderStatusCheck === "AWAITING_COLLECTION") {
@@ -201,28 +195,23 @@ const BatchPrint = () => {
           );
         }
 
-        dispatch(orderListData(filteredOrderList));
-        setTotalOrderData(filteredOrderList);
+        if (isMounted) {
+          dispatch(orderListData(filteredOrderList));
+          setTotalOrderData(filteredOrderList);
+        }
       } catch (error) {
         console.error("❌ Error fetching TikTok orders:", error);
       } finally {
-        setTiktokLoading(false); // Done loading
+        if (isMounted) setTiktokLoading(false);
       }
     };
 
-    if (cipher?.[0]?.cipher && tikTokPrintedIds) {
-      fetchData();
-    }
-  }, [
-    cipher,
-    dispatch,
-    loadOrderList,
-    tikTokOrderStatusCheck,
-    tikTokPrintedIds,
-    setCheckedItems,
-    setSelectAll,
-    setTotalOrderData,
-  ]);
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [cipher, tikTokOrderStatusCheck, loadOrderList, dispatch]);
 
   const handleCheckboxChange = (order) => {
     if (checkedItems.some((item) => item?.id === order?.id)) {
@@ -388,9 +377,6 @@ const BatchPrint = () => {
       );
       setModalMessage(
         <p className="text-xl font-semibold">
-          {/* {selectedLanguage === "zh-CN"
-            ? "您确定已经完成此订单的包装了吗？"
-            : "Are you sure you have completed packaging this order?"} */}
           {t("AreYouSureYouHaveCompletedPackagingThisOrder")}
         </p>
       );
@@ -594,29 +580,6 @@ const BatchPrint = () => {
     <div className="bg-[#004368] bg-opacity-5 w-full h-screen">
       <div className="px-[30px] pt-6 pb-4">
         {/* top section */}
-        {/* <NewSearchComponent
-          setStartDate={setStartDate}
-          startDate={startDate}
-          endDate={endDate}
-          setEndDate={setEndDate}
-          setTikTokOrderStatusCheck={setTikTokOrderStatusCheck}
-          handleToSearch={handleToSearch}
-          handleToReset={handleToReset}
-          searchFields={searchFields}
-          setSearchFields={setSearchFields}
-          customersData={customersData}
-          setFilteredData={setFilteredData}
-          isActiveBtnRecipientAddress={isActiveBtnRecipientAddress}
-          setIsActiveBtnRecipientAddress={setIsActiveBtnRecipientAddress}
-          isActiveBtnOrderId={isActiveBtnOrderId}
-          setIsActiveBtnOrderId={setIsActiveBtnOrderId}
-          isActiveBtnAccountName={isActiveBtnAccountName}
-          setIsActiveBtnAccountName={setIsActiveBtnAccountName}
-          isActiveBtnProduct={isActiveBtnProduct}
-          setIsActiveBtnProduct={setIsActiveBtnProduct}
-          isActiveBtnAmount={isActiveBtnAmount}
-          setIsActiveBtnAmount={setIsActiveBtnAmount}
-        /> */}
         <NewSearchComponent
           setStartDate={setStartDate}
           startDate={startDate}

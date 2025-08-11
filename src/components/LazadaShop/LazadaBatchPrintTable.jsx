@@ -46,7 +46,7 @@ const LazadaBatchPrintTable = ({
       const itemJson = await itemRes.json();
       const parsedItemData = JSON.parse(itemJson?.body || "{}");
       const items = parsedItemData?.data || [];
-      console.log("item", items);
+      console.log("item", items, order);
       // Step 2: Collect all valid package_ids
       const ofcPackageIdList = items
         .map((item) => item?.package_id)
@@ -59,9 +59,10 @@ const LazadaBatchPrintTable = ({
 
       // Step 3: Build query string with multiple ofcPackageIdList
       const queryParams = new URLSearchParams({ orderId });
-      ofcPackageIdList.forEach((id) =>
-        queryParams.append("ofcPackageIdList", id)
-      );
+      ofcPackageIdList.forEach((id) => {
+        const cleanId = id.startsWith("FP") ? id.slice(2) : id;
+        queryParams.append("ofcPackageIdList", cleanId);
+      });
 
       const trackingUrl = `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/logistic/order/trace?${queryParams.toString()}`;
 
@@ -86,6 +87,7 @@ const LazadaBatchPrintTable = ({
       setLoading(false);
     }
   };
+  console.log(filteredData);
 
   return (
     <div className="mt-6">
@@ -132,10 +134,8 @@ const LazadaBatchPrintTable = ({
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                 {t("ProductDetails")}
               </th>
-              {(lazadaOrderStatusCheck === "Packed" ||
-                lazadaOrderStatusCheck === "ready_to_ship" ||
-                lazadaOrderStatusCheck === "shipped" ||
-                lazadaOrderStatusCheck === "Packed_Printed") && (
+              {(lazadaOrderStatusCheck === "delivered" ||
+                lazadaOrderStatusCheck === "shipped") && (
                 <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-r-md">
                   <span className="mr-[10px]">{t("Tracking")}</span>
                 </th>
@@ -145,20 +145,10 @@ const LazadaBatchPrintTable = ({
           <tbody>
             {filteredData?.map((order) => {
               const address = order.address_billing || {};
-              const receiverName =
-                [address.first_name, address.last_name]
-                  .filter(Boolean)
-                  .join(" ") || t("NoData");
-
               const fullAddress = [
-                address.address1,
-                address.address2,
-                address.address3,
-                address.address4,
-                address.address5,
+                address.country,
                 address.city,
                 address.post_code,
-                address.country,
               ]
                 .filter(Boolean)
                 .join(", ");
@@ -186,7 +176,7 @@ const LazadaBatchPrintTable = ({
 
                   {/* Receiver Name */}
                   <td className="text-black opacity-80 text-sm font-normal leading-4">
-                    {receiverName}
+                    {formatText(order?.orderItemInfo[0]?.name) || t("NoData")}
                   </td>
 
                   {/* Full Address */}
@@ -221,10 +211,8 @@ const LazadaBatchPrintTable = ({
                   </td>
 
                   {/* Optional Tracking Button */}
-                  {(lazadaOrderStatusCheck === "Packed" ||
-                    lazadaOrderStatusCheck === "ready_to_ship" ||
-                    lazadaOrderStatusCheck === "shipped" ||
-                    lazadaOrderStatusCheck === "Packed_Printed") && (
+                  {(lazadaOrderStatusCheck === "delivered" ||
+                    lazadaOrderStatusCheck === "shipped") && (
                     <td className="text-black opacity-80 text-sm font-normal leading-4">
                       <p
                         className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"

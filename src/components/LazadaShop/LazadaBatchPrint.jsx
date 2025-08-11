@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { MdOutlineLocalPrintshop } from "react-icons/md";
-import { arrayToExcel } from "../../Share/Function/FunctionalComponent";
+import { lazadaArrayToExcel } from "../../Share/Function/FunctionalComponent";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { checkedItemsChange } from "../../features/slice/userSlice";
 import * as XLSX from "xlsx";
 import NewSearchComponent from "../../Share/SearchComponent/NewSearchComponent";
-import { filterDataBySearchFieldsBatchPrint } from "../../Share/SearchComponent/SearchComponentFunction";
+import { filterLazadaDataBySearchFields } from "../../Share/SearchComponent/SearchComponentFunction";
 import toast from "react-hot-toast";
 import { orderListData } from "../../features/slice/orderListSlice";
 import ConfirmationModal from "../../Share/ConfirmationModal";
@@ -144,46 +144,44 @@ const LazadaBatchPrint = () => {
   const [rightPaginationBtn, setRightPaginationBtn] = useState(true);
 
   useEffect(() => {
-    const fetchPrintedIds = async () => {
-      try {
-        const res = await fetch(
-          "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds"
-        );
-        const data = await res.json();
-        console.log(data, "✅ Fetched printed IDs");
+    let isMounted = true;
 
-        if (Array.isArray(data)) {
-          setLazadaPrintedIds(data);
-        } else {
-          throw new Error("Expected array but got invalid response");
+    const fetchData = async () => {
+      try {
+        setLazadaLoading(true);
+
+        // ✅ 1. Ensure printed IDs are loaded first
+        let printedIds = lazadaPrintedIds;
+        if (printedIds.length === 0) {
+          const res = await fetch(
+            "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds"
+          );
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            printedIds = data;
+            if (isMounted) setLazadaPrintedIds(data);
+          }
         }
-      } catch (err) {
-        console.error("❌ Failed to fetch printed IDs:", err);
-      }
-    };
 
-    fetchPrintedIds();
-  }, [lazadaOrderStatusCheck]);
+        // ✅ 2. Only fetch orders if we have a status
+        if (!lazadaOrderStatusCheck) return;
 
-  useEffect(() => {
-    const fetchLazadaOrders = async () => {
-      try {
         const now = new Date();
-        const fiveDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         const toISOString = (date) => date.toISOString().split(".")[0] + "Z";
+
         dispatch(
           checkedItemsChange({ items: [], from: lazadaOrderStatusCheck })
         );
         setCheckedItems([]);
         setSelectAll(false);
-        setLazadaLoading(true); // ✅ set before trigger
 
+        // ✅ 3. Get main order list
         const response = await getLazadaOrders({
           sortBy: "updated_at",
-          createdAfter: toISOString(fiveDaysAgo),
+          createdAfter: toISOString(sevenDaysAgo),
           createdBefore: toISOString(now),
-          updateAfter: toISOString(fiveDaysAgo),
+          updateAfter: toISOString(sevenDaysAgo),
           updateBefore: toISOString(now),
           status:
             lazadaOrderStatusCheck === "Packed_Printed"
@@ -195,17 +193,10 @@ const LazadaBatchPrint = () => {
         }).unwrap();
 
         const parsedBody = JSON.parse(response?.body || "{}");
-        let filteredOrderList = parsedBody?.data?.orders;
-        // Filter based on printed ID status
+        let filteredOrderList = parsedBody?.data?.orders || [];
+
         const printedIdSet = new Set(
-          lazadaPrintedIds.map((item) => item.lazadaPrintedId)
-        );
-        console.log(
-          lazadaPrintedIds,
-          printedIdSet,
-          "printedIdSet",
-          filteredOrderList,
-          "filterd data"
+          printedIds.map((item) => item.lazadaPrintedId)
         );
 
         if (lazadaOrderStatusCheck === "Packed") {
@@ -218,19 +209,68 @@ const LazadaBatchPrint = () => {
           );
         }
 
-        dispatch(orderListData(filteredOrderList));
-        setTotalOrderData(filteredOrderList);
+        // ✅ 4. Fetch item details for each order_id (No Auth Needed)
+        // ✅ 4. Fetch item details for each order_id (No Auth Needed)
+        const orderWithItems = [];
+
+        for (const order of filteredOrderList) {
+          try {
+            const itemRes = await fetch(
+              `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${order.order_id}`,
+              { method: "GET", headers: { accept: "*/*" } }
+            );
+            const itemData = await itemRes.json();
+
+            // ✅ Parse the string body into JSON if needed
+            let parsedBody = {};
+            if (typeof itemData?.body === "string") {
+              try {
+                parsedBody = JSON.parse(itemData.body);
+              } catch (parseErr) {
+                console.error(
+                  `❌ Failed to parse body for order ${order.order_id}`,
+                  parseErr
+                );
+                parsedBody = {};
+              }
+            } else if (typeof itemData?.body === "object") {
+              parsedBody = itemData.body;
+            }
+
+            const parsedItemData =
+              parsedBody?.data?.order_items || // Standard Lazada API format
+              parsedBody?.data || // Fallback for direct array
+              [];
+
+            orderWithItems.push({
+              ...order,
+              orderItemInfo: parsedItemData, // attach correctly parsed items
+            });
+          } catch (itemErr) {
+            console.error(
+              `❌ Failed to fetch items for order ${order.order_id}`,
+              itemErr
+            );
+          }
+        }
+
+        // ✅ 5. Save final merged list
+        if (isMounted) {
+          dispatch(orderListData(orderWithItems));
+          setTotalOrderData(orderWithItems);
+        }
       } catch (error) {
         console.error("❌ Lazada Order Fetch Error:", error);
       } finally {
-        setLazadaLoading(false); // ✅ reset on finish
+        if (isMounted) setLazadaLoading(false);
       }
     };
 
-    if (lazadaOrderStatusCheck) {
-      fetchLazadaOrders();
-    }
-  }, [getLazadaOrders, lazadaOrderStatusCheck, lazadaPrintedIds]);
+    fetchData();
+    return () => {
+      isMounted = false;
+    };
+  }, [lazadaOrderStatusCheck]);
 
   useEffect(() => {
     const firstPageData = data?.slice(0, 5);
@@ -306,26 +346,26 @@ const LazadaBatchPrint = () => {
 
   const handleDetailsClick = async (orderData) => {
     try {
-      const orderId = orderData.order_id || orderData.order_number;
-      if (!orderId) {
-        console.warn("No order ID provided.");
-        return;
-      }
-      setDetailsLoading(true);
-      const response = await fetch(
-        `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}`
-      );
+      // const orderId = orderData.order_id || orderData.order_number;
+      // if (!orderId) {
+      //   console.warn("No order ID provided.");
+      //   return;
+      // }
+      // setDetailsLoading(true);
+      // const response = await fetch(
+      //   `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}`
+      // );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch order item details.");
-      }
+      // if (!response.ok) {
+      //   throw new Error("Failed to fetch order item details.");
+      // }
 
-      const result = await response.json();
-      const parsedBody = JSON.parse(result.body);
-      const itemDetails = parsedBody.data?.[0]; // Assuming you want the first item
-      console.log(itemDetails, "details");
+      // const result = await response.json();
+      // const parsedBody = JSON.parse(result.body);
+      // const itemDetails = parsedBody.data?.[0]; // Assuming you want the first item
+      // console.log(itemDetails, "details");
 
-      setSelectedCustomer(itemDetails);
+      setSelectedCustomer(orderData);
       setIsModalOpen(true);
       setDetailsLoading(false);
     } catch (error) {
@@ -340,8 +380,8 @@ const LazadaBatchPrint = () => {
 
   //make array to excel
 
-  const handleBatchPrinterExcelClick = () => {
-    arrayToExcel(checkedItems, "BatchPrinterOrderList");
+  const handleLazadaPrinterExcelClick = () => {
+    lazadaArrayToExcel(checkedItems, "lazadaPrinterOrderList");
   };
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -625,72 +665,111 @@ const LazadaBatchPrint = () => {
   };
 
   const handleFileChange = async (e) => {
-    const file = e.target.files[0];
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    if (!file) {
-      return;
-    }
     const reader = new FileReader();
-    reader.onload = async (e) => {
-      // Make the callback async
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
 
-      // Assuming the first sheet is the one you want to convert
-      const sheetName = workbook.SheetNames[0];
-      const sheet = workbook.Sheets[sheetName];
+    reader.onload = async (event) => {
+      try {
+        const data = new Uint8Array(event.target.result);
+        const workbook = XLSX.read(data, { type: "array" });
 
-      // Convert the sheet to an array of objects
-      const jsonData = XLSX.utils.sheet_to_json(sheet);
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rawJson = XLSX.utils.sheet_to_json(sheet);
 
-      const updateJsonData = jsonData?.map((item, index) => {
-        if (item) {
-          item.item_list = [
-            {
-              goods_id: item?.goods_id,
-              goods_count: item?.goods_count,
-              goods_img: item?.goods_img,
-              goods_name: item?.goods_name,
-              goods_price: item?.goods_price,
-              goods_spec: item?.goods_spec,
-              outer_goods_id: item?.outer_goods_id,
-              outer_id: item?.outer_id,
-              sku_id: item?.sku_id,
+        const importedData = rawJson.map((row) => {
+          // Construct nested structure from flat row fields
+          return {
+            order_id: row.order_id,
+            order_number: row.order_number,
+            customer_first_name: row.customer_first_name,
+            customer_last_name: row.customer_last_name,
+            payment_method: row.payment_method,
+            price: row.price,
+            items_count: row.items_count,
+            shipping_fee: row.shipping_fee,
+            warehouse_code: row.warehouse_code,
+            voucher: row.voucher,
+            voucher_code: row.voucher_code,
+            statuses:
+              typeof row.statuses === "string"
+                ? row.statuses.split(",").map((s) => s.trim())
+                : Array.isArray(row.statuses)
+                ? row.statuses
+                : [],
+            updated_at: row.updated_at,
+            created_at: row.created_at,
+            address_billing: {
+              address1: row.address_billing_address1,
+              address2: row.address_billing_address2,
+              address3: row.address_billing_address3,
+              address4: row.address_billing_address4,
+              address5: row.address_billing_address5,
+              city: row.address_billing_city,
+              country: row.address_billing_country,
+              first_name: row.address_billing_first_name,
+              last_name: row.address_billing_last_name,
+              phone: row.address_billing_phone,
+              phone2: row.address_billing_phone2,
+              post_code: row.address_billing_post_code,
             },
-          ];
-        }
-        const {
-          goods_id,
-          goods_count,
-          goods_img,
-          goods_name,
-          goods_price,
-          goods_spec,
-          outer_goods_id,
-          sku_id,
-          ...updateDataWithoutGoodsId
-        } = item; // Destructure 'goods_id' from 'item'
-        const updateData = { ...updateDataWithoutGoodsId };
-        return updateData;
-      });
+            address_shipping: {
+              address1: row.address_shipping_address1,
+              address2: row.address_shipping_address2,
+              address3: row.address_shipping_address3,
+              address4: row.address_shipping_address4,
+              address5: row.address_shipping_address5,
+              city: row.address_shipping_city,
+              country: row.address_shipping_country,
+              first_name: row.address_shipping_first_name,
+              last_name: row.address_shipping_last_name,
+              phone: row.address_shipping_phone,
+              phone2: row.address_shipping_phone2,
+              post_code: row.address_shipping_post_code,
+            },
+            // Add any other fields you want from row here...
+            // For example:
+            buyer_note: row.buyer_note || "",
+            delivery_info: row.delivery_info || "",
+            extra_attributes: row.extra_attributes || "",
+            gift_message: row.gift_message || "",
+            gift_option: row.gift_option === "true" || row.gift_option === true,
+            national_registration_number:
+              row.national_registration_number || "",
+            remarks: row.remarks || "",
+            shipping_fee_discount_platform: row.shipping_fee_discount_platform,
+            shipping_fee_discount_seller: row.shipping_fee_discount_seller,
+            shipping_fee_original: row.shipping_fee_original,
+            tax_code: row.tax_code || "",
+            voucher_platform: row.voucher_platform,
+            voucher_seller: row.voucher_seller,
+            branch_number: row.branch_number || "",
+            recipient_info: row.recipient_info || {},
+            // etc.
+          };
+        });
 
-      if (lazadaOrderStatusCheck === "Waiting For Shipment") {
-        dispatch(orderListData([...updateJsonData, ...customersData]));
-        setCustomersData([...updateJsonData, ...customersData]);
-        setTotalPart(Math.ceil((totalOrderData.length + jsonData?.length) / 5));
-        toast.success(
-          "Import file Store as Awaiting for Shipment Data Successfully"
-        );
-      }
-      if (lazadaOrderStatusCheck === "shipped") {
-        if (response.error) {
-          console.error("Error storing data:", response.error);
-          toast.error("Failed To Store Import file Printing Data");
-        } else {
-          toast.success("Import file Store as Printing Data Successfully");
+        // Now merge with existing data according to your status
+        if (lazadaOrderStatusCheck === "Waiting For Shipment") {
+          const merged = [...importedData, ...customersData];
+          setCustomersData(merged);
+          dispatch(orderListData(merged));
+          setTotalPart(Math.ceil(merged.length / 5));
+          toast.success(
+            "Import file stored as Awaiting for Shipment Data successfully"
+          );
+        } else if (lazadaOrderStatusCheck === "shipped") {
+          const merged = [...importedData, ...customersData];
+          setCustomersData(merged);
+          dispatch(orderListData(merged));
+          setTotalPart(Math.ceil(merged.length / 5));
+          toast.success("Import file stored as Printing Data successfully");
         }
-        setCustomersData([...updateJsonData, ...customersData]);
-        setTotalPart(Math.ceil((totalOrderData.length + jsonData?.length) / 5));
+      } catch (err) {
+        console.error("Failed to import Excel file:", err);
+        toast.error("Failed to process Excel file");
       }
     };
 
@@ -706,7 +785,7 @@ const LazadaBatchPrint = () => {
   const handleToSearch = () => {
     document.getElementById("searchInput").value = "";
     // Usage:
-    const filteredMultipleSearchingData = filterDataBySearchFieldsBatchPrint(
+    const filteredMultipleSearchingData = filterLazadaDataBySearchFields(
       customersData,
       searchFields
     );
@@ -744,15 +823,14 @@ const LazadaBatchPrint = () => {
         />
 
         {/* middle section */}
-        <div className="bg-white rounded-[17px] shadow-[6px 9px 16.4px 0px rgba(0, 0, 0, 0.04)] p-4 mt-5 grid grid-cols-12 gap-20">
-          {/* modal component */}
+        {/* <div className="bg-white rounded-[17px] shadow-[6px 9px 16.4px 0px rgba(0, 0, 0, 0.04)] p-4 mt-5 grid grid-cols-12 gap-20">
           <div className="col-span-2">
             <BatchPrinterModal />
           </div>
           <div className="col-span-10 custom-scrollbar">
             <StoredDeliveryCompanyList />
           </div>
-        </div>
+        </div> */}
 
         {/* bottom section table */}
         <div className="bg-white rounded-[17px] shadow-[6px 9px 16.4px 0px rgba(0, 0, 0, 0.04)] p-4 mt-5">
@@ -896,7 +974,7 @@ const LazadaBatchPrint = () => {
               </div>
 
               <button
-                onClick={handleBatchPrinterExcelClick}
+                onClick={handleLazadaPrinterExcelClick}
                 className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[115px] h-10 px-8 py-2 rounded-md cursor-pointer"
               >
                 <p className="text-[15px] font-medium capitalize cursor-pointer whitespace-nowrap">
@@ -982,49 +1060,48 @@ const LazadaBatchPrint = () => {
                   </h2>
                 </div>
 
-                {/* Info Grid */}
+                {/* Main Order Info Grid */}
                 <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
+                  {/* Display main order-level fields */}
                   <div>
-                    <strong>{t("BuyerName")}:</strong>{" "}
-                    {selectedCustomer?.name || t("NoData")}
-                  </div>
-                  <div>
-                    <strong>{t("BuyerID")}:</strong>{" "}
-                    {selectedCustomer?.buyer_id || t("NoData")}
-                  </div>
-                  <div>
-                    <strong>{t("OrderID")}:</strong>{" "}
-                    {selectedCustomer?.order_id || t("NoData")}
-                  </div>
-                  <div>
-                    <strong>{t("OrderItemID")}:</strong>{" "}
-                    {selectedCustomer?.order_item_id || t("NoData")}
-                  </div>
-                  <div>
-                    <strong>{t("InvoiceNumber")}:</strong>{" "}
-                    {selectedCustomer?.invoice_number || t("NoData")}
-                  </div>
-                  <div>
-                    <strong>{t("Status")}:</strong>{" "}
-                    <span className="text-blue-700 font-semibold">
-                      {selectedCustomer?.status || t("NoData")}
-                    </span>
-                  </div>
-                  <div>
-                    <strong>{t("ItemPrice")}:</strong>{" "}
-                    {selectedCustomer?.item_price ?? "0.00"}
-                  </div>
-                  <div>
-                    <strong>{t("PaidPrice")}:</strong>{" "}
-                    {selectedCustomer?.paid_price ?? "0.00"}
-                  </div>
-                  <div>
-                    <strong>{t("ShippingFee")}:</strong>{" "}
-                    {selectedCustomer?.shipping_amount ?? "0.00"}
+                    <strong>{t("OrderNumber")}:</strong>{" "}
+                    {selectedCustomer?.order_number || t("NoData")}
                   </div>
                   <div>
                     <strong>{t("Warehouse")}:</strong>{" "}
                     {selectedCustomer?.warehouse_code || t("NoData")}
+                  </div>
+                  <div>
+                    <strong>{t("VoucherPlatform")}:</strong>{" "}
+                    {selectedCustomer?.voucher_platform ?? 0}
+                  </div>
+                  <div>
+                    <strong>{t("VoucherSeller")}:</strong>{" "}
+                    {selectedCustomer?.voucher_seller ?? 0}
+                  </div>
+                  <div>
+                    <strong>{t("VoucherAmount")}:</strong>{" "}
+                    {selectedCustomer?.voucher_amount ?? 0}
+                  </div>
+                  <div>
+                    <strong>{t("ShippingFeeOriginal")}:</strong>{" "}
+                    {selectedCustomer?.shipping_fee_original ?? 0}
+                  </div>
+                  <div>
+                    <strong>{t("ShippingFeeDiscountPlatform")}:</strong>{" "}
+                    {selectedCustomer?.shipping_fee_discount_platform ?? 0}
+                  </div>
+                  <div>
+                    <strong>{t("ShippingFeeDiscountSeller")}:</strong>{" "}
+                    {selectedCustomer?.shipping_fee_discount_seller ?? 0}
+                  </div>
+                  <div>
+                    <strong>{t("ShippingAmount")}:</strong>{" "}
+                    {selectedCustomer?.shipping_amount ?? 0}
+                  </div>
+                  <div>
+                    <strong>{t("PaymentMethod")}:</strong>{" "}
+                    {selectedCustomer?.payment_method || t("NoData")}
                   </div>
                   <div>
                     <strong>{t("CreatedAt")}:</strong>{" "}
@@ -1034,107 +1111,75 @@ const LazadaBatchPrint = () => {
                     <strong>{t("UpdatedAt")}:</strong>{" "}
                     {new Date(selectedCustomer?.updated_at).toLocaleString()}
                   </div>
-                  <div>
-                    <strong>{t("ShippingType")}:</strong>{" "}
-                    {selectedCustomer?.shipping_type || t("NoData")}
-                  </div>
-                  <div>
-                    <strong>{t("ShippingProviderType")}:</strong>{" "}
-                    {selectedCustomer?.shipping_provider_type || t("NoData")}
-                  </div>
-                  <div>
-                    <strong>{t("DeliveryOption")}:</strong>{" "}
-                    {selectedCustomer?.delivery_option_sof ? "SOF" : "Standard"}
-                  </div>
-                  <div>
-                    <strong>{t("IsDigital")}:</strong>{" "}
-                    {selectedCustomer?.is_digital ? t("Yes") : t("No")}
-                  </div>
-                  <div>
-                    <strong>{t("DigitalDeliveryEmail")}:</strong>{" "}
-                    {selectedCustomer?.digital_delivery_info || t("NoData")}
-                  </div>
-                  <div>
-                    <strong>{t("Reason")}:</strong>{" "}
-                    {selectedCustomer?.reason || t("NoData")}
-                  </div>
-                  <div>
-                    <strong>{t("OrderType")}:</strong>{" "}
-                    {selectedCustomer?.order_type || t("NoData")}
-                  </div>
-                  <div>
-                    <strong>{t("ShopSKU")}:</strong>{" "}
-                    {selectedCustomer?.shop_sku || t("NoData")}
-                  </div>
-                  <div>
-                    <strong>{t("SKU")}:</strong>{" "}
-                    {selectedCustomer?.sku || t("NoData")}
-                  </div>
-                  <div>
-                    <strong>{t("Variation")}:</strong>{" "}
-                    {selectedCustomer?.variation || t("NoData")}
-                  </div>
-                  <div>
-                    <strong>{t("VoucherAmount")}:</strong>{" "}
-                    {selectedCustomer?.voucher_amount ?? 0}
-                  </div>
-                  <div>
-                    <strong>{t("VoucherSeller")}:</strong>{" "}
-                    {selectedCustomer?.voucher_seller ?? 0}
-                  </div>
-                  <div>
-                    <strong>{t("VoucherPlatform")}:</strong>{" "}
-                    {selectedCustomer?.voucher_platform ?? 0}
-                  </div>
-                  <div>
-                    <strong>{t("WalletCredits")}:</strong>{" "}
-                    {selectedCustomer?.wallet_credits ?? 0}
-                  </div>
-                  <div>
-                    <strong>{t("SupplyPrice")}:</strong>{" "}
-                    {selectedCustomer?.supply_price ?? 0}
-                  </div>
-                  <div>
-                    <strong>{t("TaxAmount")}:</strong>{" "}
-                    {selectedCustomer?.tax_amount ?? 0}
-                  </div>
+                  {/* Add more order-level fields as needed */}
                 </div>
 
-                {/* Product & Image */}
-                <div className="mt-6 flex items-start gap-4">
-                  <img
-                    src={
-                      selectedCustomer?.product_main_image ||
-                      "https://via.placeholder.com/100"
-                    }
-                    alt="SKU"
-                    className="w-28 h-28 object-cover rounded-lg border"
-                  />
-                  <div className="flex-1">
-                    <p>
-                      <strong>{t("ProductDetailURL")}:</strong>{" "}
-                      <a
-                        href={selectedCustomer?.product_detail_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline"
-                      >
-                        {t("ViewProduct")}
-                      </a>
-                    </p>
-                    <p>
-                      <strong>{t("ShippingFeeOriginal")}:</strong>{" "}
-                      {selectedCustomer?.shipping_fee_original}
-                    </p>
-                    <p>
-                      <strong>{t("DiscountPlatform")}:</strong>{" "}
-                      {selectedCustomer?.shipping_fee_discount_platform}
-                    </p>
-                    <p>
-                      <strong>{t("DiscountSeller")}:</strong>{" "}
-                      {selectedCustomer?.shipping_fee_discount_seller}
-                    </p>
-                  </div>
+                {/* Divider */}
+                <hr className="my-6" />
+
+                {/* Order Items List */}
+                <div>
+                  <h3 className="text-xl font-semibold mb-4">
+                    {t("OrderItems")}
+                  </h3>
+                  {selectedCustomer?.orderItemInfo?.length > 0 ? (
+                    <div className="space-y-4 max-h-[40vh] overflow-y-auto">
+                      {selectedCustomer.orderItemInfo.map((item, idx) => (
+                        <div
+                          key={item.order_item_id || idx}
+                          className="flex gap-4 items-center border p-4 rounded-lg shadow-sm"
+                        >
+                          <img
+                            src={
+                              item.product_main_image ||
+                              "https://via.placeholder.com/80"
+                            }
+                            alt={item.name || t("NoData")}
+                            className="w-20 h-20 object-cover rounded-md border"
+                          />
+                          <div className="flex-1">
+                            <p>
+                              <strong>{t("Name")}:</strong>{" "}
+                              {item.name || t("NoData")}
+                            </p>
+                            <p>
+                              <strong>{t("SKU")}:</strong>{" "}
+                              {item.sku || t("NoData")}
+                            </p>
+                            <p>
+                              <strong>{t("Variation")}:</strong>{" "}
+                              {item.variation || t("NoData")}
+                            </p>
+                            <p>
+                              <strong>{t("ItemPrice")}:</strong>{" "}
+                              {item.item_price ?? 0}
+                            </p>
+                            <p>
+                              <strong>{t("PaidPrice")}:</strong>{" "}
+                              {item.paid_price ?? 0}
+                            </p>
+                            <p>
+                              <strong>{t("Status")}:</strong>{" "}
+                              {item.status || t("NoData")}
+                            </p>
+                            <p>
+                              <strong>{t("ProductDetailURL")}:</strong>{" "}
+                              <a
+                                href={item.product_detail_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 underline"
+                              >
+                                {t("ViewProduct")}
+                              </a>
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p>{t("NoOrderItems")}</p>
+                  )}
                 </div>
 
                 {/* Footer */}
