@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { tikTokOrderStatusOptions } from "../../Share/Data/ClientData";
 import { lazadaOrderStatusOptions } from "../../Share/Data/ClientData";
 import { useDispatch, useSelector } from "react-redux";
@@ -7,7 +7,10 @@ import { format } from "date-fns";
 import { DateRange } from "react-date-range";
 import { CiSearch } from "react-icons/ci";
 import { RxReset } from "react-icons/rx";
-import { filterDataByDateRange } from "./SearchComponentFunction";
+import {
+  filterDataByDateRange,
+  filterLazadaDataByDateRange,
+} from "./SearchComponentFunction";
 import { useTranslation } from "react-i18next";
 import {
   lazadaSelectStatusChange,
@@ -56,17 +59,40 @@ const NewSearchComponent = ({
   const [currentActiveButton, setCurrentActiveButton] = useState(false);
   const { t } = useTranslation();
   const dispatch = useDispatch();
+  const containerRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target)
+      ) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleSelect = (date) => {
     setStartDate(date.selection.startDate);
     setEndDate(date.selection.endDate);
-    if ((date.selection.startDate, date.selection.endDate)) {
+    if (date.selection.startDate && date.selection.endDate) {
       setFilteredData(
-        filterDataByDateRange(
-          customersData,
-          date.selection.startDate,
-          date.selection.endDate
-        )
+        currentShop === "Lazada"
+          ? filterLazadaDataByDateRange(
+              customersData,
+              date.selection.startDate,
+              date.selection.endDate
+            )
+          : filterDataByDateRange(
+              customersData,
+              date.selection.startDate,
+              date.selection.endDate
+            )
       );
     }
   };
@@ -436,7 +462,7 @@ const NewSearchComponent = ({
         </div>
 
         {/* Date Range */}
-        <div className="w-[240px] h-12">
+        <div ref={containerRef} className="w-[240px] h-12 relative">
           <button
             className="inputBox w-full h-full bg-[#0043681A] rounded-md px-1 flex items-center"
             onClick={() => setOpen((open) => !open)}
@@ -448,19 +474,18 @@ const NewSearchComponent = ({
                 "MM/dd/yyyy"
               )}`}
               className="h-full w-full border-none outline-none text-black text-opacity-60 font-normal text-[15px] text-center bg-transparent"
+              readOnly
             />
           </button>
-          <div className="">
-            {open && (
-              <DateRange
-                editableDateInputs={true}
-                onChange={handleSelect}
-                moveRangeOnFirstSelection={false}
-                ranges={[selectionRange]}
-                className="bg-white bg-opacity-80 z-50 absolute mt-1 rounded-md"
-              />
-            )}
-          </div>
+          {open && (
+            <DateRange
+              editableDateInputs={true}
+              onChange={handleSelect}
+              moveRangeOnFirstSelection={false}
+              ranges={[selectionRange]}
+              className="bg-white bg-opacity-80 z-50 absolute mt-1 rounded-md"
+            />
+          )}
         </div>
 
         <div className="w-[470px] h-12 outline-none rounded-md text-[#00000099] font-normal text-[15px] text-center flex justify-between items-center cursor-pointer">
