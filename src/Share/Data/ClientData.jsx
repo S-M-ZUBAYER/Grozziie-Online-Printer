@@ -3,22 +3,6 @@ import Express2 from "../../assets/expressPrinterPage2.png";
 import Express3 from "../../assets/expressPrinterPage3.png";
 import Express from "../../assets/expressBatchPrinterPage.png";
 import TP874 from "../../assets/TP874.jpg";
-//export const selectionArray = [
-//   "Order Source",
-//   "Homer",
-//   "Marge",
-//   "Bart",
-//   "Lisa",
-//   "Maggie",
-// ];
-//export const statusArray = [
-//   "Pending delivery",
-//   "Homer",
-//   "Marge",
-//   "Bart",
-//   "Lisa",
-//   "Maggie",
-// ];
 
 export const deliveryCompanyNames = [
   "Default Delivery Company Name",
@@ -94,10 +78,10 @@ export const lazadaOrderStatusOptions = [
     status: "Ready To Ship",
     value: "ready_to_ship",
   },
-  {
-    status: "Shipped",
-    value: "shipped",
-  },
+  // {
+  //   status: "Shipped",
+  //   value: "shipped",
+  // },
   {
     status: "Delivered",
     value: "delivered",
@@ -109,6 +93,33 @@ export const lazadaOrderStatusOptions = [
   {
     status: "Cancel",
     value: "Canceled",
+  },
+];
+
+export const ShopeeOrderStatusOptions = [
+  {
+    status: "Ready To Ship",
+    value: "READY_TO_SHIP",
+  },
+  {
+    status: "Processed",
+    value: "PROCESSED",
+  },
+  {
+    status: "Shipped",
+    value: "SHIPPED",
+  },
+  {
+    status: "Completed",
+    value: "COMPLETED",
+  },
+  // {
+  //   status: "Returned",
+  //   value: "RETURNED",
+  // },
+  {
+    status: "Cancelled",
+    value: "CANCELLED",
   },
 ];
 export const orderList = [

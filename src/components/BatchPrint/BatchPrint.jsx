@@ -24,7 +24,6 @@ import { orderListData } from "../../features/slice/orderListSlice";
 import ConfirmationModal from "../../Share/ConfirmationModal";
 import { TiInfoOutline } from "react-icons/ti";
 import { AiOutlineCheckCircle } from "react-icons/ai";
-import { fetchLogisticCompanies } from "./BatchPrinterFunctions";
 
 const BatchPrint = () => {
   const [selectAll, setSelectAll] = useState(false);
@@ -75,8 +74,6 @@ const BatchPrint = () => {
 
   //Data post request send and return data get
   const [loadOrderList, { isLoading, isError }] = useLoadOrderListMutation();
-
-  console.log(isLoading, isError, "lksjfldks");
 
   // shipped Data Get from our server (Already Printed)
   const { data: printed, isLoading: isPrintedLoading } =
@@ -173,7 +170,7 @@ const BatchPrint = () => {
             tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED"
               ? "AWAITING_COLLECTION"
               : tikTokOrderStatusCheck,
-          pageSize: 100,
+          pageSize: 50,
           sortOrder: "DESC",
         }).unwrap();
 
@@ -271,7 +268,6 @@ const BatchPrint = () => {
 
   // 5 data show in table function
   const handleToShowCurrentBarData = (count) => {
-    // console.log(customersData, "currentShowBar");
     if (count <= totalPart) {
       const data = totalOrderData;
       const currentData = count * 5;
@@ -313,8 +309,6 @@ const BatchPrint = () => {
       setLeftPaginationBtn(false);
     }
   };
-
-  console.log(fetchLogisticCompanies, "logistic company");
 
   // details modal functionality
   const [selectedCustomer, setSelectedCustomer] = useState(null);
