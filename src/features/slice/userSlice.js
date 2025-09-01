@@ -30,6 +30,9 @@ export const counterSlice = createSlice({
     lazadaSelectStatusChange: (state, action) => {
       state.lazadaSelectStatus = action.payload;
     },
+    shopeeSelectStatusChange: (state, action) => {
+      state.shopeeSelectStatus = action.payload;
+    },
     paymentUserChange: (state, action) => {
       state.isPaymentUser = action.payload;
     },
@@ -63,6 +66,7 @@ export const {
   accountUserChange,
   tikTokSelectStatusChange,
   lazadaSelectStatusChange,
+  shopeeSelectStatusChange,
   mainRouteStateFalseChange,
   checkedItemsChange,
   printedDataFromRedux,

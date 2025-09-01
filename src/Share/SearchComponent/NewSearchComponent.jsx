@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import { tikTokOrderStatusOptions } from "../../Share/Data/ClientData";
+import {
+  ShopeeOrderStatusOptions,
+  tikTokOrderStatusOptions,
+} from "../../Share/Data/ClientData";
 import { lazadaOrderStatusOptions } from "../../Share/Data/ClientData";
 import { useDispatch, useSelector } from "react-redux";
 import { MdDateRange } from "react-icons/md";
@@ -15,12 +18,14 @@ import { useTranslation } from "react-i18next";
 import {
   lazadaSelectStatusChange,
   tikTokSelectStatusChange,
+  shopeeSelectStatusChange,
 } from "../../features/slice/userSlice";
 
 const NewSearchComponent = ({
   setTikTokOrderStatusCheck,
   tikTokOrderStatusCheck,
   setLazadaOrderStatusCheck,
+  setShopeeOrderStatusCheck,
   lazadaOrderStatusCheck,
   setStartDate,
   setEndDate,
@@ -225,6 +230,9 @@ const NewSearchComponent = ({
     } else if (currentShop === "Lazada") {
       setLazadaOrderStatusCheck(selectedValue);
       dispatch(lazadaSelectStatusChange(selectedValue));
+    } else if (currentShop === "Shopee") {
+      setShopeeOrderStatusCheck(selectedValue);
+      dispatch(shopeeSelectStatusChange(selectedValue));
     }
   };
 
@@ -245,6 +253,13 @@ const NewSearchComponent = ({
       });
     }
   };
+
+  const statusOptionsMap = {
+    TikTok: tikTokOrderStatusOptions,
+    Lazada: lazadaOrderStatusOptions,
+    Shopee: ShopeeOrderStatusOptions,
+  };
+  const orderStatusOptions = statusOptionsMap[currentShop] || [];
 
   // const handleSearchAllChange = (event) => {
   //   const searchTerm = event.target.value.toLowerCase();
@@ -445,10 +460,7 @@ const NewSearchComponent = ({
               onChange={handleRefundStatusChange}
               className="select w-[220px] h-10 rounded-md outline-none text-[#00000099] font-normal text-[15px] capitalize px-[15px] py-2 text-center inline-flex items-center bg-[#0043681A]"
             >
-              {(currentShop === "TikTok"
-                ? tikTokOrderStatusOptions
-                : lazadaOrderStatusOptions
-              ).map((status, index) => (
+              {orderStatusOptions.map((status, index) => (
                 <option
                   key={index}
                   value={status?.value}

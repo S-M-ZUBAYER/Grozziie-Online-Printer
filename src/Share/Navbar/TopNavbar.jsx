@@ -8,7 +8,6 @@ import {
   mainRouteStateChange,
   mainRouteStateFalseChange,
 } from "../../features/slice/userSlice";
-
 import grozziieLogo from "../../assets/GrozziieLogo.png";
 import Avatar from "../../assets/avatar.jpg";
 import customerSupport from "../../assets/Vector.png";
@@ -18,52 +17,29 @@ const TopNavbar = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
-
   const currentUser = useSelector((state) => state.user.accountUser);
   const routeState = useSelector((state) => state.user.mainRoute);
   const selectedLanguage = i18n.language;
   const storedUser = localStorage.getItem("printerUser");
   const userDetails = storedUser ? JSON.parse(storedUser) : null;
-
   const [activeLi, setActiveLi] = useState(null);
 
-  // Update route state
-  // useEffect(() => {
-  //   const path = location.pathname;
-  //   if (path === "/" || path === "/home") {
-  //     dispatch(mainRouteStateFalseChange());
-  //   } else {
-  //     dispatch(mainRouteStateChange());
-  //   }
-
-  //   if (path.includes("settings")) setActiveLi(4);
-  //   else if (path.includes("utility")) setActiveLi(5);
-  //   else if (path.includes("batchprint")) setActiveLi(1);
-  //   else if (path.includes("singleprint")) setActiveLi(3);
-  //   else if (path.includes("manualOrder")) setActiveLi(6);
-  //   else if (path.includes("packages")) setActiveLi(2);
-  //   else if (path.includes("contact")) setActiveLi(7);
-  //   else setActiveLi(0);
-  // }, [location.pathname, dispatch]);
   useEffect(() => {
     const path = location.pathname.toLowerCase();
-
     if (path === "/" || path === "/home") {
       dispatch(mainRouteStateFalseChange());
       setActiveLi(0);
     } else {
       dispatch(mainRouteStateChange());
-      console.log(path, "patch");
-
       if (path.includes("tiktok")) setActiveLi(1);
       else if (path.includes("lazada")) setActiveLi(2);
-      else if (path.includes("contact")) setActiveLi(3);
+      else if (path.includes("shopee")) setActiveLi(3);
+      else if (path.includes("contact")) setActiveLi(4);
       else setActiveLi(null); // If no match
     }
   }, [location.pathname, dispatch]);
 
   const handleLanguageChange = (e) => {
-    console.log(e.target.value);
     i18n.changeLanguage(e.target.value);
   };
 
@@ -77,6 +53,7 @@ const TopNavbar = () => {
     { key: "home", path: "/home" },
     { key: "TikTok", path: "/TikTokOrderManagemnt" },
     { key: "Lazada", path: "/LazadaOrderManagement" },
+    { key: "Shopee", path: "/ShopeeOrderManagement" },
     // { key: "singlePrint", path: "/singleprint" },
     // { key: "settings", path: "/settings/recipient information" },
     // { key: "utility", path: "/utility/delivery record" },
@@ -86,7 +63,6 @@ const TopNavbar = () => {
 
   return (
     <div className="navbar bg-slate-200 grid grid-cols-6 h-24">
-      {/* Logo */}
       <div className="flex justify-start items-center col-span-1 ml-[30px]">
         <Link to="/" className="text-xl">
           <img src={grozziieLogo} alt="Logo" className="w-32 h-7" />

@@ -1062,9 +1062,8 @@ const LazadaBatchPrint = () => {
 
                 {/* Main Order Info Grid */}
                 <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
-                  {/* Display main order-level fields */}
                   <div>
-                    <strong>{t("OrderNumber")}:</strong>{" "}
+                    <strong>{t("OrderID")}:</strong>{" "}
                     {selectedCustomer?.order_number || t("NoData")}
                   </div>
                   <div>
@@ -1111,7 +1110,6 @@ const LazadaBatchPrint = () => {
                     <strong>{t("UpdatedAt")}:</strong>{" "}
                     {new Date(selectedCustomer?.updated_at).toLocaleString()}
                   </div>
-                  {/* Add more order-level fields as needed */}
                 </div>
 
                 {/* Divider */}
@@ -1139,7 +1137,7 @@ const LazadaBatchPrint = () => {
                           />
                           <div className="flex-1">
                             <p>
-                              <strong>{t("Name")}:</strong>{" "}
+                              <strong>{t("Product")}:</strong>{" "}
                               {item.name || t("NoData")}
                             </p>
                             <p>

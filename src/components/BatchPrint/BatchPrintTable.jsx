@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useSelector } from "react-redux";
 import { RxCross1 } from "react-icons/rx";
 import { useTranslation } from "react-i18next";
 import FadeLoader from "react-spinners/FadeLoader";
@@ -14,9 +13,6 @@ const BatchPrintTable = ({
   tikTokOrderStatusCheck,
   cipher,
 }) => {
-  const selectedLanguage = useSelector(
-    (state) => state.user.selectedLanguageRedux
-  );
   const [showModal, setShowModal] = useState(false);
   const [trackingInfo, setTrackingInfo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -53,8 +49,6 @@ const BatchPrintTable = ({
       setLoading(false);
     }
   };
-
-  console.log(filteredData, "tittok");
 
   return (
     <div className="mt-6">
