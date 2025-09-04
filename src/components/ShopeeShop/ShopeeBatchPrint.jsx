@@ -30,7 +30,7 @@ const ShopeeBatchPrint = () => {
   const [totalOrderData, setTotalOrderData] = useState(orderListDataGet);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
-
+  const [packageLoading, setPackageLoading] = useState(false);
   console.log(totalOrderData, "orderlist...");
 
   const selectedShopeeOrderStatus = useSelector(
@@ -475,7 +475,7 @@ const ShopeeBatchPrint = () => {
   const handleConfirmPackage = async () => {
     const successfulIds = [];
     const failedOrders = [];
-
+    setPackageLoading(true);
     try {
       // ✅ Step 1: Get address_id (call once)
       const addressRes = await fetch(
@@ -563,6 +563,7 @@ const ShopeeBatchPrint = () => {
 
       // ✅ Show result modal if failures
       if (failedOrders.length > 0) {
+        setPackageLoadingg(false);
         setModalTitle(
           <div className="bg-red-200 w-16 h-16 rounded-full flex items-center justify-center">
             <TiInfoOutline className="w-10 h-10 text-red-600" />
@@ -595,6 +596,8 @@ const ShopeeBatchPrint = () => {
         autoClose: false,
         position: "top-right",
       });
+    } finally {
+      setPackageLoading(false); // always stop loader
     }
   };
 
@@ -956,7 +959,7 @@ const ShopeeBatchPrint = () => {
             >
               <MdOutlineLocalPrintshop className="w-[18px] h-[18px]" />
               <p className="text-[15px] font-medium leading-normal capitalize pl-1">
-                {t("OrderAcceptedAndPackages")}
+                {packageLoading ? "Loading" : t("OrderAcceptedAndPackages")}
               </p>
             </button>
           )}
@@ -968,6 +971,7 @@ const ShopeeBatchPrint = () => {
             onConfirm={confirmAction}
             showConfirmButton={showConfirmButton}
             selectedLanguage={selectedLanguage}
+            packageLoading={packageLoading}
           />
           {/* </Link> */}
           {selectedCustomer && isModalOpen && (
