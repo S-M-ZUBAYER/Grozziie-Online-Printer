@@ -9,6 +9,7 @@ const ConfirmationModal = ({
   showConfirmButton,
   showOkButton,
   selectedLanguage,
+  packageLoading,
 }) => {
   if (!isOpen) return null;
   const { t } = useTranslation();
@@ -39,7 +40,7 @@ const ConfirmationModal = ({
               onClick={onConfirm}
               className="bg-[#004368] text-white px-4 py-1 rounded hover:bg-opacity-30 hover:text-black h-8"
             >
-              {t("Confirm")}
+              {packageLoading ? "Loading" : t("Confirm")}
             </button>
           )}
         </div>
