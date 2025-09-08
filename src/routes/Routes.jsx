@@ -62,6 +62,8 @@ import WrappedPaymentPage from "../components/Pricing/PaymentPage";
 import SuccessPage from "../components/Pricing/SuccessPage";
 import LazadaBatchPrint from "../components/LazadaShop/LazadaBatchPrint";
 import LazadaAWBPrinting from "../components/LazadaShop/LazadaAWBPrinting";
+import ShopeeBatchPrint from "../components/ShopeeShop/ShopeeBatchPrint";
+import ShopeeAWBPrinting from "../components/ShopeeShop/ShopeeAWBPrinting";
 
 export const routes = createBrowserRouter([
   {
@@ -151,11 +153,21 @@ export const routes = createBrowserRouter([
       {
         path: "/LazadaOrderManagement",
         element: (
-          // <PrivateRoute>
-          <PaymentPrivateRoute>
-            <LazadaBatchPrint />
-          </PaymentPrivateRoute>
-          // </PrivateRoute>
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <LazadaBatchPrint />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/ShopeeOrderManagement",
+        element: (
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <ShopeeBatchPrint />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
         ),
       },
       {
@@ -223,21 +235,31 @@ export const routes = createBrowserRouter([
       {
         path: "/tikTokPrintPrinting",
         element: (
-          // <PrivateRoute>
-          // <PaymentPrivateRoute>
-          <BatchPrintPrinting />
-          // </PaymentPrivateRoute>
-          // </PrivateRoute>
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <BatchPrintPrinting />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
         ),
       },
       {
         path: "/lazadaAWBPrinting",
         element: (
-          // <PrivateRoute>
-          // <PaymentPrivateRoute>
-          <LazadaAWBPrinting />
-          // </PaymentPrivateRoute>
-          // </PrivateRoute>
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <LazadaAWBPrinting />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/shopeeAWBPrinting",
+        element: (
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <ShopeeAWBPrinting />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
         ),
       },
     ],

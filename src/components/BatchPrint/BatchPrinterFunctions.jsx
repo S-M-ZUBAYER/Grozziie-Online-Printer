@@ -29,25 +29,6 @@ export const getRangeWithCurrentLocalTimeTimestamp = () => {
   return epochTimestamp;
 };
 
-// const dispatch = useDispatch();
-
-// const decryptAndDispatchOrderList = async () => {
-//     try {
-//         // Decrypt the orderList
-//         const decryptedOrderList = await decryptArrayData(orderList);
-
-//         // Dispatch the decrypted orderList
-//         dispatch(orderListData(decryptedOrderList));
-
-//         console.log(decryptedOrderList, "check response"); // Log the decrypted orderList
-//     } catch (error) {
-//         console.error('Error decrypting orderList:', error);
-//     }
-// };
-
-// // Call the function to decrypt and dispatch the orderList
-// decryptAndDispatchOrderList();
-
 //*********************All function are related to  Express Delivery Company******************
 
 //Get all the Logistic company list

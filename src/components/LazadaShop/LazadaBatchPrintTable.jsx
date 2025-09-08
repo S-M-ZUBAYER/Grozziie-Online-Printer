@@ -46,7 +46,6 @@ const LazadaBatchPrintTable = ({
       const itemJson = await itemRes.json();
       const parsedItemData = JSON.parse(itemJson?.body || "{}");
       const items = parsedItemData?.data || [];
-      console.log("item", items, order);
       // Step 2: Collect all valid package_ids
       const ofcPackageIdList = items
         .map((item) => item?.package_id)
@@ -69,11 +68,7 @@ const LazadaBatchPrintTable = ({
       // Step 4: Call tracking API
       const traceRes = await fetch(trackingUrl);
       const traceJson = await traceRes.json();
-      console.log(
-        "tracking end",
-        `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/logistic/order/trace?${queryParams.toString()}`,
-        traceJson
-      );
+
       if (traceJson.code === 0 && traceJson.data) {
         setTrackingInfo(traceJson.data);
         setShowModal(true);
@@ -87,7 +82,6 @@ const LazadaBatchPrintTable = ({
       setLoading(false);
     }
   };
-  console.log(filteredData);
 
   return (
     <div className="mt-6">
@@ -154,8 +148,77 @@ const LazadaBatchPrintTable = ({
                 .join(", ");
 
               return (
+                // <tr
+                //   key={order.order_id}
+                //   className="capitalize hover:bg-[#0043681A] cursor-pointer"
+                // >
+                //   {/* Checkbox & Buyer Name */}
+                //   <td className="flex items-center justify-start cursor-pointer">
+                //     <input
+                //       type="checkbox"
+                //       className="w-4 h-4 rounded-[2px] text-black text-opacity-60 bg-[#004368] cursor-pointer"
+                //       value={order.order_id}
+                //       checked={checkedItems.some(
+                //         (i) => i.order_id === order.order_id
+                //       )}
+                //       onChange={() => handleCheckboxChange(order)}
+                //     />
+                //     <p className="ml-[7px] text-black opacity-80 text-sm font-normal leading-4">
+                //       {formatText(order?.customer_first_name) || t("NoData")}
+                //     </p>
+                //   </td>
+
+                //   {/* Receiver Name */}
+                //   <td className="text-black opacity-80 text-sm font-normal leading-4">
+                //     {formatText(order?.orderItemInfo[0]?.name) || t("NoData")}
+                //   </td>
+
+                //   {/* Full Address */}
+                //   <td className="text-black opacity-80 text-sm font-normal leading-4">
+                //     {formatText(fullAddress) || t("NoData")}
+                //   </td>
+
+                //   {/* Warehouse Code */}
+                //   <td className="text-black opacity-80 text-sm font-normal leading-4">
+                //     {formatText(order?.warehouse_code) || t("NoData")}
+                //   </td>
+
+                //   {/* Order Number */}
+                //   <td className="text-black opacity-80 text-sm font-normal leading-4">
+                //     {formatText(order?.order_number?.toString()) || t("NoData")}
+                //   </td>
+
+                //   {/* Product Details */}
+                //   <td className="flex items-center justify-between cursor-pointer">
+                //     <span className="text-black opacity-80 text-xs font-normal capitalize ml-[6px] mr-6">
+                //       {order.items_count
+                //         ? `Items: ${order?.items_count}`
+                //         : t("NoData")}
+                //     </span>
+
+                //     <p
+                //       className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
+                //       onClick={() => handleDetailsClick(order)}
+                //     >
+                //       {detailsLoading ? "Loading..." : t("Details")}
+                //     </p>
+                //   </td>
+
+                //   {/* Optional Tracking Button */}
+                //   {(lazadaOrderStatusCheck === "delivered" ||
+                //     lazadaOrderStatusCheck === "shipped") && (
+                //     <td className="text-black opacity-80 text-sm font-normal leading-4">
+                //       <p
+                //         className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
+                //         onClick={() => handleGetTracking(order)}
+                //       >
+                //         {t("Tracking")}
+                //       </p>
+                //     </td>
+                //   )}
+                // </tr>
                 <tr
-                  key={order.order_id}
+                  key={order?.order_id || Math.random()}
                   className="capitalize hover:bg-[#0043681A] cursor-pointer"
                 >
                   {/* Checkbox & Buyer Name */}
@@ -163,50 +226,53 @@ const LazadaBatchPrintTable = ({
                     <input
                       type="checkbox"
                       className="w-4 h-4 rounded-[2px] text-black text-opacity-60 bg-[#004368] cursor-pointer"
-                      value={order.order_id}
+                      value={order?.order_id || ""}
                       checked={checkedItems.some(
-                        (i) => i.order_id === order.order_id
+                        (i) => i?.order_id === order?.order_id
                       )}
-                      onChange={() => handleCheckboxChange(order)}
+                      onChange={() => order && handleCheckboxChange(order)}
+                      disabled={!order?.order_id} // disable checkbox if no id
                     />
                     <p className="ml-[7px] text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(order.customer_first_name) || t("NoData")}
+                      {formatText(order?.customer_first_name) || t("NoData")}
                     </p>
                   </td>
 
                   {/* Receiver Name */}
                   <td className="text-black opacity-80 text-sm font-normal leading-4">
-                    {formatText(order?.orderItemInfo[0]?.name) || t("NoData")}
+                    {formatText(order?.orderItemInfo?.[0]?.name) || t("NoData")}
                   </td>
 
                   {/* Full Address */}
                   <td className="text-black opacity-80 text-sm font-normal leading-4">
-                    {formatText(fullAddress) || t("NoData")}
+                    {formatText(fullAddress || "") || t("NoData")}
                   </td>
 
                   {/* Warehouse Code */}
                   <td className="text-black opacity-80 text-sm font-normal leading-4">
-                    {formatText(order.warehouse_code) || t("NoData")}
+                    {formatText(order?.warehouse_code) || t("NoData")}
                   </td>
 
                   {/* Order Number */}
                   <td className="text-black opacity-80 text-sm font-normal leading-4">
-                    {formatText(order.order_number?.toString()) || t("NoData")}
+                    {order?.order_number
+                      ? formatText(order.order_number.toString())
+                      : t("NoData")}
                   </td>
 
                   {/* Product Details */}
                   <td className="flex items-center justify-between cursor-pointer">
                     <span className="text-black opacity-80 text-xs font-normal capitalize ml-[6px] mr-6">
-                      {order.items_count
+                      {order?.items_count
                         ? `Items: ${order.items_count}`
                         : t("NoData")}
                     </span>
 
                     <p
                       className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
-                      onClick={() => handleDetailsClick(order)}
+                      onClick={() => order && handleDetailsClick(order)}
                     >
-                      {detailsLoading ? "Loading..." : t("Details")}
+                      {detailsLoading ? t("Loading") : t("Details")}
                     </p>
                   </td>
 
@@ -216,7 +282,7 @@ const LazadaBatchPrintTable = ({
                     <td className="text-black opacity-80 text-sm font-normal leading-4">
                       <p
                         className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
-                        onClick={() => handleGetTracking(order)}
+                        onClick={() => order && handleGetTracking(order)}
                       >
                         {t("Tracking")}
                       </p>
