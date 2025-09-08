@@ -125,7 +125,8 @@ const Registration = () => {
       // Make API call to register user
       const response = await fetch(
         // "https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/signup",
-        "https://grozziieget.zjweiting.com:3091/tiktokshop-print/user/signup",
+        // "https://grozziieget.zjweiting.com:3091/tiktokshop-print/user/signup",
+        "https://grozziie.zjweiting.com:3091/tiktokshop-print/user/signup",
         {
           method: "POST",
           headers: {
