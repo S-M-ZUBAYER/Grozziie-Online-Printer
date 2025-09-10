@@ -27,6 +27,7 @@ const NewSearchComponent = ({
   setLazadaOrderStatusCheck,
   setShopeeOrderStatusCheck,
   lazadaOrderStatusCheck,
+  shopeeOrderStatusCheck,
   setStartDate,
   setEndDate,
   startDate,
@@ -455,8 +456,13 @@ const NewSearchComponent = ({
               value={
                 currentShop === "TikTok"
                   ? tikTokOrderStatusCheck
-                  : lazadaOrderStatusCheck
-              } // <-- This ensures correct default
+                  : currentShop === "Lazada"
+                  ? lazadaOrderStatusCheck
+                  : currentShop === "Shopee"
+                  ? shopeeOrderStatusCheck
+                  : ""
+              }
+              // <-- This ensures correct default
               onChange={handleRefundStatusChange}
               className="select w-[220px] h-10 rounded-md outline-none text-[#00000099] font-normal text-[15px] capitalize px-[15px] py-2 text-center inline-flex items-center bg-[#0043681A]"
             >

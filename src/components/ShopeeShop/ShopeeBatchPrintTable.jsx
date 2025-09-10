@@ -346,6 +346,7 @@ const ShopeeBatchPrintTable = ({
       setLoading(false);
     }
   };
+  console.log(filteredData);
 
   return (
     <div className="mt-6">
@@ -368,17 +369,17 @@ const ShopeeBatchPrintTable = ({
         <table className="table">
           <thead>
             <tr className="h-11 text-black text-opacity-80 capitalize text-center text-sm font-normal leading-4">
-              <th className="sticky top-0 bg-[#0043681A] rounded-l-md">
+              {/* <th className="sticky top-0 bg-[#0043681A] rounded-l-md">
                 {t("AccountName")}
-              </th>
+              </th> */}
+              <th className="sticky top-0 bg-[#0043681A]">{t("orderId")}</th>{" "}
               <th className="sticky top-0 bg-[#0043681A]">
                 {t("ReceiverName")}
               </th>
               <th className="sticky top-0 bg-[#0043681A]">{t("Address")}</th>
-              <th className="sticky top-0 bg-[#0043681A]">
+              {/* <th className="sticky top-0 bg-[#0043681A]">
                 {t("DeliveryCompany")}
-              </th>
-              <th className="sticky top-0 bg-[#0043681A]">{t("orderId")}</th>
+              </th> */}
               <th className="sticky top-0 bg-[#0043681A] rounded-r-md">
                 {t("ProductDetails")}
               </th>
@@ -419,7 +420,9 @@ const ShopeeBatchPrintTable = ({
                       )}
                       onChange={() => handleCheckboxChange(order)}
                     />
-                    <p className="ml-2">{formatText(order?.buyer_username)}</p>
+                    {/* <p className="ml-2">{formatText(order?.buyer_username)}</p> */}
+                    {/* Order SN */}
+                    <p className="ml-2"> {formatText(order?.order_sn)}</p>
                   </td>
 
                   {/* Recipient name */}
@@ -429,10 +432,7 @@ const ShopeeBatchPrintTable = ({
                   <td>{formatText(fullAddress)}</td>
 
                   {/* Shipping Carrier */}
-                  <td>{formatText(order?.shipping_carrier)}</td>
-
-                  {/* Order SN */}
-                  <td>{formatText(order?.order_sn)}</td>
+                  {/* <td>{formatText(order?.shipping_carrier)}</td> */}
 
                   {/* Product details */}
                   <td>

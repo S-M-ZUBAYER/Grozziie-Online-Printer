@@ -106,6 +106,10 @@ export const ShopeeOrderStatusOptions = [
     value: "PROCESSED",
   },
   {
+    status: "Processed_Printed",
+    value: "PROCESSED_PRINTED",
+  },
+  {
     status: "Shipped",
     value: "SHIPPED",
   },
