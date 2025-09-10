@@ -31,7 +31,6 @@ const ShopeeBatchPrint = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [packageLoading, setPackageLoading] = useState(false);
-  console.log(totalOrderData, "orderlist...");
 
   const selectedShopeeOrderStatus = useSelector(
     (state) => state.user.shopeeSelectStatus
@@ -149,30 +148,30 @@ const ShopeeBatchPrint = () => {
   const [leftPaginationBtn, setLeftPaginationBtn] = useState(false);
   const [rightPaginationBtn, setRightPaginationBtn] = useState(true);
 
-  console.log(selectedShopeeOrderStatus, "orderStatuscheck");
-
   useEffect(() => {
     let isMounted = true;
     dispatch(checkedItemsChange({ items: [], from: shopeeOrderStatusCheck }));
     setCheckedItems([]);
     setSelectAll(false);
+
     const fetchShopeeOrdersWithDetails = async () => {
       try {
         setShopeeLoading(true);
-        const now = Math.floor(Date.now() / 1000); // current time in seconds
-        const sevenDaysAgo = now - 7 * 24 * 60 * 60; // 7 days before
-        // ✅ Step 1: Get main order list
+        const now = Math.floor(Date.now() / 1000);
+        const sevenDaysAgo = now - 7 * 24 * 60 * 60;
 
+        // ✅ Step 1: Get main order list
         const orderListResponse = await getShopeeOrders({
           timeFrom: sevenDaysAgo,
           timeTo: now,
-          orderStatus: selectedShopeeOrderStatus || "READY_TO_SHIP",
+          orderStatus:
+            selectedShopeeOrderStatus === "PROCESSED_PRINTED"
+              ? "PROCESSED"
+              : selectedShopeeOrderStatus || "READY_TO_SHIP",
         }).unwrap();
-        console.log(orderListResponse);
 
         const orderList = orderListResponse?.response?.order_list || [];
         if (orderList.length === 0) {
-          console.log("No Shopee orders found");
           if (isMounted) {
             dispatch(orderListData([]));
             setTotalOrderData([]);
@@ -193,7 +192,7 @@ const ShopeeBatchPrint = () => {
         const detailedOrders = detailsResponse?.response?.order_list || [];
 
         // ✅ Step 4: Merge base order + detailed info
-        const mergedOrders = orderList.map((order) => {
+        let mergedOrders = orderList.map((order) => {
           const details = detailedOrders.find(
             (d) => d.order_sn === order.order_sn
           );
@@ -203,7 +202,31 @@ const ShopeeBatchPrint = () => {
           };
         });
 
-        // ✅ Step 5: Save final result
+        // ✅ Step 5: Fetch printed IDs from external API
+        let printedIds = [];
+        try {
+          const res = await fetch(
+            "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/shopee/printedIds"
+          );
+          printedIds = await res.json();
+        } catch (err) {
+          console.error("❌ Error fetching printedIds:", err);
+        }
+
+        const shopeePrintedIds = printedIds.map((p) => p.shopeePrintedId);
+
+        // ✅ Step 6: Filter based on status
+        if (selectedShopeeOrderStatus === "PROCESSED_PRINTED") {
+          mergedOrders = mergedOrders.filter((order) =>
+            shopeePrintedIds.includes(order.order_sn)
+          );
+        } else if (selectedShopeeOrderStatus === "PROCESSED") {
+          mergedOrders = mergedOrders.filter(
+            (order) => !shopeePrintedIds.includes(order.order_sn)
+          );
+        }
+
+        // ✅ Step 7: Save final result
         if (isMounted) {
           dispatch(orderListData(mergedOrders));
           setTotalOrderData(mergedOrders);
@@ -222,53 +245,52 @@ const ShopeeBatchPrint = () => {
     return () => {
       isMounted = false;
     };
-  }, [shopeeOrderStatusCheck]);
+  }, [shopeeOrderStatusCheck, selectedShopeeOrderStatus, dispatch]);
 
   // ✅ Use correct hooks
   const [getShopeeOrderDetails] = useLazyGetShopeeOrderDetailsQuery();
 
-  const fetchShopeeOrdersWithDetails = async () => {
-    try {
-      // ✅ Step 1: Get order list
-      const orderListResponse = await getShopeeOrders({
-        timeFrom: 1755885600,
-        timeTo: 1756663199,
-        orderStatus: "READY_TO_SHIP",
-      }).unwrap();
+  // const fetchShopeeOrdersWithDetails = async () => {
+  //   try {
+  //     // ✅ Step 1: Get order list
+  //     const orderListResponse = await getShopeeOrders({
+  //       timeFrom: 1755885600,
+  //       timeTo: 1756663199,
+  //       orderStatus: "READY_TO_SHIP",
+  //     }).unwrap();
 
-      const orderList = orderListResponse?.response?.order_list || [];
+  //     const orderList = orderListResponse?.response?.order_list || [];
 
-      if (orderList.length === 0) {
-        console.log("No orders found");
-        return [];
-      }
+  //     if (orderList.length === 0) {
+  //       console.log("No orders found");
+  //       return [];
+  //     }
 
-      // ✅ Step 2: Extract order_sn list
-      const orderSnList = orderList.map((order) => order.order_sn);
+  //     // ✅ Step 2: Extract order_sn list
+  //     const orderSnList = orderList.map((order) => order.order_sn);
 
-      // ✅ Step 3: Get detailed info
-      const detailsResponse = await getShopeeOrderDetails({
-        orderSnList,
-        request_order_status_pending: true,
-        response_optional_fields: "total_amount",
-      }).unwrap();
-      const detailedOrders = detailsResponse?.response?.order_list || [];
-      return detailedOrders;
-    } catch (err) {
-      console.error("Error fetching Shopee orders:", err);
-      return [];
-    }
-  };
+  //     // ✅ Step 3: Get detailed info
+  //     const detailsResponse = await getShopeeOrderDetails({
+  //       orderSnList,
+  //       request_order_status_pending: true,
+  //       response_optional_fields: "total_amount",
+  //     }).unwrap();
+  //     const detailedOrders = detailsResponse?.response?.order_list || [];
+  //     return detailedOrders;
+  //   } catch (err) {
+  //     console.error("Error fetching Shopee orders:", err);
+  //     return [];
+  //   }
+  // };
 
   useEffect(() => {
-    console.log(data, "data");
     const firstPageData = data?.slice(0, 5);
     setTotalPart(Math.ceil(data?.length / 5));
     setCustomersData(data);
     setFilteredData(firstPageData);
     setCurrentCustomerData(firstPageData);
     setCurrentBar(1);
-    fetchShopeeOrdersWithDetails();
+    // fetchShopeeOrdersWithDetails();
   }, [shopeeOrderStatusCheck, totalOrderData, shopeeOrderStatusCheck]);
 
   useEffect(() => {
@@ -428,7 +450,7 @@ const ShopeeBatchPrint = () => {
       );
       setModalMessage(
         <p className="text-xl font-semibold">
-          {shopeeOrderStatusCheck === "Packed"
+          {shopeeOrderStatusCheck === "PROCESSED"
             ? t("AreYouSureToPrintForReadyToShip")
             : t("DoYouWantPrintAWBAgain")}
         </p>
@@ -563,7 +585,7 @@ const ShopeeBatchPrint = () => {
 
       // ✅ Show result modal if failures
       if (failedOrders.length > 0) {
-        setPackageLoadingg(false);
+        setPackageLoading(false);
         setModalTitle(
           <div className="bg-red-200 w-16 h-16 rounded-full flex items-center justify-center">
             <TiInfoOutline className="w-10 h-10 text-red-600" />
@@ -938,7 +960,7 @@ const ShopeeBatchPrint = () => {
         <div className="flex items-center justify-end">
           {(shopeeOrderStatusCheck === "SHIPPED" ||
             shopeeOrderStatusCheck === "PROCESSED" ||
-            shopeeOrderStatusCheck === "Packed_Printed") && (
+            shopeeOrderStatusCheck === "PROCESSED_PRINTED") && (
             <button
               onClick={handleToCheckItemsShippingUpdate}
               className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto h-10 px-4 gap-2 py-2 rounded-md cursor-pointer flex items-center justify-center"

@@ -29,6 +29,10 @@ import ActivityRow from "./HomeComponents/ActivityRow";
 import ShopSelector from "./HomeComponents/ShopSelector";
 import { useLoadOrderListMutation } from "../../features/allApis/batchPrintApi";
 import { useLazyGetLazadaOrdersQuery } from "../../features/allApis/lazadaApi";
+import {
+  useLazyGetShopeeOrderDetailsQuery,
+  useLazyGetShopeeOrdersQuery,
+} from "../../features/allApis/shopeeApi";
 
 const Home = () => {
   const { t } = useTranslation();
@@ -78,6 +82,30 @@ const Home = () => {
   const [lazadaDeliveredOrders, setLazadaDeliveredOrders] = useState([]);
   const [lazadacancelledOrders, setLazadacancelledOrders] = useState([]);
 
+  // 🔹 Shopee States
+  const [shopeePrintedIds, setShopeePrintedIds] = useState([]);
+  const [shopeeReadyToShip, setShopeeReadyToShip] = useState([]);
+  const [shopeeProcessed, setShopeeProcessed] = useState([]);
+  const [shopeeProcessedPrinted, setShopeeProcessedPrinted] = useState([]);
+  const [shopeeTodayPrinted, setShopeeTodayPrinted] = useState([]);
+  const [shopeeProcessedUnprinted, setShopeeProcessedUnprinted] = useState([]);
+  const [shopeeShippedTodayOrders, setShopeeShippedTodayOrders] = useState([]);
+  const [shopeeShippedOrders, setShopeeShippedOrders] = useState([]);
+  const [shopeeCompletedOrders, setShopeeCompletedOrders] = useState([]);
+  const [shopeeCancelledOrders, setShopeeCancelledOrders] = useState([]);
+  console.log(
+    selectedStore,
+    "shopeee",
+    shopeePrintedIds,
+    shopeeReadyToShip,
+    shopeeProcessed,
+    shopeeProcessedPrinted,
+    shopeeProcessedUnprinted,
+    shopeeShippedOrders,
+    shopeeCompletedOrders,
+    shopeeCancelledOrders
+  );
+
   const [loadOrderList] = useLoadOrderListMutation();
   const [getLazadaOrders, { isLoading, isError }] =
     useLazyGetLazadaOrdersQuery();
@@ -90,28 +118,44 @@ const Home = () => {
       value:
         selectedPlatform === "tiktok"
           ? awaitingCollectionPrinted?.length || 0
-          : lazadaPackedPrinted?.length || 0,
+          : selectedPlatform === "lazada"
+          ? lazadaPackedPrinted?.length || 0
+          : selectedPlatform === "shopee"
+          ? shopeeProcessedPrinted?.length || 0
+          : 0,
     },
     {
       name: t("New Orders"),
       value:
         selectedPlatform === "tiktok"
           ? awaitingShipment?.length || 0
-          : lazadaNewOrders?.length || 0,
+          : selectedPlatform === "lazada"
+          ? lazadaNewOrders?.length || 0
+          : selectedPlatform === "shopee"
+          ? shopeeReadyToShip?.length || 0
+          : 0,
     },
     {
       name: t("Cancelled"),
       value:
         selectedPlatform === "tiktok"
           ? cancelledOrders?.length || 0
-          : lazadacancelledOrders?.length,
+          : selectedPlatform === "lazada"
+          ? lazadacancelledOrders?.length || 0
+          : selectedPlatform === "shopee"
+          ? shopeeCancelledOrders?.length || 0
+          : 0,
     },
     {
       name: t("Processing for Delivery"),
       value:
         selectedPlatform === "tiktok"
           ? awaitingCollection?.length || 0
-          : lazadaOnShipping?.length || 0,
+          : selectedPlatform === "lazada"
+          ? lazadaOnShipping?.length || 0
+          : selectedPlatform === "shopee"
+          ? shopeeProcessedUnprinted?.length || 0
+          : 0,
     },
   ];
 
@@ -232,6 +276,8 @@ const Home = () => {
 
   // Lazada Call API
   useEffect(() => {
+    console.log("start");
+
     const fetchPrintedIds = async () => {
       try {
         const res = await fetch(
@@ -336,6 +382,161 @@ const Home = () => {
     fetchLazadaStatusOrders();
   }, [lazadaPrintedIds, selectedStore]);
 
+  // Shopee Fetch Printed IDs
+  useEffect(() => {
+    const fetchShopeePrintedIds = async () => {
+      try {
+        const res = await fetch(
+          "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/shopee/printedIds"
+        );
+        const data = await res.json();
+
+        console.log("📦 Shopee Printed IDs (raw):", data);
+
+        if (Array.isArray(data)) {
+          console.log("shopee ids", data);
+
+          setShopeePrintedIds(data);
+        }
+      } catch (err) {
+        console.error("❌ Failed to fetch Shopee printed IDs:", err);
+      }
+    };
+
+    // if (selectedStore === "Shopee") {
+    fetchShopeePrintedIds();
+    // }
+  }, [selectedStore]);
+
+  const [getShopeeOrderDetails] = useLazyGetShopeeOrderDetailsQuery();
+  const [getShopeeOrders] = useLazyGetShopeeOrdersQuery();
+
+  // Shopee Fetch Orders by Status
+  useEffect(() => {
+    const fetchShopeeStatusOrders = async () => {
+      const statuses = [
+        "READY_TO_SHIP",
+        "PROCESSED",
+        "SHIPPED",
+        "COMPLETED",
+        "CANCELLED",
+      ];
+
+      const now = Math.floor(Date.now() / 1000); // seconds
+      const sevenDaysAgo = now - 7 * 24 * 60 * 60;
+
+      const printedSet = new Set(
+        shopeePrintedIds.map((item) => String(item.shopeePrintedId))
+      );
+
+      console.log("🖨️ Shopee Printed Set:", printedSet);
+
+      for (const status of statuses) {
+        try {
+          // 1️⃣ Get base orders
+          const orderListResponse = await getShopeeOrders({
+            timeFrom: sevenDaysAgo,
+            timeTo: now,
+            orderStatus: status,
+          }).unwrap();
+
+          console.log(`📥 Shopee Orders (${status}) - raw:`, orderListResponse);
+
+          const orderList = orderListResponse?.response?.order_list || [];
+          console.log(`📋 Shopee Orders (${status}) - parsed list:`, orderList);
+
+          if (!orderList.length) continue;
+
+          // 2️⃣ Extract order_sn
+          const orderSnList = orderList.map((o) => o.order_sn);
+          console.log(`🔑 Shopee orderSnList (${status}):`, orderSnList);
+
+          // 3️⃣ Get order details
+          const detailsResponse = await getShopeeOrderDetails({
+            orderSnList,
+            request_order_status_pending: true,
+            response_optional_fields:
+              "total_amount,recipient_address,item_list",
+          }).unwrap();
+
+          console.log(`📥 Shopee Order Details (${status}):`, detailsResponse);
+
+          const detailedOrders = detailsResponse?.response?.order_list || [];
+
+          // 4️⃣ Merge orders with details
+          const mergedOrders = orderList.map((order) => {
+            const details = detailedOrders.find(
+              (d) => d.order_sn === order.order_sn
+            );
+            return { ...order, ...details };
+          });
+
+          console.log(`📝 Shopee Merged Orders (${status}):`, mergedOrders);
+
+          // 5️⃣ Split printed/unprinted
+          const printedOrders = mergedOrders.filter((item) =>
+            printedSet.has(String(item.order_sn))
+          );
+          const unprintedOrders = mergedOrders.filter(
+            (item) => !printedSet.has(String(item.order_sn))
+          );
+
+          console.log(`🖨️ Printed Orders (${status}):`, printedOrders);
+          console.log(`📄 Unprinted Orders (${status}):`, unprintedOrders);
+
+          // 6️⃣ Assign to relevant state
+          if (status === "READY_TO_SHIP") {
+            setShopeeReadyToShip(mergedOrders);
+          } else if (status === "PROCESSED") {
+            setShopeeProcessed(mergedOrders);
+            setShopeeProcessedPrinted(printedOrders);
+            setShopeeProcessedUnprinted(unprintedOrders);
+            // Convert UNIX timestamp (seconds) → Date
+            const fromUnix = (ts) => new Date(ts * 1000);
+
+            const now = new Date();
+
+            // Filter printed today
+            const todayPrinted = printedOrders.filter((order) => {
+              const updateTime = fromUnix(
+                order.update_time || order.createdAtUnix
+              );
+              return (
+                updateTime.getDate() === now.getDate() &&
+                updateTime.getMonth() === now.getMonth() &&
+                updateTime.getFullYear() === now.getFullYear()
+              );
+            });
+            setShopeeTodayPrinted(todayPrinted);
+          } else if (status === "SHIPPED") {
+            setShopeeShippedOrders(mergedOrders);
+            const shippedToday = mergedOrders.filter((order) => {
+              const updateTime = fromUnix(
+                order.update_time || order.ship_by_date
+              ); // or whichever field reflects shipped time
+              return (
+                updateTime.getDate() === now.getDate() &&
+                updateTime.getMonth() === now.getMonth() &&
+                updateTime.getFullYear() === now.getFullYear()
+              );
+            });
+            setShopeeShippedTodayOrders(shippedToday);
+          } else if (status === "COMPLETED") {
+            setShopeeCompletedOrders(mergedOrders);
+          } else if (status === "CANCELLED") {
+            setShopeeCancelledOrders(mergedOrders);
+          }
+        } catch (error) {
+          console.error(`❌ Failed to load Shopee orders for ${status}`, error);
+        }
+      }
+    };
+
+    // if (selectedStore === "Shopee" && shopeePrintedIds.length > 0) {
+    fetchShopeeStatusOrders();
+    // }
+  }, [shopeePrintedIds, selectedStore]);
+
   return (
     <div className="bg-[#0043680D] grid grid-cols-6">
       <div className="col-span-1">
@@ -367,8 +568,15 @@ const Home = () => {
             title={t("Printed Today")}
             count={
               selectedPlatform === "tiktok"
-                ? tikTokPrintedToday?.length.toString().padStart(2, "0") || "00"
-                : lazadaPrintedToday?.length.toString().padStart(2, "0") || "00"
+                ? tikTokPrintedToday?.length?.toString().padStart(2, "0") ||
+                  "00"
+                : selectedPlatform === "lazada"
+                ? lazadaPrintedToday?.length?.toString().padStart(2, "0") ||
+                  "00"
+                : selectedPlatform === "shopee"
+                ? shopeeTodayPrinted?.length?.toString().padStart(2, "0") ||
+                  "00"
+                : "00"
             }
             image={print}
           />
@@ -376,8 +584,16 @@ const Home = () => {
             title={t("Shipped Today")}
             count={
               selectedPlatform === "tiktok"
-                ? tikTokShippedToday?.length.toString().padStart(2, "0") || "00"
-                : lazadaShippedToday?.length.toString().padStart(2, "0") || "00"
+                ? tikTokShippedToday?.length?.toString().padStart(2, "0") ||
+                  "00"
+                : selectedPlatform === "lazada"
+                ? lazadaShippedToday?.length?.toString().padStart(2, "0") ||
+                  "00"
+                : selectedPlatform === "shopee"
+                ? shopeeShippedTodayOrders?.length
+                    ?.toString()
+                    .padStart(2, "0") || "00"
+                : "00"
             }
             image={shipped}
           />
@@ -386,9 +602,15 @@ const Home = () => {
             count={
               selectedPlatform === "tiktok"
                 ? awaitingCollectionUnprinted?.length
-                    .toString()
+                    ?.toString()
                     .padStart(2, "0") || "00"
-                : lazadaNewOrders?.length.toString().padStart(2, "0") || "00"
+                : selectedPlatform === "lazada"
+                ? lazadaNewOrders?.length?.toString().padStart(2, "0") || "00"
+                : selectedPlatform === "shopee"
+                ? shopeeProcessedUnprinted?.length
+                    ?.toString()
+                    .padStart(2, "0") || "00"
+                : "00"
             }
             image={needPrint}
           />
@@ -472,11 +694,17 @@ const Home = () => {
                   value={
                     selectedPlatform === "tiktok"
                       ? awaitingCollectionPrinted?.length
-                          .toString()
+                          ?.toString()
                           .padStart(2, "0") || "00"
-                      : lazadaPackedPrinted?.length
-                          .toString()
+                      : selectedPlatform === "lazada"
+                      ? lazadaPackedPrinted?.length
+                          ?.toString()
                           .padStart(2, "0") || "00"
+                      : selectedPlatform === "shopee"
+                      ? shopeeProcessedPrinted?.length
+                          ?.toString()
+                          .padStart(2, "0") || "00"
+                      : "00"
                   }
                 />
                 <ActivityRow
@@ -484,10 +712,16 @@ const Home = () => {
                   label={t("New Orders")}
                   value={
                     selectedPlatform === "tiktok"
-                      ? awaitingShipment?.length.toString().padStart(2, "0") ||
+                      ? awaitingShipment?.length?.toString().padStart(2, "0") ||
                         "00"
-                      : lazadaNewOrders?.length.toString().padStart(2, "0") ||
+                      : selectedPlatform === "lazada"
+                      ? lazadaNewOrders?.length?.toString().padStart(2, "0") ||
                         "00"
+                      : selectedPlatform === "shopee"
+                      ? shopeeReadyToShip?.length
+                          ?.toString()
+                          .padStart(2, "0") || "00"
+                      : "00"
                   }
                 />
                 <ActivityRow
@@ -495,11 +729,17 @@ const Home = () => {
                   label={t("Cancelled")}
                   value={
                     selectedPlatform === "tiktok"
-                      ? cancelledOrders?.length.toString().padStart(2, "0") ||
+                      ? cancelledOrders?.length?.toString().padStart(2, "0") ||
                         "00"
-                      : lazadacancelledOrders?.length
-                          .toString()
+                      : selectedPlatform === "lazada"
+                      ? lazadacancelledOrders?.length
+                          ?.toString()
                           .padStart(2, "0") || "00"
+                      : selectedPlatform === "shopee"
+                      ? shopeeCancelledOrders?.length
+                          ?.toString()
+                          .padStart(2, "0") || "00"
+                      : "00"
                   }
                 />
                 <ActivityRow
@@ -508,10 +748,16 @@ const Home = () => {
                   value={
                     selectedPlatform === "tiktok"
                       ? awaitingCollection?.length
-                          .toString()
+                          ?.toString()
                           .padStart(2, "0") || "00"
-                      : lazadaOnShipping?.length.toString().padStart(2, "0") ||
+                      : selectedPlatform === "lazada"
+                      ? lazadaOnShipping?.length?.toString().padStart(2, "0") ||
                         "00"
+                      : selectedPlatform === "shopee"
+                      ? shopeeProcessedUnprinted?.length
+                          ?.toString()
+                          .padStart(2, "0") || "00"
+                      : "00"
                   }
                 />
               </div>

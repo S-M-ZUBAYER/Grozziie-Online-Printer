@@ -24,6 +24,7 @@ const ShopeeAWBPrinting = () => {
     const stored = localStorage.getItem("tiktokShopInfo");
     return stored ? JSON.parse(stored) : [];
   });
+  console.log(checkedItems, "checkedItems");
 
   const currentItem = checkedItems?.items?.[0]; // Show first item for warehouse/delivery
 
@@ -61,160 +62,16 @@ const ShopeeAWBPrinting = () => {
       setShipmentProviders([]);
     }
   };
-  console.log("provider name", shipmentProviders);
-
-  // const handleMergeAndPrint = async () => {
-  //   try {
-  //     setIsLoading(true);
-
-  //     if (!checkedItems?.items?.length) {
-  //       alert("No orders selected.");
-  //       setIsLoading(false);
-  //       return;
-  //     }
-
-  //     const docUrls = [];
-  //     const printedOrderIds = [];
-
-  //     for (const order of checkedItems.items) {
-  //       const { order_id, data } = order;
-
-  //       const packages = data
-  //         .map((item) => item?.package_id)
-  //         .filter(Boolean)
-  //         .map((id) => ({ package_id: id }));
-
-  //       if (!packages.length) {
-  //         // toast.error(`No valid package_id found for order ${order_id}`);
-  //         console.error(`No valid package_id found for order ${order_id}`);
-  //         continue;
-  //       }
-
-  //       try {
-  //         // 🟠 Step 1: Print AWB
-  //         const response = await fetch(
-  //           "https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/print-awb",
-  //           {
-  //             method: "POST",
-  //             headers: {
-  //               Accept: "*/*",
-  //               "Content-Type": "application/json",
-  //             },
-  //             body: JSON.stringify({
-  //               doc_type: "PDF",
-  //               print_item_list: true,
-  //               packages,
-  //             }),
-  //           }
-  //         );
-
-  //         const result = await response.json();
-  //         const pdfUrl = result?.result?.data?.pdf_url;
-
-  //         if (pdfUrl) {
-  //           docUrls.push(pdfUrl);
-  //           printedOrderIds.push(order_id);
-
-  //           // 🟢 Step 2: Call "ready to ship" API for each package
-
-  //           const skipStatuses = [
-  //             "Packed_Printed",
-  //             "ready_to_ship",
-  //             "ready_to_ship_pending",
-  //           ];
-
-  //           if (!skipStatuses.includes(checkedItems?.from)) {
-  //             console.log(checkedItems?.from, "from");
-
-  //             for (const pkg of packages) {
-  //               try {
-  //                 const deliveryRes = await fetch(
-  //                   "https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/order/package/sof/delivered",
-  //                   {
-  //                     method: "POST",
-  //                     headers: {
-  //                       Accept: "*/*",
-  //                       "Content-Type": "application/json",
-  //                     },
-  //                     body: JSON.stringify({ packages: [pkg] }),
-  //                   }
-  //                 );
-
-  //                 const deliveryData = await deliveryRes.json();
-  //                 console.log("✅ Delivery API Response", deliveryData);
-  //               } catch (deliveryErr) {
-  //                 console.error(
-  //                   `❌ Failed to mark package ${pkg.package_id} as delivered`,
-  //                   deliveryErr
-  //                 );
-  //               }
-  //             }
-  //           }
-  //         } else {
-  //           console.error(`No PDF URL returned for order ${order_id}`);
-  //           // toast.error(`No PDF URL returned for order ${order_id}`);
-  //         }
-  //       } catch (error) {
-  //         console.error(`❌ Error printing AWB for order ${order_id}`, error);
-  //         // toast.error(`Failed to print AWB for order ${order_id}`);
-  //         continue;
-  //       }
-  //     }
-
-  //     if (!docUrls.length) {
-  //       alert("No valid shipping labels found.");
-  //       setIsLoading(false);
-  //       return;
-  //     }
-
-  //     // Merge all collected PDFs
-  //     const mergeRes = await fetch(
-  //       "https://grozziieget.zjweiting.com:8033/tht/merge-pdfs",
-  //       {
-  //         method: "POST",
-  //         headers: { "Content-Type": "application/json" },
-  //         body: JSON.stringify({ urls: docUrls }),
-  //       }
-  //     );
-
-  //     if (!mergeRes.ok) throw new Error("Failed to merge PDFs");
-
-  //     const blob = await mergeRes.blob();
-  //     const pdfUrl = URL.createObjectURL(blob);
-  //     setLazadaPdf(pdfUrl);
-
-  //     // ✅ Call store API for each printed order_id
-  //     if (checkedItems?.from !== "Packed_Printed") {
-  //       for (const lazadaId of printedOrderIds) {
-  //         try {
-  //           await fetch(
-  //             `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds/add?LazadaPrintedId=${lazadaId}&email=${encodeURIComponent(
-  //               currentUser
-  //             )}`,
-  //             {
-  //               method: "POST",
-  //             }
-  //           );
-  //           console.log(`✅ Stored LazadaPrintedId ${lazadaId}`);
-  //         } catch (err) {
-  //           console.error(
-  //             `❌ Failed to store LazadaPrintedId ${lazadaId}`,
-  //             err
-  //           );
-  //         }
-  //       }
-  //     }
-  //   } catch (err) {
-  //     console.error("❌ Merge print failed:", err);
-  //     alert("Something went wrong while generating the merged PDF.");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   const handleMergeAndPrint = async () => {
     try {
       setIsLoading(true);
+      const skipStatuses = [
+        "PROCESSED_PRINTED",
+        "SHIPPED",
+        "READY_TO_SHIP",
+        "COMPLETED",
+      ];
 
       if (!checkedItems?.items?.length) {
         alert("No orders selected.");
@@ -229,7 +86,6 @@ const ShopeeAWBPrinting = () => {
         try {
           const orderSn = order?.order_sn || order?.orderId;
           if (!orderSn) continue;
-
           // 1️⃣ Get suggested shipping document type
           const docTypeRes = await fetch(
             "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-shipping-document-parameter",
@@ -243,6 +99,9 @@ const ShopeeAWBPrinting = () => {
           const shippingDocType =
             docTypeData?.body?.response?.result_list?.[0]
               ?.suggest_shipping_document_type || "THERMAL_AIR_WAYBILL";
+
+          // if (!skipStatuses.includes(checkedItems?.from)) {
+          console.log("callllllllllll........2222222");
 
           // 2️⃣ Create shipping document (safe call even if already exists)
           await fetch(
@@ -260,7 +119,7 @@ const ShopeeAWBPrinting = () => {
               }),
             }
           );
-
+          // }
           // 3️⃣ Download shipping document
           const pdfRes = await fetch(
             "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/download-shipping-document",
@@ -341,18 +200,25 @@ const ShopeeAWBPrinting = () => {
         alert("No PDFs generated for the selected orders.");
       }
 
-      // 5️⃣ Save printed order ids
-      for (const shopeeId of printedOrderIds) {
-        try {
-          await fetch(
-            `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds/add?LazadaPrintedId=${shopeeId}&email=${encodeURIComponent(
-              currentUser
-            )}`,
-            { method: "POST" }
-          );
-          console.log(`✅ Stored LazadaPrintedId ${shopeeId}`);
-        } catch (err) {
-          console.error(`❌ Failed to store LazadaPrintedId ${shopeeId}`, err);
+      if (!skipStatuses.includes(checkedItems?.from)) {
+        console.log("Calllllll------1");
+
+        // 5️⃣ Save printed order ids
+        for (const shopeeId of printedOrderIds) {
+          try {
+            await fetch(
+              `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/shopee/printedIds/add?shopeePrintedId=${shopeeId}&email=${encodeURIComponent(
+                currentUser
+              )}`,
+              { method: "POST" }
+            );
+            console.log(`✅ Stored ShopeePrintedId ${shopeeId}`);
+          } catch (err) {
+            console.error(
+              `❌ Failed to store ShopeePrintedId ${shopeeId}`,
+              err
+            );
+          }
         }
       }
     } catch (err) {
@@ -363,6 +229,166 @@ const ShopeeAWBPrinting = () => {
     }
   };
 
+  // const handleMergeAndPrint = async () => {
+  //   try {
+  //     setIsLoading(true);
+
+  //     if (!checkedItems?.items?.length) {
+  //       alert("No orders selected.");
+  //       return;
+  //     }
+
+  //     const skipStatuses = [
+  //       "PROCESSED_PRINTED",
+  //       "SHIPPED",
+  //       "READY_TO_SHIP",
+  //       "COMPLETED",
+  //     ];
+  //     const pdfBase64Array = [];
+  //     const printedOrderIds = [];
+
+  //     // Utility: Blob → Base64
+  //     const blobToBase64 = (blob) =>
+  //       new Promise((resolve, reject) => {
+  //         const reader = new FileReader();
+  //         reader.onloadend = () => resolve(reader.result.split(",")[1]);
+  //         reader.onerror = reject;
+  //         reader.readAsDataURL(blob);
+  //       });
+
+  //     // Sequential process for each order
+  //     for (const order of checkedItems.items) {
+  //       const orderSn = order?.order_sn || order?.orderId;
+  //       if (!orderSn) continue;
+
+  //       try {
+  //         // 1️⃣ Get suggested shipping doc type
+  //         const docTypeRes = await fetch(
+  //           "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-shipping-document-parameter",
+  //           {
+  //             method: "POST",
+  //             headers: { "Content-Type": "application/json" },
+  //             body: JSON.stringify({ order_list: [{ order_sn: orderSn }] }),
+  //           }
+  //         );
+  //         const docTypeData = await docTypeRes.json();
+  //         const shippingDocType =
+  //           docTypeData?.body?.response?.result_list?.[0]
+  //             ?.suggest_shipping_document_type || "THERMAL_AIR_WAYBILL";
+
+  //         // 2️⃣ Create shipping doc (always wait until complete)
+  //         if (!skipStatuses.includes(checkedItems?.from)) {
+  //           const createRes = await fetch(
+  //             "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/create-shipping-document",
+  //             {
+  //               method: "POST",
+  //               headers: { "Content-Type": "application/json" },
+  //               body: JSON.stringify({
+  //                 order_list: [
+  //                   {
+  //                     order_sn: orderSn,
+  //                     shipping_document_type: shippingDocType,
+  //                   },
+  //                 ],
+  //               }),
+  //             }
+  //           );
+
+  //           if (!createRes.ok) {
+  //             console.error(`❌ Failed to create shipping doc for ${orderSn}`);
+  //             continue;
+  //           }
+
+  //           // 🔹 Wait a short delay to let Shopee process before downloading
+  //           await new Promise((res) => setTimeout(res, 800));
+  //         }
+
+  //         // 3️⃣ Download shipping doc
+  //         const pdfRes = await fetch(
+  //           "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/download-shipping-document",
+  //           {
+  //             method: "POST",
+  //             headers: { "Content-Type": "application/json" },
+  //             body: JSON.stringify({
+  //               shipping_document_type: shippingDocType,
+  //               order_list: [{ order_sn: orderSn }],
+  //             }),
+  //           }
+  //         );
+  //         if (!pdfRes.ok) {
+  //           console.error(`❌ Download failed for ${orderSn}`);
+  //           continue;
+  //         }
+
+  //         const pdfBlob = await pdfRes.blob();
+  //         const base64 = await blobToBase64(pdfBlob);
+
+  //         pdfBase64Array.push(base64);
+  //         printedOrderIds.push(orderSn);
+  //       } catch (err) {
+  //         console.error(`❌ Error processing ${orderSn}`, err);
+  //       }
+  //     }
+
+  //     // 4️⃣ Merge or show PDFs
+  //     if (pdfBase64Array.length === 1) {
+  //       const byteChars = atob(pdfBase64Array[0]);
+  //       const byteNumbers = Array.from(byteChars, (c) => c.charCodeAt(0));
+  //       const pdfBlob = new Blob([new Uint8Array(byteNumbers)], {
+  //         type: "application/pdf",
+  //       });
+  //       setLazadaPdf(URL.createObjectURL(pdfBlob));
+  //     } else if (pdfBase64Array.length > 1) {
+  //       const mergeRes = await fetch(
+  //         "http://localhost:2000/tht/merge-pdfs-base64",
+  //         {
+  //           method: "POST",
+  //           headers: { "Content-Type": "application/json" },
+  //           body: JSON.stringify({ pdfs: pdfBase64Array }),
+  //         }
+  //       );
+
+  //       if (!mergeRes.ok) throw new Error("Failed to merge PDFs");
+  //       const { pdfBase64 } = await mergeRes.json();
+
+  //       const byteChars = atob(pdfBase64);
+  //       const byteNumbers = Array.from(byteChars, (c) => c.charCodeAt(0));
+  //       const pdfBlob = new Blob([new Uint8Array(byteNumbers)], {
+  //         type: "application/pdf",
+  //       });
+  //       setLazadaPdf(URL.createObjectURL(pdfBlob));
+  //     } else {
+  //       alert("No PDFs generated for the selected orders.");
+  //     }
+
+  //     // 5️⃣ Save printed IDs
+  //     if (!skipStatuses.includes(checkedItems?.from)) {
+  //       for (const shopeeId of printedOrderIds) {
+  //         try {
+  //           await fetch(
+  //             `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/shopee/printedIds/add?shopeePrintedId=${shopeeId}&email=${encodeURIComponent(
+  //               currentUser
+  //             )}`,
+  //             { method: "POST" }
+  //           );
+  //         } catch (err) {
+  //           console.error(
+  //             `❌ Failed to store ShopeePrintedId ${shopeeId}`,
+  //             err
+  //           );
+  //         }
+  //       }
+  //     }
+
+  //     console.log("✅ All done");
+  //   } catch (err) {
+  //     console.error("❌ Merge print failed:", err);
+  //     alert("Something went wrong while generating the PDF(s).");
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const handlePrintAll = () => {
     const iframe = document.querySelector("iframe");
     if (iframe?.contentWindow) {
@@ -370,6 +396,7 @@ const ShopeeAWBPrinting = () => {
       iframe.contentWindow.print();
     }
   };
+  console.log(checkedItems);
 
   useEffect(() => {
     if (!checkedItems?.items?.length) return;
