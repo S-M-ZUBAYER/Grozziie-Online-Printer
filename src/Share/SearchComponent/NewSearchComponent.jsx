@@ -13,6 +13,7 @@ import { RxReset } from "react-icons/rx";
 import {
   filterDataByDateRange,
   filterLazadaDataByDateRange,
+  filterShopeeDataByDateRange,
 } from "./SearchComponentFunction";
 import { useTranslation } from "react-i18next";
 import {
@@ -90,6 +91,12 @@ const NewSearchComponent = ({
       setFilteredData(
         currentShop === "Lazada"
           ? filterLazadaDataByDateRange(
+              customersData,
+              date.selection.startDate,
+              date.selection.endDate
+            )
+          : currentShop === "Shopee"
+          ? filterShopeeDataByDateRange(
               customersData,
               date.selection.startDate,
               date.selection.endDate

@@ -510,16 +510,22 @@ const Home = () => {
             setShopeeTodayPrinted(todayPrinted);
           } else if (status === "SHIPPED") {
             setShopeeShippedOrders(mergedOrders);
+            console.log(mergedOrders, "Shippedorders....");
+
             const shippedToday = mergedOrders.filter((order) => {
-              const updateTime = fromUnix(
-                order.update_time || order.ship_by_date
-              ); // or whichever field reflects shipped time
+              // Use update_time (fallback to ship_by_date if missing)
+              const updateTime = new Date(
+                (order.update_time || order.ship_by_date) * 1000
+              );
+
+              const today = new Date();
               return (
-                updateTime.getDate() === now.getDate() &&
-                updateTime.getMonth() === now.getMonth() &&
-                updateTime.getFullYear() === now.getFullYear()
+                updateTime.getFullYear() === today.getFullYear() &&
+                updateTime.getMonth() === today.getMonth() &&
+                updateTime.getDate() === today.getDate()
               );
             });
+
             setShopeeShippedTodayOrders(shippedToday);
           } else if (status === "COMPLETED") {
             setShopeeCompletedOrders(mergedOrders);
