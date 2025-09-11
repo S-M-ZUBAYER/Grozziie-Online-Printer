@@ -280,9 +280,19 @@
   "Packed": "Naka-pack",
   "Packed_Printed": "Naka-pack at Na-print",
   "Ready_To_Ship": "Handa nang Ipadala",
+  "Ready To Ship": "Handa nang Ipadala",
   "ready_to_ship": "handa nang ipadala",
   "Shipped": "Naipadala",
   "shipped": "naipadala",
   "Returned": "Naibalik",
-  "returned": "naibalik"
+  "returned": "naibalik",
+  "Processed": "Naproseso",
+  "Processed_Printed": "Naproseso at Naimprenta",
+  "Completed": "Nakumpleto",
+  "ShopeeOrderDetails": "Mga Detalye ng Order sa Shopee",
+  "FullAddress": "Kumpletong Address",
+  "State": "Estado",
+  "OriginalPrice": "Orihinal na Presyo",
+  "PromotionType": "Uri ng Promosyon",
+  "ModelName": "Pangalan ng Modelo"
 }

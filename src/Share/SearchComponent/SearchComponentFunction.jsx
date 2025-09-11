@@ -49,6 +49,20 @@ export function filterLazadaDataByDateRange(data, startDate, endDate) {
     return itemDate >= startDateTime && itemDate <= endDateTime;
   });
 }
+export function filterShopeeDataByDateRange(data, startDate, endDate) {
+  const startDateTime = new Date(startDate);
+  const endDateTime = new Date(endDate);
+
+  return data.filter((item) => {
+    const timestamp = item.create_time || item.update_time || item.ship_by_date;
+    if (!timestamp) return false;
+
+    // Convert Unix timestamp (seconds) to JS Date
+    const itemDate = new Date(timestamp * 1000);
+
+    return itemDate >= startDateTime && itemDate <= endDateTime;
+  });
+}
 
 export function filterDataBySearchFields(customersData, searchFields) {
   console.log(customersData);
@@ -206,6 +220,95 @@ export function filterLazadaDataBySearchFields(customersData, searchFields) {
       const statusesStr = (customer?.statuses || []).join(" ").toLowerCase();
       isMatch =
         isMatch && statusesStr.includes(searchFields.Status.toLowerCase());
+    }
+
+    return isMatch;
+  });
+}
+
+export function filterShopeeDataBySearchFields(customersData, searchFields) {
+  return customersData.filter((order) => {
+    let isMatch = true;
+
+    // ✅ Recipient Address
+    if (
+      searchFields.isActiveRecipientAddress &&
+      searchFields.RecipientAddress
+    ) {
+      const shippingAddress = [
+        order?.recipient_address?.full_address,
+        order?.recipient_address?.city,
+        order?.recipient_address?.zipcode,
+      ]
+        .filter(Boolean)
+        .join(",")
+        .toLowerCase();
+
+      isMatch =
+        isMatch &&
+        shippingAddress.includes(searchFields.RecipientAddress.toLowerCase());
+    }
+
+    // ✅ Recipient Name
+    if (searchFields.isActiveAccountName && searchFields.AccountName) {
+      const name = order?.recipient_address?.name?.toLowerCase() || "";
+      isMatch =
+        isMatch && name.includes(searchFields.AccountName.toLowerCase());
+    }
+
+    // ✅ Order ID
+    if (searchFields.isActiveOrderId && searchFields.OrderId) {
+      isMatch =
+        isMatch &&
+        order?.order_sn
+          ?.toLowerCase()
+          ?.includes(searchFields.OrderId.toLowerCase());
+    }
+
+    // ✅ Amount
+    if (searchFields.isActiveAmount && searchFields.Amount) {
+      if (order?.item_list?.length > 0) {
+        isMatch =
+          isMatch &&
+          Number(order?.item_list?.length) === Number(searchFields.Amount);
+      } else {
+        isMatch = false;
+      }
+    }
+
+    // ✅ Product Name (any item in item_list)
+    if (searchFields.isActiveProduct && searchFields.Product) {
+      const productMatch = order?.item_list?.some((item) =>
+        item?.item_name
+          ?.toLowerCase()
+          .includes(searchFields.Product.toLowerCase())
+      );
+      isMatch = isMatch && productMatch;
+    }
+
+    // ✅ Warehouse Code (first product location)
+    if (searchFields.isActiveWarehouse && searchFields.Warehouse) {
+      const warehouseCode =
+        order?.item_list?.[0]?.product_location_id?.[0] || "";
+      isMatch =
+        isMatch &&
+        warehouseCode
+          .toLowerCase()
+          .includes(searchFields.Warehouse.toLowerCase());
+    }
+
+    // ✅ Payment Method (COD or not)
+    if (searchFields.isActivePaymentMethod && searchFields.PaymentMethod) {
+      const paymentMethod = order?.cod ? "cod" : "non-cod";
+      isMatch =
+        isMatch &&
+        paymentMethod.includes(searchFields.PaymentMethod.toLowerCase());
+    }
+
+    // ✅ Status
+    if (searchFields.isActiveStatus && searchFields.Status) {
+      const status = order?.order_status?.toLowerCase() || "";
+      isMatch = isMatch && status.includes(searchFields.Status.toLowerCase());
     }
 
     return isMatch;

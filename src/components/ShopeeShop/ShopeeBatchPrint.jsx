@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { checkedItemsChange } from "../../features/slice/userSlice";
 import * as XLSX from "xlsx";
 import NewSearchComponent from "../../Share/SearchComponent/NewSearchComponent";
-import { filterLazadaDataBySearchFields } from "../../Share/SearchComponent/SearchComponentFunction";
+import { filterShopeeDataBySearchFields } from "../../Share/SearchComponent/SearchComponentFunction";
 import toast from "react-hot-toast";
 import { orderListData } from "../../features/slice/orderListSlice";
 import ConfirmationModal from "../../Share/ConfirmationModal";
@@ -223,6 +223,16 @@ const ShopeeBatchPrint = () => {
         } else if (selectedShopeeOrderStatus === "PROCESSED") {
           mergedOrders = mergedOrders.filter(
             (order) => !shopeePrintedIds.includes(order.order_sn)
+          );
+          // 🔹 Remove from localStorage if PROCESSED orders are found
+          const remaining = storedShopeePackaging.filter(
+            (sn) => !mergedOrders.some((o) => o.order_sn === sn)
+          );
+          localStorage.setItem("ShopeePackaging", JSON.stringify(remaining));
+        } else if (selectedShopeeOrderStatus === "READY_TO_SHIP") {
+          // 🔹 Only show orders NOT in localStorage
+          mergedOrders = mergedOrders.filter(
+            (order) => !storedShopeePackaging.includes(order.order_sn)
           );
         }
 
@@ -550,6 +560,16 @@ const ShopeeBatchPrint = () => {
           if (!shipData?.body?.error) {
             console.log(`✅ Shipped order ${orderSn}`, shipData);
             successfulIds.push(orderSn);
+
+            // 🔹 Save into localStorage (ShopeePackaging)
+            const stored =
+              JSON.parse(localStorage.getItem("ShopeePackaging")) || [];
+            if (!stored.includes(orderSn)) {
+              localStorage.setItem(
+                "ShopeePackaging",
+                JSON.stringify([...stored, orderSn])
+              );
+            }
           } else {
             console.warn(
               `❌ Failed to ship ${orderSn}`,
@@ -744,7 +764,7 @@ const ShopeeBatchPrint = () => {
   const handleToSearch = () => {
     document.getElementById("searchInput").value = "";
     // Usage:
-    const filteredMultipleSearchingData = filterLazadaDataBySearchFields(
+    const filteredMultipleSearchingData = filterShopeeDataBySearchFields(
       customersData,
       searchFields
     );
@@ -1013,11 +1033,11 @@ const ShopeeBatchPrint = () => {
                 {/* Main Order Info Grid */}
                 <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
                   <div>
-                    <strong>{t("OrderSN")}:</strong>{" "}
+                    <strong>{t("OrderID")}:</strong>{" "}
                     {selectedCustomer?.order_sn || t("NoData")}
                   </div>
                   <div>
-                    <strong>{t("OrderStatus")}:</strong>{" "}
+                    <strong>{t("Status")}:</strong>{" "}
                     {selectedCustomer?.order_status || t("NoData")}
                   </div>
                   <div>
@@ -1033,10 +1053,6 @@ const ShopeeBatchPrint = () => {
                     {selectedCustomer?.total_amount ?? 0}
                   </div>
                   <div>
-                    <strong>{t("ShippingCarrier")}:</strong>{" "}
-                    {selectedCustomer?.shipping_carrier || t("NoData")}
-                  </div>
-                  <div>
                     <strong>{t("COD")}:</strong>{" "}
                     {selectedCustomer?.cod ? t("Yes") : t("No")}
                   </div>
@@ -1045,14 +1061,6 @@ const ShopeeBatchPrint = () => {
                     {selectedCustomer?.create_time
                       ? new Date(
                           selectedCustomer.create_time * 1000
-                        ).toLocaleString()
-                      : t("NoData")}
-                  </div>
-                  <div>
-                    <strong>{t("PaidAt")}:</strong>{" "}
-                    {selectedCustomer?.pay_time
-                      ? new Date(
-                          selectedCustomer.pay_time * 1000
                         ).toLocaleString()
                       : t("NoData")}
                   </div>
@@ -1072,7 +1080,7 @@ const ShopeeBatchPrint = () => {
                 {/* Recipient Info */}
                 <div className="mb-6">
                   <h3 className="text-xl font-semibold mb-3">
-                    {t("RecipientInfo")}
+                    {t("RecipientInformation")}
                   </h3>
                   <p>
                     <strong>{t("Name")}:</strong>{" "}
