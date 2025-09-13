@@ -278,9 +278,19 @@
   "Packed": "Đã đóng gói",
   "Packed_Printed": "Đã đóng gói và in",
   "Ready_To_Ship": "Sẵn sàng giao",
+  "Ready To Ship": "Sẵn sàng giao hàng",
   "ready_to_ship": "sẵn sàng giao",
   "Shipped": "Đã giao hàng",
   "shipped": "đã giao hàng",
   "Returned": "Đã trả lại",
-  "returned": "đã trả lại"
+  "returned": "đã trả lại",
+  "Processed": "Đã xử lý",
+  "Processed_Printed": "Đã xử lý và in",
+  "Completed": "Hoàn thành",
+  "ShopeeOrderDetails": "Chi tiết đơn hàng Shopee",
+  "FullAddress": "Địa chỉ đầy đủ",
+  "State": "Tỉnh/Bang",
+  "OriginalPrice": "Giá gốc",
+  "PromotionType": "Loại khuyến mãi",
+  "ModelName": "Tên mẫu"
 }

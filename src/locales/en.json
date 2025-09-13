@@ -286,5 +286,14 @@
   "Shipped": "Shipped",
   "shipped": "shipped",
   "Returned": "Returned",
-  "returned": "returned"
+  "returned": "returned",
+  "Processed": "Processed",
+  "Processed_Printed": "Processed Printed",
+  "Completed": "Completed",
+  "ShopeeOrderDetails": "Shopee Order Details",
+  "FullAddress": "Full Address",
+  "State": "State",
+  "OriginalPrice": "Original Price",
+  "PromotionType": "Promotion Type",
+  "ModelName": "Model Name"
 }

@@ -154,6 +154,54 @@ export const lazadaArrayToExcel = (data, fileName) => {
   XLSX.writeFile(wb, `${fileName}.xlsx`);
 };
 
+export const shopeeArrayToExcel = (data, fileName) => {
+  const updateData = data?.map((item) => {
+    const address = item?.recipient_address || {};
+    const firstItem = item?.item_list?.[0] || {};
+
+    return {
+      // Order-level fields
+      orderSn: item.order_sn,
+      orderStatus: item.order_status,
+      createTime: new Date(item.create_time * 1000).toLocaleString(),
+      updateTime: new Date(item.update_time * 1000).toLocaleString(),
+      shipByDate: item.ship_by_date
+        ? new Date(item.ship_by_date * 1000).toLocaleString()
+        : "",
+
+      // Buyer info
+      buyerUsername: item.buyer_username,
+      note: item.note,
+
+      // Price
+      totalAmount: item.total_amount,
+
+      // Shipping address
+      recipientName: address.name,
+      recipientPhone: address.phone,
+      recipientFullAddress: address.full_address,
+      recipientCity: address.city,
+      recipientState: address.state,
+      recipientDistrict: address.district,
+      recipientZipcode: address.zipcode,
+      recipientCountry: address.country || "",
+
+      // First item details (for multi-items, you can expand separately)
+      firstItemId: firstItem.item_id,
+      firstItemName: firstItem.item_name,
+      firstItemModel: firstItem.model_name,
+      firstItemQty: firstItem.model_quantity_purchased,
+      firstItemOriginalPrice: firstItem.model_original_price,
+      firstItemDiscountedPrice: firstItem.model_discounted_price,
+    };
+  });
+
+  const ws = XLSX.utils.json_to_sheet(updateData);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Shopee Orders");
+  XLSX.writeFile(wb, `${fileName}.xlsx`);
+};
+
 export const generateRandomNumberWithTime = () => {
   // Get the current date and time
   const currentDate = new Date();

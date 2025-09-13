@@ -50,6 +50,8 @@ const BatchPrintTable = ({
     }
   };
 
+  console.log(filteredData, "tiktok");
+
   return (
     <div className="mt-6">
       {isLoading ? (
@@ -179,8 +181,9 @@ const BatchPrintTable = ({
                         <p
                           className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
                           onClick={() => handleGetTracking(order)}
+                          title="Click to View tracking info"
                         >
-                          {t("Tracking")}
+                          {order?.trackingNumber}
                         </p>
                       </td>
                     )}

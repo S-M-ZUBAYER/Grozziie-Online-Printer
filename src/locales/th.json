@@ -279,9 +279,19 @@
   "Packed": "บรรจุแล้ว",
   "Packed_Printed": "บรรจุและพิมพ์แล้ว",
   "Ready_To_Ship": "พร้อมจัดส่ง",
+  "Ready To Ship": "พร้อมจัดส่ง",
   "ready_to_ship": "พร้อมจัดส่ง",
   "Shipped": "จัดส่งแล้ว",
   "shipped": "จัดส่งแล้ว",
   "Returned": "ส่งคืนแล้ว",
-  "returned": "ส่งคืนแล้ว"
+  "returned": "ส่งคืนแล้ว",
+  "Processed": "ดำเนินการแล้ว",
+  "Processed_Printed": "ดำเนินการแล้วและพิมพ์",
+  "Completed": "เสร็จสิ้น",
+  "ShopeeOrderDetails": "รายละเอียดคำสั่งซื้อ Shopee",
+  "FullAddress": "ที่อยู่เต็ม",
+  "State": "รัฐ/จังหวัด",
+  "OriginalPrice": "ราคาตั้งต้น",
+  "PromotionType": "ประเภทโปรโมชั่น",
+  "ModelName": "ชื่อรุ่น"
 }

@@ -1,12 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { MdOutlineLocalPrintshop } from "react-icons/md";
-import { lazadaArrayToExcel } from "../../Share/Function/FunctionalComponent";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { checkedItemsChange } from "../../features/slice/userSlice";
 import * as XLSX from "xlsx";
 import NewSearchComponent from "../../Share/SearchComponent/NewSearchComponent";
-import { filterLazadaDataBySearchFields } from "../../Share/SearchComponent/SearchComponentFunction";
+import { filterShopeeDataBySearchFields } from "../../Share/SearchComponent/SearchComponentFunction";
 import toast from "react-hot-toast";
 import { orderListData } from "../../features/slice/orderListSlice";
 import ConfirmationModal from "../../Share/ConfirmationModal";
@@ -20,6 +19,7 @@ import {
   useLazyGetShopeeOrderDetailsQuery,
   useLazyGetShopeeOrdersQuery,
 } from "../../features/allApis/shopeeApi";
+import { shopeeArrayToExcel } from "../../Share/Function/FunctionalComponent";
 
 const ShopeeBatchPrint = () => {
   const [selectAll, setSelectAll] = useState(false);
@@ -37,7 +37,7 @@ const ShopeeBatchPrint = () => {
   );
 
   const [shopeeOrderStatusCheck, setShopeeOrderStatusCheck] = useState(
-    selectedShopeeOrderStatus ? selectedShopeeOrderStatus : "Ready_To_Ship"
+    selectedShopeeOrderStatus ? selectedShopeeOrderStatus : "READY_TO_SHIP"
   );
 
   const [searchFields, setSearchFields] = useState({
@@ -180,16 +180,17 @@ const ShopeeBatchPrint = () => {
         }
 
         // ✅ Step 2: Extract order_sn list
+
         const orderSnList = orderList.map((order) => order.order_sn);
 
-        // ✅ Step 3: Get detailed info
+        // ✅ Step 3: Get detailed info (already has tracking_number merged in)
         const detailsResponse = await getShopeeOrderDetails({
           orderSnList,
           request_order_status_pending: true,
           response_optional_fields: "total_amount,recipient_address,item_list",
         }).unwrap();
 
-        const detailedOrders = detailsResponse?.response?.order_list || [];
+        const detailedOrders = detailsResponse || []; // 👈 already array of objects
 
         // ✅ Step 4: Merge base order + detailed info
         let mergedOrders = orderList.map((order) => {
@@ -198,9 +199,11 @@ const ShopeeBatchPrint = () => {
           );
           return {
             ...order,
-            ...details,
+            ...details, // includes tracking_number
           };
         });
+
+        console.log("orderdetails response", mergedOrders);
 
         // ✅ Step 5: Fetch printed IDs from external API
         let printedIds = [];
@@ -221,8 +224,30 @@ const ShopeeBatchPrint = () => {
             shopeePrintedIds.includes(order.order_sn)
           );
         } else if (selectedShopeeOrderStatus === "PROCESSED") {
+          const stored =
+            JSON.parse(localStorage.getItem("ShopeePackaging")) || [];
+
+          mergedOrders = mergedOrders.filter((order) => {
+            const isPrinted = shopeePrintedIds.includes(order.order_sn);
+            const inStorage = stored.includes(order.order_sn);
+
+            // 🔹 If in storage, remove it
+            if (inStorage) {
+              const updatedStorage = stored.filter(
+                (id) => id !== order.order_sn
+              );
+              localStorage.setItem(
+                "ShopeePackaging",
+                JSON.stringify(updatedStorage)
+              );
+            }
+
+            return !isPrinted; // keep only orders not in printed list
+          });
+        } else if (selectedShopeeOrderStatus === "READY_TO_SHIP") {
+          const storeOrderId = localStorage.getItem("ShopeePackaging");
           mergedOrders = mergedOrders.filter(
-            (order) => !shopeePrintedIds.includes(order.order_sn)
+            (order) => !storeOrderId.includes(order.order_sn)
           );
         }
 
@@ -358,25 +383,6 @@ const ShopeeBatchPrint = () => {
 
   const handleDetailsClick = async (orderData) => {
     try {
-      // const orderId = orderData.order_id || orderData.order_number;
-      // if (!orderId) {
-      //   console.warn("No order ID provided.");
-      //   return;
-      // }
-      // setDetailsLoading(true);
-      // const response = await fetch(
-      //   `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}`
-      // );
-
-      // if (!response.ok) {
-      //   throw new Error("Failed to fetch order item details.");
-      // }
-
-      // const result = await response.json();
-      // const parsedBody = JSON.parse(result.body);
-      // const itemDetails = parsedBody.data?.[0]; // Assuming you want the first item
-      // console.log(itemDetails, "details");
-
       setSelectedCustomer(orderData);
       setIsModalOpen(true);
       setDetailsLoading(false);
@@ -392,8 +398,8 @@ const ShopeeBatchPrint = () => {
 
   //make array to excel
 
-  const handleLazadaPrinterExcelClick = () => {
-    lazadaArrayToExcel(checkedItems, "lazadaPrinterOrderList");
+  const handleShopeePrinterExcelClick = () => {
+    shopeeArrayToExcel(checkedItems, "ShopeePrinterOrderList");
   };
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -499,21 +505,6 @@ const ShopeeBatchPrint = () => {
     const failedOrders = [];
     setPackageLoading(true);
     try {
-      // ✅ Step 1: Get address_id (call once)
-      const addressRes = await fetch(
-        "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-address-list"
-      );
-      const addressData = await addressRes.json();
-      const parsedAddress = addressData?.body?.response?.address_list?.[0];
-
-      if (!parsedAddress?.address_id) {
-        toast.error("❌ No pickup address found!");
-        return;
-      }
-
-      const addressId = parsedAddress.address_id;
-      console.log("✅ Using address_id:", addressId);
-
       // ✅ Step 2: Loop through orders
       for (const item of checkedItems) {
         const orderSn = item?.order_sn || item?.orderId; // ensure correct field
@@ -525,6 +516,42 @@ const ShopeeBatchPrint = () => {
         }
 
         try {
+          // 1️⃣ Get shipping parameters (to extract address_id)
+          const shippingParamRes = await fetch(
+            `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-shipping-parameter?orderSn=${orderSn}`
+          );
+          const shippingParamData = await shippingParamRes.json();
+
+          if (shippingParamData?.body?.error) {
+            console.warn(
+              `❌ Failed to get shipping parameter for ${orderSn}`,
+              shippingParamData?.body?.message || shippingParamData?.body?.error
+            );
+            failedOrders.push({
+              orderId: orderSn,
+              reason:
+                shippingParamData?.body?.message ||
+                shippingParamData?.body?.error ||
+                "Unknown error",
+            });
+            continue; // skip this order
+          }
+
+          // Extract address_id (if available)
+          const addressId =
+            shippingParamData?.body?.response?.pickup?.address_list?.[0]
+              ?.address_id || null;
+
+          if (!addressId) {
+            console.warn(`❌ No address_id found for ${orderSn}`);
+            failedOrders.push({
+              orderId: orderSn,
+              reason: "Missing address_id from shipping parameter",
+            });
+            continue; // skip this order
+          }
+
+          // 2️⃣ Call ship-order API
           const shipRes = await fetch(
             "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/ship-order",
             {
@@ -537,8 +564,8 @@ const ShopeeBatchPrint = () => {
                 order_sn: orderSn,
                 package_number: "",
                 pickup: {
-                  address_id: addressId,
-                  pickup_time_id: "", // optional, leave blank if not needed
+                  address_id: addressId, // 👈 dynamically set from API
+                  pickup_time_id: "", // optional
                   tracking_number: "",
                 },
               }),
@@ -550,6 +577,16 @@ const ShopeeBatchPrint = () => {
           if (!shipData?.body?.error) {
             console.log(`✅ Shipped order ${orderSn}`, shipData);
             successfulIds.push(orderSn);
+
+            // 🔹 Save into localStorage (ShopeePackaging)
+            const stored =
+              JSON.parse(localStorage.getItem("ShopeePackaging")) || [];
+            if (!stored.includes(orderSn)) {
+              localStorage.setItem(
+                "ShopeePackaging",
+                JSON.stringify([...stored, orderSn])
+              );
+            }
           } else {
             console.warn(
               `❌ Failed to ship ${orderSn}`,
@@ -639,96 +676,87 @@ const ShopeeBatchPrint = () => {
         const rawJson = XLSX.utils.sheet_to_json(sheet);
 
         const importedData = rawJson.map((row) => {
-          // Construct nested structure from flat row fields
           return {
-            order_id: row.order_id,
-            order_number: row.order_number,
-            customer_first_name: row.customer_first_name,
-            customer_last_name: row.customer_last_name,
-            payment_method: row.payment_method,
-            price: row.price,
-            items_count: row.items_count,
-            shipping_fee: row.shipping_fee,
-            warehouse_code: row.warehouse_code,
-            voucher: row.voucher,
-            voucher_code: row.voucher_code,
-            statuses:
-              typeof row.statuses === "string"
-                ? row.statuses.split(",").map((s) => s.trim())
-                : Array.isArray(row.statuses)
-                ? row.statuses
-                : [],
-            updated_at: row.updated_at,
-            created_at: row.created_at,
-            address_billing: {
-              address1: row.address_billing_address1,
-              address2: row.address_billing_address2,
-              address3: row.address_billing_address3,
-              address4: row.address_billing_address4,
-              address5: row.address_billing_address5,
-              city: row.address_billing_city,
-              country: row.address_billing_country,
-              first_name: row.address_billing_first_name,
-              last_name: row.address_billing_last_name,
-              phone: row.address_billing_phone,
-              phone2: row.address_billing_phone2,
-              post_code: row.address_billing_post_code,
+            // Core order fields
+            order_sn: row.orderSn || row.order_sn,
+            order_status: row.orderStatus || row.order_status,
+            create_time: row.createTime
+              ? Math.floor(new Date(row.createTime).getTime() / 1000)
+              : row.create_time,
+            update_time: row.updateTime
+              ? Math.floor(new Date(row.updateTime).getTime() / 1000)
+              : row.update_time,
+            ship_by_date: row.shipByDate
+              ? Math.floor(new Date(row.shipByDate).getTime() / 1000)
+              : row.ship_by_date,
+            total_amount: row.totalAmount || row.total_amount,
+
+            // Buyer info
+            buyer_username: row.buyerUsername || row.buyer_username,
+            note: row.note || "",
+
+            // Recipient / Shipping Address
+            recipient_address: {
+              name: row.recipientName || "",
+              phone: row.recipientPhone || "",
+              full_address: row.recipientFullAddress || "",
+              city: row.recipientCity || "",
+              state: row.recipientState || "",
+              district: row.recipientDistrict || "",
+              zipcode: row.recipientZipcode || "",
+              country: row.recipientCountry || "",
             },
-            address_shipping: {
-              address1: row.address_shipping_address1,
-              address2: row.address_shipping_address2,
-              address3: row.address_shipping_address3,
-              address4: row.address_shipping_address4,
-              address5: row.address_shipping_address5,
-              city: row.address_shipping_city,
-              country: row.address_shipping_country,
-              first_name: row.address_shipping_first_name,
-              last_name: row.address_shipping_last_name,
-              phone: row.address_shipping_phone,
-              phone2: row.address_shipping_phone2,
-              post_code: row.address_shipping_post_code,
-            },
-            // Add any other fields you want from row here...
-            // For example:
-            buyer_note: row.buyer_note || "",
-            delivery_info: row.delivery_info || "",
-            extra_attributes: row.extra_attributes || "",
-            gift_message: row.gift_message || "",
-            gift_option: row.gift_option === "true" || row.gift_option === true,
-            national_registration_number:
-              row.national_registration_number || "",
-            remarks: row.remarks || "",
-            shipping_fee_discount_platform: row.shipping_fee_discount_platform,
-            shipping_fee_discount_seller: row.shipping_fee_discount_seller,
-            shipping_fee_original: row.shipping_fee_original,
-            tax_code: row.tax_code || "",
-            voucher_platform: row.voucher_platform,
-            voucher_seller: row.voucher_seller,
-            branch_number: row.branch_number || "",
-            recipient_info: row.recipient_info || {},
-            // etc.
+
+            // Items (basic — can be expanded if multiple items exist per row)
+            item_list: [
+              {
+                item_id: row.firstItemId,
+                item_name: row.firstItemName,
+                model_name: row.firstItemModel,
+                model_quantity_purchased: row.firstItemQty,
+                model_original_price: row.firstItemOriginalPrice,
+                model_discounted_price: row.firstItemDiscountedPrice,
+              },
+            ],
           };
         });
 
-        // Now merge with existing data according to your status
-        if (shopeeOrderStatusCheck === "Waiting For Shipment") {
+        // Merge with existing Shopee data depending on status
+        if (shopeeOrderStatusCheck === "READY_TO_SHIP") {
           const merged = [...importedData, ...customersData];
           setCustomersData(merged);
           dispatch(orderListData(merged));
           setTotalPart(Math.ceil(merged.length / 5));
           toast.success(
-            "Import file stored as Awaiting for Shipment Data successfully"
+            "Import file stored as Shopee Ready To Ship data successfully"
           );
-        } else if (shopeeOrderStatusCheck === "shipped") {
+        } else if (shopeeOrderStatusCheck === "SHIPPED") {
           const merged = [...importedData, ...customersData];
           setCustomersData(merged);
           dispatch(orderListData(merged));
           setTotalPart(Math.ceil(merged.length / 5));
-          toast.success("Import file stored as Printing Data successfully");
+          toast.success(
+            "Import file stored as Shopee Shipped data successfully"
+          );
+        } else if (shopeeOrderStatusCheck === "CANCELLED") {
+          const merged = [...importedData, ...customersData];
+          setCustomersData(merged);
+          dispatch(orderListData(merged));
+          setTotalPart(Math.ceil(merged.length / 5));
+          toast.success(
+            "Import file stored as Shopee Cancelled data successfully"
+          );
+        } else {
+          // fallback
+          const merged = [...importedData, ...customersData];
+          setCustomersData(merged);
+          dispatch(orderListData(merged));
+          setTotalPart(Math.ceil(merged.length / 5));
+          toast.success("Shopee Import file stored successfully");
         }
       } catch (err) {
-        console.error("Failed to import Excel file:", err);
-        toast.error("Failed to process Excel file");
+        console.error("❌ Failed to import Shopee Excel file:", err);
+        toast.error("Failed to process Shopee Excel file");
       }
     };
 
@@ -744,7 +772,7 @@ const ShopeeBatchPrint = () => {
   const handleToSearch = () => {
     document.getElementById("searchInput").value = "";
     // Usage:
-    const filteredMultipleSearchingData = filterLazadaDataBySearchFields(
+    const filteredMultipleSearchingData = filterShopeeDataBySearchFields(
       customersData,
       searchFields
     );
@@ -826,7 +854,7 @@ const ShopeeBatchPrint = () => {
               </p>
               <div className="w-[1px] h-8 bg-black opacity-40 mx-2"></div>
               <p className="text-black opacity-40 text-sm font-medium capitalize">
-                700 {t("Orders")}
+                {totalOrderData?.length} {t("Orders")}
               </p>
             </div>
 
@@ -923,7 +951,7 @@ const ShopeeBatchPrint = () => {
               </div>
 
               <button
-                onClick={handleLazadaPrinterExcelClick}
+                onClick={handleShopeePrinterExcelClick}
                 className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[115px] h-10 px-8 py-2 rounded-md cursor-pointer"
               >
                 <p className="text-[15px] font-medium capitalize cursor-pointer whitespace-nowrap">
@@ -974,7 +1002,7 @@ const ShopeeBatchPrint = () => {
             </button>
           )}
 
-          {shopeeOrderStatusCheck === "READY_TO_SHIP" && (
+          {shopeeOrderStatusCheck?.toUpperCase() === "READY_TO_SHIP" && (
             <button
               onClick={handleToCheckItemsPackageUpdate}
               className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-auto  h-10 px-4 gap-2 py-2 rounded-md cursor-pointer flex items-center justify-center"
@@ -1013,11 +1041,11 @@ const ShopeeBatchPrint = () => {
                 {/* Main Order Info Grid */}
                 <div className="grid grid-cols-2 gap-4 text-sm text-gray-700">
                   <div>
-                    <strong>{t("OrderSN")}:</strong>{" "}
+                    <strong>{t("OrderID")}:</strong>{" "}
                     {selectedCustomer?.order_sn || t("NoData")}
                   </div>
                   <div>
-                    <strong>{t("OrderStatus")}:</strong>{" "}
+                    <strong>{t("Status")}:</strong>{" "}
                     {selectedCustomer?.order_status || t("NoData")}
                   </div>
                   <div>
@@ -1033,10 +1061,6 @@ const ShopeeBatchPrint = () => {
                     {selectedCustomer?.total_amount ?? 0}
                   </div>
                   <div>
-                    <strong>{t("ShippingCarrier")}:</strong>{" "}
-                    {selectedCustomer?.shipping_carrier || t("NoData")}
-                  </div>
-                  <div>
                     <strong>{t("COD")}:</strong>{" "}
                     {selectedCustomer?.cod ? t("Yes") : t("No")}
                   </div>
@@ -1045,14 +1069,6 @@ const ShopeeBatchPrint = () => {
                     {selectedCustomer?.create_time
                       ? new Date(
                           selectedCustomer.create_time * 1000
-                        ).toLocaleString()
-                      : t("NoData")}
-                  </div>
-                  <div>
-                    <strong>{t("PaidAt")}:</strong>{" "}
-                    {selectedCustomer?.pay_time
-                      ? new Date(
-                          selectedCustomer.pay_time * 1000
                         ).toLocaleString()
                       : t("NoData")}
                   </div>
@@ -1072,7 +1088,7 @@ const ShopeeBatchPrint = () => {
                 {/* Recipient Info */}
                 <div className="mb-6">
                   <h3 className="text-xl font-semibold mb-3">
-                    {t("RecipientInfo")}
+                    {t("RecipientInformation")}
                   </h3>
                   <p>
                     <strong>{t("Name")}:</strong>{" "}

@@ -72,6 +72,7 @@ const ShopeeAWBPrinting = () => {
         "READY_TO_SHIP",
         "COMPLETED",
       ];
+      const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
       if (!checkedItems?.items?.length) {
         alert("No orders selected.");
@@ -86,46 +87,79 @@ const ShopeeAWBPrinting = () => {
         try {
           const orderSn = order?.order_sn || order?.orderId;
           if (!orderSn) continue;
+
           // 1️⃣ Get suggested shipping document type
+          const docTypePayload = { order_list: [{ order_sn: orderSn }] };
+          console.log(
+            "📤 Calling get-shipping-document-parameter with:",
+            docTypePayload
+          );
+
           const docTypeRes = await fetch(
             "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-shipping-document-parameter",
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ order_list: [{ order_sn: orderSn }] }),
+              body: JSON.stringify(docTypePayload),
             }
           );
           const docTypeData = await docTypeRes.json();
+          console.log(
+            "📥 Response get-shipping-document-parameter:",
+            docTypeData
+          );
+
           const shippingDocType =
             docTypeData?.body?.response?.result_list?.[0]
               ?.suggest_shipping_document_type || "THERMAL_AIR_WAYBILL";
 
-          // if (!skipStatuses.includes(checkedItems?.from)) {
-          console.log("callllllllllll........2222222");
+          if (!skipStatuses.includes(checkedItems?.from)) {
+            // 2️⃣ Get tracking number
+            const trackingUrl = `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-tracking-number?orderSn=${orderSn}&packageNumber=-&responseOptionalFields=first_mile_tracking_number`;
+            console.log("📤 Calling get-tracking-number:", trackingUrl);
 
-          // 2️⃣ Create shipping document (safe call even if already exists)
-          await fetch(
-            "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/create-shipping-document",
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                order_list: [
-                  {
-                    order_sn: orderSn,
-                    shipping_document_type: shippingDocType,
-                  },
-                ],
-              }),
-            }
-          );
-          // }
-          // 3️⃣ Download shipping document
+            const trackingRes = await fetch(trackingUrl);
+            const trackingData = await trackingRes.json();
+            console.log("📥 Response get-tracking-number:", trackingData);
+
+            const trackingNumber =
+              trackingData?.body?.response?.tracking_number || "";
+
+            // 3️⃣ Create shipping document
+            const createPayload = {
+              order_list: [
+                {
+                  order_sn: orderSn,
+                  shipping_document_type: shippingDocType,
+                  tracking_number: trackingNumber,
+                },
+              ],
+            };
+            console.log(
+              "📤 Calling create-shipping-document with:",
+              createPayload
+            );
+
+            const createRes = await fetch(
+              "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/create-shipping-document",
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(createPayload),
+              }
+            );
+            const createData = await createRes.json();
+            console.log("📥 Response create-shipping-document:", createData);
+            await delay(1000);
+          }
           const pdfRes = await fetch(
             "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/download-shipping-document",
             {
               method: "POST",
-              headers: { "Content-Type": "application/json" },
+              headers: {
+                "Content-Type": "application/json",
+                Accept: "*/*", // ✅ force same as curl
+              },
               body: JSON.stringify({
                 shipping_document_type: shippingDocType,
                 order_list: [{ order_sn: orderSn }],
@@ -133,10 +167,16 @@ const ShopeeAWBPrinting = () => {
             }
           );
 
+          console.log(
+            "📥 download-shipping-document status:",
+            pdfRes.status,
+            pdfRes.statusText
+          );
+
           if (!pdfRes.ok) throw new Error("Download failed");
           const pdfBlob = await pdfRes.blob();
 
-          // Convert blob → base64 (for backend merging)
+          // Convert blob → base64
           const base64 = await new Promise((resolve, reject) => {
             const reader = new FileReader();
             reader.onloadend = () => resolve(reader.result.split(",")[1]);
@@ -147,15 +187,14 @@ const ShopeeAWBPrinting = () => {
           pdfBase64Array.push(base64);
           printedOrderIds.push(orderSn);
 
-          console.log(`✅ Processed order ${orderSn}`);
+          console.log(`✅ Finished processing order ${orderSn}`);
         } catch (err) {
           console.error(`❌ Failed to process order ${order?.order_sn}`, err);
         }
       }
 
-      // 4️⃣ Decide single vs multiple
+      // 5️⃣ Single vs multiple
       if (pdfBase64Array.length === 1) {
-        // Decode Base64 → binary
         const byteChars = atob(pdfBase64Array[0]);
         const byteNumbers = new Array(byteChars.length);
         for (let i = 0; i < byteChars.length; i++) {
@@ -163,15 +202,18 @@ const ShopeeAWBPrinting = () => {
         }
         const byteArray = new Uint8Array(byteNumbers);
 
-        // Make PDF Blob
         const pdfBlob = new Blob([byteArray], { type: "application/pdf" });
         const pdfUrl = window.URL.createObjectURL(pdfBlob);
 
-        // ✅ Show in iframe preview only
         setLazadaPdf(pdfUrl);
       } else if (pdfBase64Array.length > 1) {
-        // Merge on backend
+        console.log(
+          "📤 Calling backend merge-pdfs-base64 with array length:",
+          pdfBase64Array.length
+        );
+
         const mergeRes = await fetch(
+          // "https://grozziieget.zjweiting.com:8033/tht/merge-pdfs-base64",
           "http://localhost:2000/tht/merge-pdfs-base64",
           {
             method: "POST",
@@ -180,11 +222,12 @@ const ShopeeAWBPrinting = () => {
           }
         );
 
+        const mergeData = await mergeRes.json();
+        console.log("📥 Response merge-pdfs-base64:", mergeData);
+
         if (!mergeRes.ok) throw new Error("Failed to merge PDFs");
 
-        const { pdfBase64 } = await mergeRes.json();
-
-        // Convert Base64 → Blob
+        const { pdfBase64 } = mergeData;
         const byteChars = atob(pdfBase64);
         const byteNumbers = new Array(byteChars.length);
         for (let i = 0; i < byteChars.length; i++) {
@@ -193,25 +236,24 @@ const ShopeeAWBPrinting = () => {
         const byteArray = new Uint8Array(byteNumbers);
         const pdfBlob = new Blob([byteArray], { type: "application/pdf" });
 
-        // ✅ Show in iframe preview only
         const pdfUrl = URL.createObjectURL(pdfBlob);
         setLazadaPdf(pdfUrl);
       } else {
         alert("No PDFs generated for the selected orders.");
       }
 
+      // 6️⃣ Save printed order ids
       if (!skipStatuses.includes(checkedItems?.from)) {
-        console.log("Calllllll------1");
-
-        // 5️⃣ Save printed order ids
         for (const shopeeId of printedOrderIds) {
           try {
-            await fetch(
-              `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/shopee/printedIds/add?shopeePrintedId=${shopeeId}&email=${encodeURIComponent(
-                currentUser
-              )}`,
-              { method: "POST" }
-            );
+            const url = `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/shopee/printedIds/add?shopeePrintedId=${shopeeId}&email=${encodeURIComponent(
+              currentUser
+            )}`;
+            console.log("📤 Calling save printedId:", url);
+
+            const saveRes = await fetch(url, { method: "POST" });
+            console.log("📥 Response save printedId:", saveRes.status);
+
             console.log(`✅ Stored ShopeePrintedId ${shopeeId}`);
           } catch (err) {
             console.error(
@@ -228,166 +270,6 @@ const ShopeeAWBPrinting = () => {
       setIsLoading(false);
     }
   };
-
-  // const handleMergeAndPrint = async () => {
-  //   try {
-  //     setIsLoading(true);
-
-  //     if (!checkedItems?.items?.length) {
-  //       alert("No orders selected.");
-  //       return;
-  //     }
-
-  //     const skipStatuses = [
-  //       "PROCESSED_PRINTED",
-  //       "SHIPPED",
-  //       "READY_TO_SHIP",
-  //       "COMPLETED",
-  //     ];
-  //     const pdfBase64Array = [];
-  //     const printedOrderIds = [];
-
-  //     // Utility: Blob → Base64
-  //     const blobToBase64 = (blob) =>
-  //       new Promise((resolve, reject) => {
-  //         const reader = new FileReader();
-  //         reader.onloadend = () => resolve(reader.result.split(",")[1]);
-  //         reader.onerror = reject;
-  //         reader.readAsDataURL(blob);
-  //       });
-
-  //     // Sequential process for each order
-  //     for (const order of checkedItems.items) {
-  //       const orderSn = order?.order_sn || order?.orderId;
-  //       if (!orderSn) continue;
-
-  //       try {
-  //         // 1️⃣ Get suggested shipping doc type
-  //         const docTypeRes = await fetch(
-  //           "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-shipping-document-parameter",
-  //           {
-  //             method: "POST",
-  //             headers: { "Content-Type": "application/json" },
-  //             body: JSON.stringify({ order_list: [{ order_sn: orderSn }] }),
-  //           }
-  //         );
-  //         const docTypeData = await docTypeRes.json();
-  //         const shippingDocType =
-  //           docTypeData?.body?.response?.result_list?.[0]
-  //             ?.suggest_shipping_document_type || "THERMAL_AIR_WAYBILL";
-
-  //         // 2️⃣ Create shipping doc (always wait until complete)
-  //         if (!skipStatuses.includes(checkedItems?.from)) {
-  //           const createRes = await fetch(
-  //             "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/create-shipping-document",
-  //             {
-  //               method: "POST",
-  //               headers: { "Content-Type": "application/json" },
-  //               body: JSON.stringify({
-  //                 order_list: [
-  //                   {
-  //                     order_sn: orderSn,
-  //                     shipping_document_type: shippingDocType,
-  //                   },
-  //                 ],
-  //               }),
-  //             }
-  //           );
-
-  //           if (!createRes.ok) {
-  //             console.error(`❌ Failed to create shipping doc for ${orderSn}`);
-  //             continue;
-  //           }
-
-  //           // 🔹 Wait a short delay to let Shopee process before downloading
-  //           await new Promise((res) => setTimeout(res, 800));
-  //         }
-
-  //         // 3️⃣ Download shipping doc
-  //         const pdfRes = await fetch(
-  //           "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/download-shipping-document",
-  //           {
-  //             method: "POST",
-  //             headers: { "Content-Type": "application/json" },
-  //             body: JSON.stringify({
-  //               shipping_document_type: shippingDocType,
-  //               order_list: [{ order_sn: orderSn }],
-  //             }),
-  //           }
-  //         );
-  //         if (!pdfRes.ok) {
-  //           console.error(`❌ Download failed for ${orderSn}`);
-  //           continue;
-  //         }
-
-  //         const pdfBlob = await pdfRes.blob();
-  //         const base64 = await blobToBase64(pdfBlob);
-
-  //         pdfBase64Array.push(base64);
-  //         printedOrderIds.push(orderSn);
-  //       } catch (err) {
-  //         console.error(`❌ Error processing ${orderSn}`, err);
-  //       }
-  //     }
-
-  //     // 4️⃣ Merge or show PDFs
-  //     if (pdfBase64Array.length === 1) {
-  //       const byteChars = atob(pdfBase64Array[0]);
-  //       const byteNumbers = Array.from(byteChars, (c) => c.charCodeAt(0));
-  //       const pdfBlob = new Blob([new Uint8Array(byteNumbers)], {
-  //         type: "application/pdf",
-  //       });
-  //       setLazadaPdf(URL.createObjectURL(pdfBlob));
-  //     } else if (pdfBase64Array.length > 1) {
-  //       const mergeRes = await fetch(
-  //         "http://localhost:2000/tht/merge-pdfs-base64",
-  //         {
-  //           method: "POST",
-  //           headers: { "Content-Type": "application/json" },
-  //           body: JSON.stringify({ pdfs: pdfBase64Array }),
-  //         }
-  //       );
-
-  //       if (!mergeRes.ok) throw new Error("Failed to merge PDFs");
-  //       const { pdfBase64 } = await mergeRes.json();
-
-  //       const byteChars = atob(pdfBase64);
-  //       const byteNumbers = Array.from(byteChars, (c) => c.charCodeAt(0));
-  //       const pdfBlob = new Blob([new Uint8Array(byteNumbers)], {
-  //         type: "application/pdf",
-  //       });
-  //       setLazadaPdf(URL.createObjectURL(pdfBlob));
-  //     } else {
-  //       alert("No PDFs generated for the selected orders.");
-  //     }
-
-  //     // 5️⃣ Save printed IDs
-  //     if (!skipStatuses.includes(checkedItems?.from)) {
-  //       for (const shopeeId of printedOrderIds) {
-  //         try {
-  //           await fetch(
-  //             `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/shopee/printedIds/add?shopeePrintedId=${shopeeId}&email=${encodeURIComponent(
-  //               currentUser
-  //             )}`,
-  //             { method: "POST" }
-  //           );
-  //         } catch (err) {
-  //           console.error(
-  //             `❌ Failed to store ShopeePrintedId ${shopeeId}`,
-  //             err
-  //           );
-  //         }
-  //       }
-  //     }
-
-  //     console.log("✅ All done");
-  //   } catch (err) {
-  //     console.error("❌ Merge print failed:", err);
-  //     alert("Something went wrong while generating the PDF(s).");
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
 
   const handlePrintAll = () => {
     const iframe = document.querySelector("iframe");

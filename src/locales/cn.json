@@ -283,5 +283,14 @@
   "Shipped": "已发货",
   "shipped": "已发货",
   "Returned": "已退货",
-  "returned": "已退货"
+  "returned": "已退货",
+  "Processed": "已处理",
+  "Processed_Printed": "已处理并打印",
+  "Completed": "已完成",
+  "ShopeeOrderDetails": "Shopee订单详情",
+  "FullAddress": "完整地址",
+  "State": "州/省",
+  "OriginalPrice": "原价",
+  "PromotionType": "促销类型",
+  "ModelName": "型号名称"
 }

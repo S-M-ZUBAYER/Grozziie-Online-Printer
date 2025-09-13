@@ -279,9 +279,19 @@
   "Packed": "Dikemas",
   "Packed_Printed": "Dikemas dan Dicetak",
   "Ready_To_Ship": "Siap Dikirim",
+  "Ready To Ship": "Siap Dikirim",
   "ready_to_ship": "siap dikirim",
   "Shipped": "Dikirim",
   "shipped": "dikirim",
   "Returned": "Dikembalikan",
-  "returned": "dikembalikan"
+  "returned": "dikembalikan",
+  "Processed": "Diproses",
+  "Processed_Printed": "Diproses dan Dicetak",
+  "Completed": "Selesai",
+  "ShopeeOrderDetails": "Detail Pesanan Shopee",
+  "FullAddress": "Alamat Lengkap",
+  "State": "Provinsi",
+  "OriginalPrice": "Harga Asli",
+  "PromotionType": "Jenis Promosi",
+  "ModelName": "Nama Model"
 }

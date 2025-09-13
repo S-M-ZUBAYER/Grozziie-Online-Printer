@@ -656,7 +656,7 @@ const BatchPrint = () => {
               </p>
               <div className="w-[1px] h-8 bg-black opacity-40 mx-2"></div>
               <p className="text-black opacity-40 text-sm font-medium capitalize">
-                700 {t("Orders")}
+                {totalOrderData?.length} {t("Orders")}
               </p>
             </div>
 
