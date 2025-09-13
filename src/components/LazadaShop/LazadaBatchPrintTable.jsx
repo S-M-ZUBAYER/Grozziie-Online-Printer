@@ -68,6 +68,7 @@ const LazadaBatchPrintTable = ({
       // Step 4: Call tracking API
       const traceRes = await fetch(trackingUrl);
       const traceJson = await traceRes.json();
+      console.log(traceJson, ofcPackageIdList, "tracking");
 
       if (traceJson.code === 0 && traceJson.data) {
         setTrackingInfo(traceJson.data);
@@ -82,6 +83,8 @@ const LazadaBatchPrintTable = ({
       setLoading(false);
     }
   };
+
+  console.log(filteredData, "lazada");
 
   return (
     <div className="mt-6">

@@ -105,6 +105,7 @@ const ShopeeBatchPrintTable = ({
               </th>
               {(shopeeOrderStatusCheck === "PROCESSED" ||
                 shopeeOrderStatusCheck === "SHIPPED" ||
+                shopeeOrderStatusCheck === "PROCESSED_PRINTED" ||
                 shopeeOrderStatusCheck === "COMPLETED") && (
                 <th className="sticky top-0 bg-[#0043681A]">{t("Tracking")}</th>
               )}
@@ -171,14 +172,16 @@ const ShopeeBatchPrintTable = ({
 
                   {/* Tracking */}
                   {(shopeeOrderStatusCheck === "PROCESSED" ||
+                    shopeeOrderStatusCheck === "PROCESSED_PRINTED" ||
                     shopeeOrderStatusCheck === "SHIPPED" ||
                     shopeeOrderStatusCheck === "COMPLETED") && (
                     <td>
                       <button
                         className="text-[#004368] text-xs"
                         onClick={() => handleGetTracking(order)}
+                        title="Click to View tracking info"
                       >
-                        {t("Tracking")}
+                        {order?.tracking_number}
                       </button>
                     </td>
                   )}
