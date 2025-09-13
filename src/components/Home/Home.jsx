@@ -93,25 +93,12 @@ const Home = () => {
   const [shopeeShippedOrders, setShopeeShippedOrders] = useState([]);
   const [shopeeCompletedOrders, setShopeeCompletedOrders] = useState([]);
   const [shopeeCancelledOrders, setShopeeCancelledOrders] = useState([]);
-  console.log(
-    selectedStore,
-    "shopeee",
-    shopeePrintedIds,
-    shopeeReadyToShip,
-    shopeeProcessed,
-    shopeeProcessedPrinted,
-    shopeeProcessedUnprinted,
-    shopeeShippedOrders,
-    shopeeCompletedOrders,
-    shopeeCancelledOrders
-  );
 
   const [loadOrderList] = useLoadOrderListMutation();
   const [getLazadaOrders, { isLoading, isError }] =
     useLazyGetLazadaOrdersQuery();
 
   const COLORS = ["#34D399", "#FBBF24", "#F87171", "#60A5FA"];
-
   const chartData = [
     {
       name: t("Printed"),
@@ -276,8 +263,6 @@ const Home = () => {
 
   // Lazada Call API
   useEffect(() => {
-    console.log("start");
-
     const fetchPrintedIds = async () => {
       try {
         const res = await fetch(
@@ -391,11 +376,7 @@ const Home = () => {
         );
         const data = await res.json();
 
-        console.log("📦 Shopee Printed IDs (raw):", data);
-
         if (Array.isArray(data)) {
-          console.log("shopee ids", data);
-
           setShopeePrintedIds(data);
         }
       } catch (err) {
@@ -429,8 +410,6 @@ const Home = () => {
         shopeePrintedIds.map((item) => String(item.shopeePrintedId))
       );
 
-      console.log("🖨️ Shopee Printed Set:", printedSet);
-
       for (const status of statuses) {
         try {
           // 1️⃣ Get base orders
@@ -440,16 +419,12 @@ const Home = () => {
             orderStatus: status,
           }).unwrap();
 
-          console.log(`📥 Shopee Orders (${status}) - raw:`, orderListResponse);
-
           const orderList = orderListResponse?.response?.order_list || [];
-          console.log(`📋 Shopee Orders (${status}) - parsed list:`, orderList);
 
           if (!orderList.length) continue;
 
           // 2️⃣ Extract order_sn
           const orderSnList = orderList.map((o) => o.order_sn);
-          console.log(`🔑 Shopee orderSnList (${status}):`, orderSnList);
 
           // 3️⃣ Get order details
           const detailsResponse = await getShopeeOrderDetails({
@@ -458,8 +433,6 @@ const Home = () => {
             response_optional_fields:
               "total_amount,recipient_address,item_list",
           }).unwrap();
-
-          console.log(`📥 Shopee Order Details (${status}):`, detailsResponse);
 
           const detailedOrders = detailsResponse?.response?.order_list || [];
 
@@ -471,8 +444,6 @@ const Home = () => {
             return { ...order, ...details };
           });
 
-          console.log(`📝 Shopee Merged Orders (${status}):`, mergedOrders);
-
           // 5️⃣ Split printed/unprinted
           const printedOrders = mergedOrders.filter((item) =>
             printedSet.has(String(item.order_sn))
@@ -480,9 +451,6 @@ const Home = () => {
           const unprintedOrders = mergedOrders.filter(
             (item) => !printedSet.has(String(item.order_sn))
           );
-
-          console.log(`🖨️ Printed Orders (${status}):`, printedOrders);
-          console.log(`📄 Unprinted Orders (${status}):`, unprintedOrders);
 
           // 6️⃣ Assign to relevant state
           if (status === "READY_TO_SHIP") {
@@ -510,7 +478,6 @@ const Home = () => {
             setShopeeTodayPrinted(todayPrinted);
           } else if (status === "SHIPPED") {
             setShopeeShippedOrders(mergedOrders);
-            console.log(mergedOrders, "Shippedorders....");
 
             const shippedToday = mergedOrders.filter((order) => {
               // Use update_time (fallback to ship_by_date if missing)
