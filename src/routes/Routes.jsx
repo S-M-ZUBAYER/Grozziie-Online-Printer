@@ -64,6 +64,9 @@ import LazadaBatchPrint from "../components/LazadaShop/LazadaBatchPrint";
 import LazadaAWBPrinting from "../components/LazadaShop/LazadaAWBPrinting";
 import ShopeeBatchPrint from "../components/ShopeeShop/ShopeeBatchPrint";
 import ShopeeAWBPrinting from "../components/ShopeeShop/ShopeeAWBPrinting";
+import ShopeedeliveryType from "../components/Settings/DeliveryType/ShopeedeliveryType";
+import LazadaDeliveryType from "../components/Settings/DeliveryType/LazadaDeliveryType";
+import TiktokDeliveryType from "../components/Settings/DeliveryType/TiktokDeliveryType";
 
 export const routes = createBrowserRouter([
   {
@@ -291,6 +294,18 @@ export const routes = createBrowserRouter([
       {
         path: "/settings/Logistic Machine Settings",
         element: <LogisticMachineSettings />,
+      },
+      {
+        path: "/settings/deliveryType/shopee",
+        element: <ShopeedeliveryType />,
+      },
+      {
+        path: "/settings/deliveryType/lazada",
+        element: <LazadaDeliveryType />,
+      },
+      {
+        path: "/settings/deliveryType/tiktok",
+        element: <TiktokDeliveryType />,
       },
       {
         path: "/settings/Express Unreachable Area",

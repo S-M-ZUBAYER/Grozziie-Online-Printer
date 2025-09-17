@@ -338,6 +338,8 @@ const Home = () => {
           } else if (status === "Packed") {
             setLazadaPacked(orderList);
             setLazadaPackedPrinted(printedOrders);
+            console.log(unprintedOrders, printedSet);
+
             setLazadaPackedUnprinted(unprintedOrders);
           } else if (status === "ready_to_ship") {
             const today = new Date();

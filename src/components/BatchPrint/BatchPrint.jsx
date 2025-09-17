@@ -66,6 +66,15 @@ const BatchPrint = () => {
     const stored = localStorage.getItem("tiktokShopInfo");
     return stored ? JSON.parse(stored) : [];
   });
+  const [selectedTikTokDeliveryType, setSelectedTikTokDeliveryType] =
+    useState("");
+
+  useEffect(() => {
+    const savedType = localStorage.getItem("tikTokDeliveryType");
+    if (savedType) {
+      setSelectedTikTokDeliveryType(savedType);
+    }
+  }, []);
   const { t } = useTranslation();
   const [postShippedDataToApi] = useSetShippedDataUsMutation();
 
@@ -420,32 +429,90 @@ const BatchPrint = () => {
 
     try {
       const responses = await Promise.all(
+        // checkedItems.map(async (item) => {
+        //   const packageId = item?.lineItems?.[0]?.packageId;
+        //   console.log(cipherValue, packageId);
+
+        //   if (!packageId) {
+        //     console.warn(`Missing packageId for item with id ${item?.id}`);
+        //     return null;
+        //   }
+
+        //   const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package?cipher=${encodeURIComponent(
+        //     cipherValue
+        //   )}&packageId=${encodeURIComponent(packageId)}`;
+
+        //   const res = await fetch(url, {
+        //     method: "POST",
+        //     headers: {
+        //       "Content-Type": "application/json",
+        //     },
+        //   });
+
+        //   const result = await res.json();
+        //   console.log(`📦 Package created for order ${item?.id}:`, result);
+        //   dispatch(
+        //     checkedItemsChange({ items: [], from: tikTokOrderStatusCheck })
+        //   );
+        //   setCheckedItems([]);
+        //   setSelectAll(false);
+        //   return result;
+        // })
+
         checkedItems.map(async (item) => {
           const packageId = item?.lineItems?.[0]?.packageId;
+          console.log(cipherValue, packageId);
 
           if (!packageId) {
             console.warn(`Missing packageId for item with id ${item?.id}`);
             return null;
           }
 
-          const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package?cipher=${encodeURIComponent(
-            cipherValue
-          )}&packageId=${encodeURIComponent(packageId)}`;
+          let url = "";
+          let body = null;
+
+          if (
+            selectedTikTokDeliveryType === "pickup" ||
+            selectedTikTokDeliveryType === "dropoff"
+          ) {
+            // Use new API
+            url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
+              cipherValue
+            )}`;
+
+            body = {
+              packageId,
+              trackingNumber: `TEST-${Date.now()}`, // 🔹 replace with real tracking number
+              shippingProviderId: item?.shippingProviderId, // 🔹 you must pass this from item/provider
+              pickupStartTime: 0, // 🔹 set valid pickup slot if pickup
+              pickupEndTime: 0, // 🔹 set valid pickup slot if pickup
+              handoverMethod:
+                selectedTikTokDeliveryType === "pickup" ? "PICKUP" : "DROP_OFF",
+            };
+          } else {
+            // Use old API
+            url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package?cipher=${encodeURIComponent(
+              cipherValue
+            )}&packageId=${encodeURIComponent(packageId)}`;
+          }
 
           const res = await fetch(url, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
             },
+            body: body ? JSON.stringify(body) : undefined,
           });
 
           const result = await res.json();
           console.log(`📦 Package created for order ${item?.id}:`, result);
+
           dispatch(
             checkedItemsChange({ items: [], from: tikTokOrderStatusCheck })
           );
           setCheckedItems([]);
           setSelectAll(false);
+
           return result;
         })
       );
@@ -668,12 +735,12 @@ const BatchPrint = () => {
                 style={{ display: "none" }}
                 onChange={handleFileChange}
               />
-              <p
+              {/* <p
                 onClick={handleImportOrderClick}
                 className="text-[#004368] text-sm font-normal capitalize cursor-pointer"
               >
                 {t("ImportOrder")}
-              </p>
+              </p> */}
             </div>
 
             <div className="col-span-2 flex items-center justify-end">

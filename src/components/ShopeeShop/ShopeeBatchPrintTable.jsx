@@ -181,7 +181,9 @@ const ShopeeBatchPrintTable = ({
                         onClick={() => handleGetTracking(order)}
                         title="Click to View tracking info"
                       >
-                        {order?.tracking_number}
+                        {order?.tracking_number
+                          ? order?.tracking_number
+                          : t("NoData")}
                       </button>
                     </td>
                   )}
