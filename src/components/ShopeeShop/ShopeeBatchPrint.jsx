@@ -147,6 +147,15 @@ const ShopeeBatchPrint = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [leftPaginationBtn, setLeftPaginationBtn] = useState(false);
   const [rightPaginationBtn, setRightPaginationBtn] = useState(true);
+  const [selectedShopeeDeliveryType, setSelectedShopeeDeliveryType] =
+    useState("");
+
+  useEffect(() => {
+    const savedType = localStorage.getItem("shopeeDeliveryType");
+    if (savedType) {
+      setSelectedShopeeDeliveryType(savedType);
+    }
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -507,72 +516,92 @@ const ShopeeBatchPrint = () => {
     try {
       // ✅ Step 2: Loop through orders
       for (const item of checkedItems) {
-        const orderSn = item?.order_sn || item?.orderId; // ensure correct field
-
-        if (!orderSn) {
-          console.warn("Missing order_sn");
-          failedOrders.push({ orderId: "Unknown", reason: "Missing order_sn" });
-          continue;
-        }
+        const orderSn = item?.order_sn || item?.orderId;
+        if (!orderSn) continue;
 
         try {
-          // 1️⃣ Get shipping parameters (to extract address_id)
+          // 1️⃣ Get shipping parameters
           const shippingParamRes = await fetch(
             `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-shipping-parameter?orderSn=${orderSn}`
           );
           const shippingParamData = await shippingParamRes.json();
 
           if (shippingParamData?.body?.error) {
-            console.warn(
-              `❌ Failed to get shipping parameter for ${orderSn}`,
-              shippingParamData?.body?.message || shippingParamData?.body?.error
-            );
             failedOrders.push({
               orderId: orderSn,
               reason:
                 shippingParamData?.body?.message ||
-                shippingParamData?.body?.error ||
-                "Unknown error",
+                shippingParamData?.body?.error,
             });
-            continue; // skip this order
+            continue;
           }
 
-          // Extract address_id (if available)
           const addressId =
             shippingParamData?.body?.response?.pickup?.address_list?.[0]
               ?.address_id || null;
+          const dropoff = shippingParamData?.body?.response?.dropoff;
+          console.log(dropoff, "dropoff");
 
-          if (!addressId) {
-            console.warn(`❌ No address_id found for ${orderSn}`);
-            failedOrders.push({
-              orderId: orderSn,
-              reason: "Missing address_id from shipping parameter",
-            });
-            continue; // skip this order
+          // 2️⃣ Build request body dynamically
+          let requestBody = {
+            order_sn: orderSn,
+            package_number: "",
+          };
+
+          if (selectedShopeeDeliveryType === "pickup") {
+            if (!addressId) {
+              failedOrders.push({
+                orderId: orderSn,
+                reason: "Missing address_id",
+              });
+              continue;
+            }
+            requestBody = {
+              order_sn: orderSn,
+              package_number: "",
+              pickup: {
+                address_id: addressId, // 👈 dynamically set from API
+                pickup_time_id: "",
+                tracking_number: "",
+              },
+            };
+          } else if (selectedShopeeDeliveryType === "dropoff") {
+            requestBody = {
+              order_sn: orderSn,
+              package_number: "",
+              dropoff: dropoff,
+            }; // add branch_id / slug if API returns them
+          } else {
+            if (!addressId) {
+              failedOrders.push({
+                orderId: orderSn,
+                reason: "Missing address_id",
+              });
+              continue;
+            }
+            requestBody = {
+              order_sn: orderSn,
+              package_number: "",
+              pickup: {
+                address_id: addressId, // 👈 dynamically set from API
+                pickup_time_id: "",
+                tracking_number: "",
+              },
+            };
           }
 
-          // 2️⃣ Call ship-order API
+          // 3️⃣ Call ship-order API
           const shipRes = await fetch(
             "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/ship-order",
             {
               method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Accept: "*/*",
-              },
-              body: JSON.stringify({
-                order_sn: orderSn,
-                package_number: "",
-                pickup: {
-                  address_id: addressId, // 👈 dynamically set from API
-                  pickup_time_id: "", // optional
-                  tracking_number: "",
-                },
-              }),
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(requestBody),
             }
           );
 
           const shipData = await shipRes.json();
+          console.log(requestBody, shipData, "shipData");
 
           if (!shipData?.body?.error) {
             console.log(`✅ Shipped order ${orderSn}`, shipData);
@@ -866,12 +895,12 @@ const ShopeeBatchPrint = () => {
                 style={{ display: "none" }}
                 onChange={handleFileChange}
               />
-              <p
+              {/* <p
                 onClick={handleImportOrderClick}
                 className="text-[#004368] text-sm font-normal capitalize cursor-pointer"
               >
                 {t("ImportOrder")}
-              </p>
+              </p> */}
             </div>
 
             <div className="col-span-2 flex items-center justify-end">

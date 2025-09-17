@@ -539,7 +539,11 @@ const LazadaBatchPrint = () => {
         );
         const itemData = await itemRes.json();
         const parsedBody = JSON.parse(itemData?.body ?? "{}");
-        const orderItemId = parsedBody?.data?.[0]?.order_item_id;
+        console.log(parsedBody, "parsed");
+
+        const orderItemId =
+          parsedBody?.data?.map((item) => item.order_item_id.toString()) || [];
+        console.log(parsedBody?.data, "order item ids");
 
         if (!orderItemId) {
           console.warn("No order_item_id found for order", orderId);
@@ -549,7 +553,13 @@ const LazadaBatchPrint = () => {
 
         // Step 2: Get shipment provider
         const shipmentRes = await fetch(
-          `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/order/shipment-provider`,
+          console.log(
+            {
+              order_id: orderId,
+              order_item_ids: orderItemId,
+            },
+            "shipment provider"
+          )`https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/order/shipment-provider`,
           {
             method: "POST",
             headers: {
@@ -570,7 +580,11 @@ const LazadaBatchPrint = () => {
         const providerInfo = shipmentData?.result?.data;
 
         if (!providerInfo?.shipment_providers?.length) {
-          console.warn("No shipment providers found for order", orderId);
+          console.warn(
+            "No shipment providers found for order",
+            providerInfo,
+            orderId
+          );
           failedOrders.push({ orderId, reason: "No shipment providers found" });
           continue;
         }
@@ -578,6 +592,11 @@ const LazadaBatchPrint = () => {
         const shipmentProviderCode =
           providerInfo.shipment_providers[0].provider_code;
         const shippingAllocateType = providerInfo.shipping_allocate_type;
+        console.log(
+          shipmentProviderCode,
+          shippingAllocateType,
+          "log shipment provider"
+        );
 
         // Step 3: Pack the order
         const packRes = await fetch(
@@ -596,6 +615,7 @@ const LazadaBatchPrint = () => {
                 },
               ],
               delivery_type: "dropship",
+              // delivery_type: "pickup",
               shipment_provider_code: shipmentProviderCode,
               shipping_allocate_type: shippingAllocateType,
             }),
@@ -889,12 +909,12 @@ const LazadaBatchPrint = () => {
                 style={{ display: "none" }}
                 onChange={handleFileChange}
               />
-              <p
+              {/* <p
                 onClick={handleImportOrderClick}
                 className="text-[#004368] text-sm font-normal capitalize cursor-pointer"
               >
                 {t("ImportOrder")}
-              </p>
+              </p> */}
             </div>
 
             <div className="col-span-2 flex items-center justify-end">

@@ -31,10 +31,11 @@ const TopNavbar = () => {
       setActiveLi(0);
     } else {
       dispatch(mainRouteStateChange());
-      if (path.includes("tiktok")) setActiveLi(1);
+      if (path.includes("settings")) setActiveLi(4);
+      else if (path.includes("tiktok")) setActiveLi(1);
       else if (path.includes("lazada")) setActiveLi(2);
       else if (path.includes("shopee")) setActiveLi(3);
-      else if (path.includes("contact")) setActiveLi(4);
+      else if (path.includes("contact")) setActiveLi(5);
       else setActiveLi(null); // If no match
     }
   }, [location.pathname, dispatch]);
@@ -56,6 +57,10 @@ const TopNavbar = () => {
     { key: "Shopee", path: "/ShopeeOrderManagement" },
     // { key: "singlePrint", path: "/singleprint" },
     // { key: "settings", path: "/settings/recipient information" },
+    {
+      key: "settings",
+      path: "/settings/deliveryType/shopee",
+    },
     // { key: "utility", path: "/utility/delivery record" },
     // { key: "manualOrder", path: "/manualOrder" },
     { key: "contact", path: "/contact" },

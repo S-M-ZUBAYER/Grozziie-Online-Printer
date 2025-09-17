@@ -107,8 +107,8 @@ const LazadaBatchPrintTable = ({
         <table className="table">
           <thead className="">
             <tr className="h-11 text-black text-opacity-80 capitalize text-center text-sm font-normal leading-4">
-              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-l-md">
-                <span className="mr-[10px]">{t("AccountName")}</span>
+              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
+                <span className="mr-[10px]">{t("orderId")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
@@ -124,7 +124,11 @@ const LazadaBatchPrintTable = ({
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                <span className="mr-[10px]">{t("orderId")}</span>
+                <span className="mr-[10px]">{t("DeliveryType")}</span>
+                <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
+              </th>
+              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-l-md">
+                <span className="mr-[10px]">{t("AccountName")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
@@ -249,6 +253,13 @@ const LazadaBatchPrintTable = ({
                   {/* Full Address */}
                   <td className="text-black opacity-80 text-sm font-normal leading-4">
                     {formatText(fullAddress || "") || t("NoData")}
+                  </td>
+
+                  {/* Order Number */}
+                  <td className="text-black opacity-80 text-sm font-normal leading-4">
+                    {order?.delivery_company
+                      ? formatText(order.delivery_company.toString())
+                      : t("NoData")}
                   </td>
 
                   {/* Warehouse Code */}
