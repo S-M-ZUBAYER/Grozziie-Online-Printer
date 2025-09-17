@@ -46,6 +46,14 @@ const HomeSideNavbar = () => {
                 {t("Shopee")}
               </Link>
             </li>
+            <li className="my-2 ml-4">
+              <Link
+                className="text-black text-[15px] font-medium capitalize transition hover:font-bold hover:text-[#004368]"
+                to="/settings/deliveryType/shopee"
+              >
+                {t("settings")}
+              </Link>
+            </li>
 
             {/* <li className="my-2 ml-4">
               <Link
@@ -56,15 +64,7 @@ const HomeSideNavbar = () => {
               </Link>
             </li>
 
-            <li className="my-2 ml-4">
-              <Link
-                className="text-black text-[15px] font-medium capitalize transition hover:font-bold hover:text-[#004368]"
-                to="/settings"
-              >
-                {t("settings")}
-              </Link>
-            </li>
-
+            
             <li className="my-2 ml-4">
               <Link
                 className="text-black text-[15px] font-medium capitalize transition hover:font-bold hover:text-[#004368]"

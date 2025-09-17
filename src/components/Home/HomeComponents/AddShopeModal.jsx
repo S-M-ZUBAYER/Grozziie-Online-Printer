@@ -16,13 +16,13 @@ function AddShopeModal() {
 
   return (
     <>
-      <button
+      {/* <button
         className="bg-[#004368] text-white ml-4 px-4 h-[32px] w-[15vw] flex gap-2 items-center rounded-[8px] whitespace-nowrap"
         onClick={() => setIsOpen(true)}
       >
         <PlusIcon className="w-5 h-5" />
         {t("Add Shop")}
-      </button>
+      </button> */}
 
       <AnimatePresence>
         {isOpen && (
