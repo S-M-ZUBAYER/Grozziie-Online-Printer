@@ -66,9 +66,9 @@ const settingsInfo = [
     name: "Delivery Type",
     image: <LiaShippingFastSolid />, // pick any suitable icon
     children: [
-      { id: "8-1", name: "TikTok Shop", path: "/settings/deliveryType/tiktok" },
-      { id: "8-2", name: "Lazada Shop", path: "/settings/deliveryType/lazada" },
       { id: "8-3", name: "Shopee Shop", path: "/settings/deliveryType/shopee" },
+      { id: "8-2", name: "Lazada Shop", path: "/settings/deliveryType/lazada" },
+      { id: "8-1", name: "TikTok Shop", path: "/settings/deliveryType/tiktok" },
     ],
   },
 ];
@@ -92,51 +92,6 @@ const clients = [
     post_code: "FGHIJ",
     operate: "Operate 2",
   },
-  // {
-  //   id: 3,
-  //   recipient_name: "Alice Johnson",
-  //   company_name: "PQR Ltd.",
-  //   address: "789 Oak Street",
-  //   landline: "111-222-3333",
-  //   post_code: "KLMNO",
-  //   operate: "Operate 3",
-  // },
-  // {
-  //   id: 4,
-  //   recipient_name: "Alice Johnson",
-  //   company_name: "PQR Ltd.",
-  //   address: "789 Oak Street",
-  //   landline: "111-222-3333",
-  //   post_code: "KLMNO",
-  //   operate: "Operate 3",
-  // },
-  // {
-  //   id: 5,
-  //   recipient_name: "Alice Johnson",
-  //   company_name: "PQR Ltd.",
-  //   address: "789 Oak Street",
-  //   landline: "111-222-3333",
-  //   post_code: "KLMNO",
-  //   operate: "Operate 3",
-  // },
-  // {
-  //   id: 6,
-  //   recipient_name: "Alice Johnson",
-  //   company_name: "PQR Ltd.",
-  //   address: "789 Oak Street",
-  //   landline: "111-222-3333",
-  //   post_code: "KLMNO",
-  //   operate: "Operate 3",
-  // },
-  // {
-  //   id: 7,
-  //   recipient_name: "Alice Johnson",
-  //   company_name: "PQR Ltd.",
-  //   address: "789 Oak Street",
-  //   landline: "111-222-3333",
-  //   post_code: "KLMNO",
-  //   operate: "Operate 3",
-  // },
 ];
 
 const SettingLayout = () => {
@@ -227,76 +182,59 @@ const SettingLayout = () => {
                   </Link>
                 ))}
               </ul> */}
-              <ul className="ml-8 mt-3 min-h-96 max-h-[590px] overflow-y-auto">
-                {settingsInfo?.map((setting) => (
-                  <div key={setting.id}>
-                    <li
-                      className="flex items-center mb-4 capitalize cursor-pointer justify-between pr-4"
-                      onClick={() =>
-                        setting.children
-                          ? toggleExpand(setting.id)
-                          : handleToSelectSideNav(setting)
-                      }
-                    >
-                      <p
-                        className={`pl-4 text-black text-[15px] font-normal leading-normal flex items-center gap-4`}
-                      >
-                        <span
-                          className={`w-[18px] h-[18px] ${
-                            active?.id === setting?.id ? "text-[#004368]" : ""
-                          }`}
+              <div className="bg-white rounded-[17px] shadow-[6px 9px 16.4px 0px rgba(0, 0, 0, 0.04)] col-span-3 max-h-[782px] mr-12 cursor-pointer">
+                <div className="mt-12">
+                  <ul className="ml-8 mt-3 min-h-96 max-h-[590px] overflow-y-auto">
+                    {settingsInfo?.map((setting) => (
+                      <div key={setting.id}>
+                        <li
+                          className="flex items-center mb-4 capitalize cursor-pointer justify-between pr-4"
+                          onClick={() => handleToSelectSideNav(setting)}
                         >
-                          {setting.image}
-                        </span>
-                        <span
-                          className={` ${
-                            active?.id === setting?.id
-                              ? "text-[#004368] font-semibold text-[15px]"
-                              : ""
-                          }`}
-                        >
-                          {t(setting.name)}
-                        </span>
-                      </p>
+                          <p
+                            className={`pl-4 text-[15px] flex items-center gap-4 ${
+                              active?.id === setting?.id
+                                ? "text-[#004368] font-semibold"
+                                : "text-black font-normal"
+                            }`}
+                          >
+                            <span className="w-[18px] h-[18px]">
+                              {setting.image}
+                            </span>
+                            <span>{t(setting.name)}</span>
+                          </p>
+                        </li>
 
-                      {/* Arrow only for items with children */}
-                      {setting.children && (
-                        <IoIosArrowDown
-                          className={`text-[18px] transition-transform duration-300 ${
-                            expanded === setting.id
-                              ? "rotate-180 text-[#004368]"
-                              : "rotate-0"
-                          }`}
-                        />
-                      )}
-                    </li>
+                        {/* Always show children */}
+                        {setting.children && (
+                          <ul className="ml-6 mb-4 border-l border-gray-200 pl-4">
+                            {setting.children.map((child) => {
+                              const isActive =
+                                location.pathname === child.path ||
+                                active?.id === child.id;
 
-                    {/* Animated children */}
-                    <AnimatePresence>
-                      {setting.children && expanded === setting.id && (
-                        <motion.ul
-                          className="ml-10 mb-4 overflow-hidden"
-                          initial={{ height: 0, opacity: 0 }}
-                          animate={{ height: "auto", opacity: 1 }}
-                          exit={{ height: 0, opacity: 0 }}
-                          transition={{ duration: 0.3, ease: "easeInOut" }}
-                        >
-                          {setting.children.map((child) => (
-                            <Link to={child.path} key={child.id}>
-                              <li
-                                className="mb-2 text-[14px] text-gray-600 hover:text-[#004368] cursor-pointer"
-                                onClick={() => setActive(child)}
-                              >
-                                {t(child.name)}
-                              </li>
-                            </Link>
-                          ))}
-                        </motion.ul>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                ))}
-              </ul>
+                              return (
+                                <Link to={child.path} key={child.id}>
+                                  <li
+                                    className={`mb-2 text-[14px] cursor-pointer pl-2 ${
+                                      isActive
+                                        ? "text-[#004368] font-semibold"
+                                        : "text-gray-600 hover:text-[#004368]"
+                                    }`}
+                                    onClick={() => setActive(child)}
+                                  >
+                                    {t(child.name)}
+                                  </li>
+                                </Link>
+                              );
+                            })}
+                          </ul>
+                        )}
+                      </div>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
 

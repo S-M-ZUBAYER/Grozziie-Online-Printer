@@ -24,6 +24,7 @@ import { orderListData } from "../../features/slice/orderListSlice";
 import ConfirmationModal from "../../Share/ConfirmationModal";
 import { TiInfoOutline } from "react-icons/ti";
 import { AiOutlineCheckCircle } from "react-icons/ai";
+import { tikTokOrderStatusOptions } from "../../Share/Data/ClientData";
 
 const BatchPrint = () => {
   const [selectAll, setSelectAll] = useState(false);
@@ -35,9 +36,23 @@ const BatchPrint = () => {
   const selectedTitTokOrderStatus = useSelector(
     (state) => state.user.tikTokSelectStatus
   );
-  const [tikTokOrderStatusCheck, setTikTokOrderStatusCheck] = useState(
-    selectedTitTokOrderStatus ? selectedTitTokOrderStatus : "AWAITING_SHIPMENT"
+
+  // Pick the default READY_TO_SHIP option once
+  const defaultOption = tikTokOrderStatusOptions.find(
+    (opt) => opt.value === "AWAITING_SHIPMENT"
   );
+
+  const [tikTokOrderStatusCheck, setTikTokOrderStatusCheck] = useState(
+    selectedTitTokOrderStatus || defaultOption?.value || ""
+  );
+
+  const [selectedStatus, setSelectedStatus] = useState(() => {
+    const matchedOption = tikTokOrderStatusOptions.find(
+      (opt) => opt.value === selectedTitTokOrderStatus
+    );
+    return matchedOption?.status || defaultOption?.status || "";
+  });
+
   const [tikTokPrintedIds, setTikTokPrintedIds] = useState([]);
 
   const [searchFields, setSearchFields] = useState({
@@ -471,30 +486,20 @@ const BatchPrint = () => {
           let url = "";
           let body = null;
 
-          if (
-            selectedTikTokDeliveryType === "pickup" ||
-            selectedTikTokDeliveryType === "dropoff"
-          ) {
-            // Use new API
-            url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
-              cipherValue
-            )}`;
+          // Use new API
+          url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
+            cipherValue
+          )}`;
 
-            body = {
-              packageId,
-              trackingNumber: `TEST-${Date.now()}`, // 🔹 replace with real tracking number
-              shippingProviderId: item?.shippingProviderId, // 🔹 you must pass this from item/provider
-              pickupStartTime: 0, // 🔹 set valid pickup slot if pickup
-              pickupEndTime: 0, // 🔹 set valid pickup slot if pickup
-              handoverMethod:
-                selectedTikTokDeliveryType === "pickup" ? "PICKUP" : "DROP_OFF",
-            };
-          } else {
-            // Use old API
-            url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package?cipher=${encodeURIComponent(
-              cipherValue
-            )}&packageId=${encodeURIComponent(packageId)}`;
-          }
+          body = {
+            packageId,
+            trackingNumber: `TEST-${Date.now()}`, // 🔹 replace with real tracking number
+            shippingProviderId: item?.shippingProviderId, // 🔹 you must pass this from item/provider
+            pickupStartTime: 0, // 🔹 set valid pickup slot if pickup
+            pickupEndTime: 0, // 🔹 set valid pickup slot if pickup
+            handoverMethod:
+              selectedTikTokDeliveryType === "dropoff" ? "DROP_OFF" : "PICKUP",
+          };
 
           const res = await fetch(url, {
             method: "POST",
@@ -665,18 +670,18 @@ const BatchPrint = () => {
           isActiveBtnAmount={isActiveBtnAmount}
           setIsActiveBtnAmount={setIsActiveBtnAmount}
           currentShop="TikTok"
+          setSelectedStatus={setSelectedStatus}
         />
 
         {/* middle section */}
-        <div className="bg-white rounded-[17px] shadow-[6px 9px 16.4px 0px rgba(0, 0, 0, 0.04)] p-4 mt-5 grid grid-cols-12 gap-20">
-          {/* modal component */}
+        {/* <div className="bg-white rounded-[17px] shadow-[6px 9px 16.4px 0px rgba(0, 0, 0, 0.04)] p-4 mt-5 grid grid-cols-12 gap-20">
           <div className="col-span-2">
             <BatchPrinterModal />
           </div>
           <div className="col-span-10 custom-scrollbar">
             <StoredDeliveryCompanyList />
           </div>
-        </div>
+        </div> */}
 
         {/* bottom section table */}
         <div className="bg-white rounded-[17px] shadow-[6px 9px 16.4px 0px rgba(0, 0, 0, 0.04)] p-4 mt-5">
@@ -713,7 +718,7 @@ const BatchPrint = () => {
                 {/* {selectedLanguage === "zh-CN"
                   ? "等待发货"
                   : "waiting for shipment"} */}
-                {t(tikTokOrderStatusCheck)}
+                {t(selectedStatus)}
               </p>
             </div>
 

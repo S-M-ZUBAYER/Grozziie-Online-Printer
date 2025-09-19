@@ -20,6 +20,7 @@ import {
   useLazyGetShopeeOrdersQuery,
 } from "../../features/allApis/shopeeApi";
 import { shopeeArrayToExcel } from "../../Share/Function/FunctionalComponent";
+import { ShopeeOrderStatusOptions } from "../../Share/Data/ClientData";
 
 const ShopeeBatchPrint = () => {
   const [selectAll, setSelectAll] = useState(false);
@@ -36,9 +37,21 @@ const ShopeeBatchPrint = () => {
     (state) => state.user.shopeeSelectStatus
   );
 
-  const [shopeeOrderStatusCheck, setShopeeOrderStatusCheck] = useState(
-    selectedShopeeOrderStatus ? selectedShopeeOrderStatus : "READY_TO_SHIP"
+  // Pick the default READY_TO_SHIP option once
+  const defaultOption = ShopeeOrderStatusOptions.find(
+    (opt) => opt.value === "READY_TO_SHIP"
   );
+
+  const [shopeeOrderStatusCheck, setShopeeOrderStatusCheck] = useState(
+    selectedShopeeOrderStatus || defaultOption?.value || ""
+  );
+
+  const [selectedStatus, setSelectedStatus] = useState(() => {
+    const matchedOption = ShopeeOrderStatusOptions.find(
+      (opt) => opt.value === selectedShopeeOrderStatus
+    );
+    return matchedOption?.status || defaultOption?.status || "";
+  });
 
   const [searchFields, setSearchFields] = useState({
     RecipientAddress: "",
@@ -191,7 +204,7 @@ const ShopeeBatchPrint = () => {
         // ✅ Step 2: Extract order_sn list
 
         const orderSnList = orderList.map((order) => order.order_sn);
-
+        console.log(orderSnList, "detailsID");
         // ✅ Step 3: Get detailed info (already has tracking_number merged in)
         const detailsResponse = await getShopeeOrderDetails({
           orderSnList,
@@ -200,6 +213,7 @@ const ShopeeBatchPrint = () => {
         }).unwrap();
 
         const detailedOrders = detailsResponse || []; // 👈 already array of objects
+        console.log(detailedOrders, "details");
 
         // ✅ Step 4: Merge base order + detailed info
         let mergedOrders = orderList.map((order) => {
@@ -836,6 +850,7 @@ const ShopeeBatchPrint = () => {
           isActiveBtnAmount={isActiveBtnAmount}
           setIsActiveBtnAmount={setIsActiveBtnAmount}
           currentShop="Shopee"
+          setSelectedStatus={setSelectedStatus}
         />
 
         {/* bottom section table */}
@@ -873,7 +888,7 @@ const ShopeeBatchPrint = () => {
                 {/* {selectedLanguage === "zh-CN"
                   ? "等待发货"
                   : "waiting for shipment"} */}
-                {t(shopeeOrderStatusCheck)}
+                {t(selectedStatus)}
               </p>
             </div>
 
@@ -1075,7 +1090,9 @@ const ShopeeBatchPrint = () => {
                   </div>
                   <div>
                     <strong>{t("Status")}:</strong>{" "}
-                    {selectedCustomer?.order_status || t("NoData")}
+                    <span className="text-blue-700 font-semibold">
+                      {selectedCustomer?.order_status || t("NoData")}
+                    </span>
                   </div>
                   <div>
                     <strong>{t("PaymentMethod")}:</strong>{" "}

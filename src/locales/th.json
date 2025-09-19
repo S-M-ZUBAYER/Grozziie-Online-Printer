@@ -293,5 +293,18 @@
   "State": "รัฐ/จังหวัด",
   "OriginalPrice": "ราคาตั้งต้น",
   "PromotionType": "ประเภทโปรโมชั่น",
-  "ModelName": "ชื่อรุ่น"
+  "ModelName": "ชื่อรุ่น",
+  "Delivery Type": "ประเภทการจัดส่ง",
+  "TikTok Shop": "ร้านค้า TikTok",
+  "Lazada Shop": "ร้านค้า Lazada",
+  "Shopee Shop": "ร้านค้า Shopee",
+  "DropOff": "Drop Off",
+  "PickUp": "Pick Up",
+  "ShopeeDeliveryType": "ประเภทการจัดส่ง Shopee",
+  "TikTokDeliveryType": "ประเภทการจัดส่ง TikTok",
+  "NowThisFunctionalitiesIsNotAvailable": "ฟังก์ชันนี้ยังไม่พร้อมใช้งาน",
+  "ShippingType": "ประเภทการจัดส่ง",
+  "TrackingCode": "รหัสติดตาม",
+  "DeliveryOption": "ตัวเลือกการจัดส่ง",
+  "CustomerInfo": "ข้อมูลลูกค้า"
 }

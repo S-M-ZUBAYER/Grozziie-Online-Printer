@@ -295,5 +295,15 @@
   "State": "State",
   "OriginalPrice": "Original Price",
   "PromotionType": "Promotion Type",
-  "ModelName": "Model Name"
+  "ModelName": "Model Name",
+  "Delivery Type": "Delivery Type",
+  "TikTok Shop": "TikTok Shop",
+  "Lazada Shop": "Lazada Shop",
+  "Shopee Shop": "Shopee Shop",
+  "DropOff": "Drop Off",
+  "PickUp": "Pick Up",
+  "ShopeeDeliveryType": "Shopee Delivery Type",
+  "TikTokDeliveryType": "TikTok Delivery Type",
+  "NowThisFunctionalitiesIsNotAvailable": "Now this functionality is not available",
+  "CustomerInfo": "Customer Information"
 }
