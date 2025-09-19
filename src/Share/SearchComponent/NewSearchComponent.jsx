@@ -51,6 +51,7 @@ const NewSearchComponent = ({
   isActiveBtnAmount,
   setIsActiveBtnAmount,
   currentShop,
+  setSelectedStatus,
 }) => {
   const [orderSource, setOrderSource] = useState("");
   const [pendingDelivery, setPendingDelivery] = useState("");
@@ -227,10 +228,10 @@ const NewSearchComponent = ({
 
   const handleRefundStatusChange = (event) => {
     const selectedValue = event.target.value;
-    const selectedStatusObj = tikTokOrderStatusOptions.find(
+    const status = orderStatusOptions.find(
       (status) => status.value === selectedValue
     );
-
+    setSelectedStatus(status?.status);
     setRefundStatus(selectedValue);
     if (currentShop === "TikTok") {
       setTikTokOrderStatusCheck(selectedValue);

@@ -78,6 +78,10 @@ const BatchPrintTable = ({
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
+                <span className="mr-[10px]">{t("orderId")}</span>
+                <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
+              </th>
+              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
                 <span className="mr-[10px]">{t("ReceiverName")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
@@ -87,10 +91,6 @@ const BatchPrintTable = ({
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
                 <span className="mr-[10px]">{t("DeliveryCompany")}</span>
-                <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
-              </th>
-              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                <span className="mr-[10px]">{t("orderId")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 ">
@@ -117,76 +117,82 @@ const BatchPrintTable = ({
                     className="capitalize hover:bg-[#0043681A] cursor-pointer"
                   >
                     {/* Account Name / Buyer Email */}
-                    <td className="flex items-center justify-start cursor-pointer">
-                      <input
-                        type="checkbox"
-                        className="w-4 h-4 rounded-[2px] text-black text-opacity-60 bg-[#004368] cursor-pointer"
-                        name="product"
-                        value={order.id}
-                        checked={checkedItems.some((i) => i.id === order.id)}
-                        onChange={() => handleCheckboxChange(order)}
-                      />
-                      <p className="ml-[7px] text-black opacity-80 text-sm font-normal leading-4">
-                        {formatText(order.buyerEmail) || t("NoData")}
-                      </p>
+                    <td className="px-3 py-2 text-left align-middle">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 rounded-[2px] text-black text-opacity-60 bg-[#004368] cursor-pointer"
+                          name="product"
+                          value={order.id}
+                          checked={checkedItems.some((i) => i.id === order.id)}
+                          onChange={() => handleCheckboxChange(order)}
+                        />
+                        <p className="text-black opacity-80 text-sm font-normal leading-4">
+                          {formatText(order.id) || t("NoData")}
+                        </p>
+                      </div>
                     </td>
+
+                    {/* Buyer Email */}
+                    <td className="px-3 py-2 text-left text-black opacity-80 text-sm font-normal">
+                      {formatText(order.buyerEmail) || t("NoData")}
+                    </td>
+
                     {/* Customer Name */}
-                    <td className="text-black opacity-80 text-sm font-normal leading-4">
+                    <td className="px-3 py-2 text-left text-black opacity-80 text-sm font-normal">
                       {formatText(address.name) || t("NoData")}
                     </td>
 
                     {/* Address */}
-                    <td className="text-black opacity-80 text-sm font-normal leading-4">
+                    <td className="px-3 py-2 text-left text-black opacity-80 text-sm font-normal">
                       {formatText(address.fullAddress) || t("NoData")}
                     </td>
 
                     {/* Delivery Company */}
-                    <td className="text-black opacity-80 text-sm font-normal leading-4">
+                    <td className="px-3 py-2 text-left text-black opacity-80 text-sm font-normal">
                       {formatText(order.shippingProvider) || t("NoData")}
                     </td>
 
-                    {/* Delivery Code / Tracking Number */}
-                    <td className="text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(order.id) || t("NoData")}
-                    </td>
-
                     {/* Product Details */}
-                    <td className="flex items-center justify-between cursor-pointer">
-                      <div className="flex">
+                    <td className="px-3 py-2 text-left">
+                      <div className="flex items-center gap-2">
                         <img
                           src={
                             item.skuImage || "https://via.placeholder.com/40"
                           }
                           alt="Product"
-                          className="w-9 h-8"
+                          className="w-9 h-8 rounded border"
                         />
-                        <span className="text-black opacity-80 text-xs font-normal capitalize ml-[6px] mr-6">
+                        <span className="text-black opacity-80 text-xs font-normal capitalize">
                           {formatText(item.productName)
                             ? item?.productName?.slice(0, 15) + "..."
                             : t("NoData")}
                         </span>
+                        <button
+                          onClick={() => handleDetailsClick(order)}
+                          className="ml-auto text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
+                        >
+                          {t("Details")}
+                        </button>
                       </div>
-                      <p
-                        className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer whitespace-nowrap"
-                        onClick={() => handleDetailsClick(order)}
-                      >
-                        {t("Details")}
-                      </p>
-                      {/* You can reuse your modal here like before */}
                     </td>
-                    {(tikTokOrderStatusCheck === "AWAITING_COLLECTION" ||
+
+                    {/* Tracking Code */}
+                    <td className="px-3 py-2 text-left text-black opacity-80 text-sm font-normal">
+                      {tikTokOrderStatusCheck === "AWAITING_COLLECTION" ||
                       tikTokOrderStatusCheck ===
-                        "AWAITING_COLLECTION_PRINTED") && (
-                      <td className="text-black opacity-80 text-sm font-normal leading-4">
+                        "AWAITING_COLLECTION_PRINTED" ? (
                         <p
                           className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
                           onClick={() => handleGetTracking(order)}
-                          title="Click to View tracking info"
+                          title="Click to view tracking info"
                         >
-                          {order?.trackingNumber}
+                          {order?.trackingNumber || t("NoData")}
                         </p>
-                      </td>
-                    )}
+                      ) : (
+                        <span className="text-gray-400">{t("NoData")}</span>
+                      )}
+                    </td>
                   </tr>
                 );
               })}

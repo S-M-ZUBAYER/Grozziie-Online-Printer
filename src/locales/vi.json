@@ -292,5 +292,18 @@
   "State": "Tỉnh/Bang",
   "OriginalPrice": "Giá gốc",
   "PromotionType": "Loại khuyến mãi",
-  "ModelName": "Tên mẫu"
+  "ModelName": "Tên mẫu",
+  "Delivery Type": "Loại giao hàng",
+  "TikTok Shop": "Cửa hàng TikTok",
+  "Lazada Shop": "Cửa hàng Lazada",
+  "Shopee Shop": "Cửa hàng Shopee",
+  "DropOff": "Drop Off",
+  "PickUp": "Pick Up",
+  "ShopeeDeliveryType": "Loại giao hàng Shopee",
+  "TikTokDeliveryType": "Loại giao hàng TikTok",
+  "NowThisFunctionalitiesIsNotAvailable": "Chức năng này hiện không khả dụng",
+  "ShippingType": "Loại vận chuyển",
+  "TrackingCode": "Mã theo dõi",
+  "DeliveryOption": "Tùy chọn giao hàng",
+  "CustomerInfo": "Thông tin khách hàng"
 }

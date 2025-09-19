@@ -294,5 +294,18 @@
   "State": "Estado",
   "OriginalPrice": "Orihinal na Presyo",
   "PromotionType": "Uri ng Promosyon",
-  "ModelName": "Pangalan ng Modelo"
+  "ModelName": "Pangalan ng Modelo",
+  "Delivery Type": "Uri ng Paghahatid",
+  "TikTok Shop": "TikTok Tindahan",
+  "Lazada Shop": "Lazada Tindahan",
+  "Shopee Shop": "Shopee Tindahan",
+  "DropOff": "Drop Off",
+  "PickUp": "Pick Up",
+  "ShopeeDeliveryType": "Uri ng Paghahatid ng Shopee",
+  "TikTokDeliveryType": "Uri ng Paghahatid ng TikTok",
+  "NowThisFunctionalitiesIsNotAvailable": "Ang functionality na ito ay hindi pa available",
+  "ShippingType": "Uri ng Pagpapadala",
+  "TrackingCode": "Code ng Pagsubaybay",
+  "DeliveryOption": "Opsyon sa Pagpapadala",
+  "CustomerInfo": "Impormasyon ng Customer"
 }

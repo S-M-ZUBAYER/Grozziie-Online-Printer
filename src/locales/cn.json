@@ -292,5 +292,18 @@
   "State": "州/省",
   "OriginalPrice": "原价",
   "PromotionType": "促销类型",
-  "ModelName": "型号名称"
+  "ModelName": "型号名称",
+  "Delivery Type": "配送方式",
+  "TikTok Shop": "TikTok商店",
+  "Lazada Shop": "Lazada商店",
+  "Shopee Shop": "Shopee商店",
+  "DropOff": "送货下单",
+  "PickUp": "取件",
+  "ShopeeDeliveryType": "Shopee 配送类型",
+  "TikTokDeliveryType": "TikTok 配送类型",
+  "NowThisFunctionalitiesIsNotAvailable": "该功能目前不可用",
+  "ShippingType": "运输方式",
+  "TrackingCode": "追踪编号",
+  "DeliveryOption": "配送选项",
+  "CustomerInfo": "客户信息"
 }

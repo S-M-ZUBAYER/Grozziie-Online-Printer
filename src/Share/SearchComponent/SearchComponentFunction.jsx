@@ -19,47 +19,47 @@
 // }
 
 export function filterDataByDateRange(data, startDate, endDate) {
-  console.log("start the function", data, startDate, endDate);
-
   const startDateTime = new Date(startDate);
+  startDateTime.setHours(0, 0, 0, 0); // start of the day
+
   const endDateTime = new Date(endDate);
+  endDateTime.setHours(23, 59, 59, 999); // end of the day
 
-  console.log(startDateTime, endDateTime, "intofunction");
-
-  const filteredData = data.filter((item) => {
-    const itemDate = new Date(item.cancelOrderSlaTime * 1000); // convert seconds to ms
+  return data.filter((item) => {
+    const itemDate = new Date(item.cancelOrderSlaTime * 1000);
     return itemDate >= startDateTime && itemDate <= endDateTime;
   });
-
-  return filteredData;
 }
 
 export function filterLazadaDataByDateRange(data, startDate, endDate) {
   const startDateTime = new Date(startDate);
+  startDateTime.setHours(0, 0, 0, 0);
+
   const endDateTime = new Date(endDate);
+  endDateTime.setHours(23, 59, 59, 999);
 
   return data.filter((item) => {
-    if (!item.created_at) return false; // skip if no date
+    if (!item.created_at) return false;
 
-    // Parse your string date (e.g. "2025-08-11 18:02:15 +0800") into JS Date
-    // Replace space before timezone with 'GMT' to be more parseable by JS Date
     const dateStr = item.created_at.replace(" +", " GMT+");
     const itemDate = new Date(dateStr);
 
     return itemDate >= startDateTime && itemDate <= endDateTime;
   });
 }
+
 export function filterShopeeDataByDateRange(data, startDate, endDate) {
   const startDateTime = new Date(startDate);
+  startDateTime.setHours(0, 0, 0, 0);
+
   const endDateTime = new Date(endDate);
+  endDateTime.setHours(23, 59, 59, 999);
 
   return data.filter((item) => {
     const timestamp = item.create_time || item.update_time || item.ship_by_date;
     if (!timestamp) return false;
 
-    // Convert Unix timestamp (seconds) to JS Date
     const itemDate = new Date(timestamp * 1000);
-
     return itemDate >= startDateTime && itemDate <= endDateTime;
   });
 }
@@ -132,30 +132,23 @@ export function filterLazadaDataBySearchFields(customersData, searchFields) {
       searchFields.isActiveRecipientAddress &&
       searchFields.RecipientAddress
     ) {
-      const shippingAddress = [
-        customer?.address_shipping?.country,
-        customer?.address_shipping?.city,
-        customer?.address_shipping?.post_code,
-      ]
-        .filter(Boolean)
-        .join(",")
-        .toLowerCase();
+      // Split the search string by commas, trim spaces, and lowercase each part
+      const searchValues = searchFields.RecipientAddress.split(",")
+        .map((v) => v.trim().toLowerCase())
+        .filter(Boolean);
 
+      const { country, city, post_code, address1 } =
+        customer?.address_shipping || {};
+      const addressFields = [country, city, post_code, address1]
+        .filter(Boolean)
+        .map((f) => f.toLowerCase());
+
+      // Check if all search values are included in any of the address fields
       isMatch =
         isMatch &&
-        shippingAddress.includes(searchFields.RecipientAddress.toLowerCase());
-    }
-
-    // ✅ Account Name
-    if (searchFields.isActiveAccountName && searchFields.AccountName) {
-      const accountName = `${customer?.customer_first_name || ""} ${
-        customer?.customer_last_name || ""
-      }`
-        .trim()
-        .toLowerCase();
-
-      isMatch =
-        isMatch && accountName.includes(searchFields.AccountName.toLowerCase());
+        searchValues.every((searchVal) =>
+          addressFields.some((field) => field.includes(searchVal))
+        );
     }
 
     // ✅ Order ID
@@ -235,11 +228,7 @@ export function filterShopeeDataBySearchFields(customersData, searchFields) {
       searchFields.isActiveRecipientAddress &&
       searchFields.RecipientAddress
     ) {
-      const shippingAddress = [
-        order?.recipient_address?.full_address,
-        order?.recipient_address?.city,
-        order?.recipient_address?.zipcode,
-      ]
+      const shippingAddress = [order?.recipient_address?.full_address]
         .filter(Boolean)
         .join(",")
         .toLowerCase();

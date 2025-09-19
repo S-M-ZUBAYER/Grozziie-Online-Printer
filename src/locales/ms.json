@@ -293,5 +293,18 @@
   "State": "Negeri",
   "OriginalPrice": "Harga Asal",
   "PromotionType": "Jenis Promosi",
-  "ModelName": "Nama Model"
+  "ModelName": "Nama Model",
+  "Delivery Type": "Jenis Penghantaran",
+  "TikTok Shop": "Kedai TikTok",
+  "Lazada Shop": "Kedai Lazada",
+  "Shopee Shop": "Kedai Shopee",
+  "DropOff": "Drop Off",
+  "PickUp": "Pick Up",
+  "ShopeeDeliveryType": "Jenis Penghantaran Shopee",
+  "TikTokDeliveryType": "Jenis Penghantaran TikTok",
+  "NowThisFunctionalitiesIsNotAvailable": "Fungsi ini tidak tersedia buat masa ini",
+  "ShippingType": "Jenis Penghantaran",
+  "TrackingCode": "Kod Penjejakan",
+  "DeliveryOption": "Pilihan Penghantaran",
+  "CustomerInfo": "Maklumat Pelanggan"
 }

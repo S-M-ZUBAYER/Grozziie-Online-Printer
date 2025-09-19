@@ -17,6 +17,8 @@ const LazadaBatchPrintTable = ({
 }) => {
   const { t } = useTranslation();
 
+  console.log(lazadaOrderStatusCheck);
+
   const [showModal, setShowModal] = useState(false);
   const [trackingInfo, setTrackingInfo] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -111,8 +113,8 @@ const LazadaBatchPrintTable = ({
                 <span className="mr-[10px]">{t("orderId")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
-              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                <span className="mr-[10px]">{t("ReceiverName")}</span>
+              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-l-md">
+                <span className="mr-[10px]">{t("AccountName")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
@@ -120,15 +122,7 @@ const LazadaBatchPrintTable = ({
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                <span className="mr-[10px]">{t("DeliveryCompany")}</span>
-                <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
-              </th>
-              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
                 <span className="mr-[10px]">{t("DeliveryType")}</span>
-                <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
-              </th>
-              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-l-md">
-                <span className="mr-[10px]">{t("AccountName")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
@@ -136,6 +130,8 @@ const LazadaBatchPrintTable = ({
                 {t("ProductDetails")}
               </th>
               {(lazadaOrderStatusCheck === "delivered" ||
+                lazadaOrderStatusCheck === "ready_to_ship" ||
+                lazadaOrderStatusCheck === "Packed_Printed" ||
                 lazadaOrderStatusCheck === "shipped") && (
                 <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-r-md">
                   <span className="mr-[10px]">{t("Tracking")}</span>
@@ -240,14 +236,17 @@ const LazadaBatchPrintTable = ({
                       onChange={() => order && handleCheckboxChange(order)}
                       disabled={!order?.order_id} // disable checkbox if no id
                     />
+                    {/* Order Number */}
                     <p className="ml-[7px] text-black opacity-80 text-sm font-normal leading-4">
-                      {formatText(order?.customer_first_name) || t("NoData")}
+                      {order?.order_number
+                        ? formatText(order.order_number.toString())
+                        : t("NoData")}
                     </p>
                   </td>
 
-                  {/* Receiver Name */}
-                  <td className="text-black opacity-80 text-sm font-normal leading-4">
-                    {formatText(order?.orderItemInfo?.[0]?.name) || t("NoData")}
+                  {/* Account name */}
+                  <td className=" text-black opacity-80 text-sm font-normal leading-4">
+                    {formatText(order?.customer_first_name) || t("NoData")}
                   </td>
 
                   {/* Full Address */}
@@ -255,23 +254,9 @@ const LazadaBatchPrintTable = ({
                     {formatText(fullAddress || "") || t("NoData")}
                   </td>
 
-                  {/* Order Number */}
-                  <td className="text-black opacity-80 text-sm font-normal leading-4">
-                    {order?.delivery_company
-                      ? formatText(order.delivery_company.toString())
-                      : t("NoData")}
-                  </td>
-
                   {/* Warehouse Code */}
                   <td className="text-black opacity-80 text-sm font-normal leading-4">
                     {formatText(order?.warehouse_code) || t("NoData")}
-                  </td>
-
-                  {/* Order Number */}
-                  <td className="text-black opacity-80 text-sm font-normal leading-4">
-                    {order?.order_number
-                      ? formatText(order.order_number.toString())
-                      : t("NoData")}
                   </td>
 
                   {/* Product Details */}
@@ -292,13 +277,31 @@ const LazadaBatchPrintTable = ({
 
                   {/* Optional Tracking Button */}
                   {(lazadaOrderStatusCheck === "delivered" ||
+                    lazadaOrderStatusCheck === "ready_to_ship" ||
+                    lazadaOrderStatusCheck === "Packed_Printed" ||
                     lazadaOrderStatusCheck === "shipped") && (
                     <td className="text-black opacity-80 text-sm font-normal leading-4">
                       <p
-                        className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
-                        onClick={() => order && handleGetTracking(order)}
+                        className={`text-xs font-normal leading-[14px] capitalize cursor-pointer ${
+                          order?.orderItemInfo?.[0]?.tracking_code
+                            ? "text-[#004368] hover:underline"
+                            : "text-gray-400 cursor-not-allowed"
+                        }`}
+                        onClick={() => {
+                          if (order?.orderItemInfo?.[0]?.tracking_code) {
+                            handleGetTracking(order);
+                          } else {
+                            console.warn(
+                              "⚠️ No tracking code found for this order:",
+                              order
+                            );
+                            // optional toast
+                            // toast.error("Tracking code not available");
+                          }
+                        }}
                       >
-                        {t("Tracking")}
+                        {order?.orderItemInfo?.[0]?.tracking_code ||
+                          "No Tracking Code"}
                       </p>
                     </td>
                   )}
