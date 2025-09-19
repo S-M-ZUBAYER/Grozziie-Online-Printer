@@ -18,6 +18,7 @@ import StoredDeliveryCompanyList from "../../Share/StoredDeliveryCompanyList/Sto
 import BatchPrinterModal from "../BatchPrint/BatchPrinterModal";
 import { useLazyGetLazadaOrdersQuery } from "../../features/allApis/lazadaApi";
 import axios from "axios";
+import { lazadaOrderStatusOptions } from "../../Share/Data/ClientData";
 
 const LazadaBatchPrint = () => {
   const [selectAll, setSelectAll] = useState(false);
@@ -31,8 +32,17 @@ const LazadaBatchPrint = () => {
   const selectedLazadaOrderStatus = useSelector(
     (state) => state.user.lazadaSelectStatus
   );
+  // pick pending option once
+  const pendingOption = lazadaOrderStatusOptions.find(
+    (opt) => opt.value === "pending"
+  );
+
   const [lazadaOrderStatusCheck, setLazadaOrderStatusCheck] = useState(
-    selectedLazadaOrderStatus ? selectedLazadaOrderStatus : "pending"
+    selectedLazadaOrderStatus || pendingOption?.value || ""
+  );
+
+  const [selectedStatus, setSelectedStatus] = useState(
+    selectedLazadaOrderStatus || pendingOption?.status || ""
   );
 
   const [searchFields, setSearchFields] = useState({
@@ -98,7 +108,7 @@ const LazadaBatchPrint = () => {
     setIsActiveBtnProduct(false);
     setIsActiveBtnAmount(false);
   };
-
+  console.log(selectedStatus, "status");
   // Function to handle the master checkbox change
 
   const handleMasterCheckboxChange = () => {
@@ -538,28 +548,30 @@ const LazadaBatchPrint = () => {
           `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}`
         );
         const itemData = await itemRes.json();
-        const parsedBody = JSON.parse(itemData?.body ?? "{}");
-        console.log(parsedBody, "parsed");
 
-        const orderItemId =
-          parsedBody?.data?.map((item) => item.order_item_id.toString()) || [];
-        console.log(parsedBody?.data, "order item ids");
+        // Lazada already returns object → don’t double parse
+        const parsedBody = JSON.parse(itemData?.body);
 
-        if (!orderItemId) {
+        console.log(parsedBody.data, "parsed");
+
+        const orderItemIds =
+          parsedBody?.data?.map((it) => it.order_item_id.toString()) || [];
+
+        if (!orderItemIds.length) {
           console.warn("No order_item_id found for order", orderId);
           failedOrders.push({ orderId, reason: "No order_item_id found" });
           continue;
         }
 
+        console.log(
+          { order_id: orderId, order_item_ids: orderItemIds },
+          "shipment provider payload"
+        );
+
+        // Step 2: Get shipment provider
         // Step 2: Get shipment provider
         const shipmentRes = await fetch(
-          console.log(
-            {
-              order_id: orderId,
-              order_item_ids: orderItemId,
-            },
-            "shipment provider"
-          )`https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/order/shipment-provider`,
+          `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/order/shipment-provider`,
           {
             method: "POST",
             headers: {
@@ -570,12 +582,13 @@ const LazadaBatchPrint = () => {
               orders: [
                 {
                   order_id: orderId,
-                  order_item_ids: [orderItemId],
+                  order_item_ids: orderItemIds, // ✅ correct
                 },
               ],
             }),
           }
         );
+
         const shipmentData = await shipmentRes.json();
         const providerInfo = shipmentData?.result?.data;
 
@@ -590,8 +603,8 @@ const LazadaBatchPrint = () => {
         }
 
         const shipmentProviderCode =
-          providerInfo.shipment_providers[0].provider_code;
-        const shippingAllocateType = providerInfo.shipping_allocate_type;
+          providerInfo?.shipment_providers[0]?.provider_code;
+        const shippingAllocateType = providerInfo?.shipping_allocate_type;
         console.log(
           shipmentProviderCode,
           shippingAllocateType,
@@ -610,12 +623,11 @@ const LazadaBatchPrint = () => {
             body: JSON.stringify({
               pack_order_list: [
                 {
-                  order_item_list: [orderItemId],
+                  order_item_list: orderItemIds, // ✅ no nested array
                   order_id: orderId,
                 },
               ],
               delivery_type: "dropship",
-              // delivery_type: "pickup",
               shipment_provider_code: shipmentProviderCode,
               shipping_allocate_type: shippingAllocateType,
             }),
@@ -840,6 +852,7 @@ const LazadaBatchPrint = () => {
           isActiveBtnAmount={isActiveBtnAmount}
           setIsActiveBtnAmount={setIsActiveBtnAmount}
           currentShop="Lazada"
+          setSelectedStatus={setSelectedStatus}
         />
 
         {/* middle section */}
@@ -887,7 +900,7 @@ const LazadaBatchPrint = () => {
                 {/* {selectedLanguage === "zh-CN"
                   ? "等待发货"
                   : "waiting for shipment"} */}
-                {t(lazadaOrderStatusCheck)}
+                {t(selectedStatus)}
               </p>
             </div>
 
@@ -1087,40 +1100,47 @@ const LazadaBatchPrint = () => {
                     {selectedCustomer?.order_number || t("NoData")}
                   </div>
                   <div>
+                    <strong>{t("Status")}:</strong>{" "}
+                    <span className="text-blue-700 font-semibold">
+                      {selectedCustomer?.statuses[0] || t("NoData")}
+                    </span>
+                  </div>
+                  <div>
                     <strong>{t("Warehouse")}:</strong>{" "}
                     {selectedCustomer?.warehouse_code || t("NoData")}
                   </div>
                   <div>
-                    <strong>{t("VoucherPlatform")}:</strong>{" "}
-                    {selectedCustomer?.voucher_platform ?? 0}
+                    <strong>{t("TrackingCode")}:</strong>{" "}
+                    {selectedCustomer?.orderItemInfo[0]?.tracking_code ||
+                      t("NoData")}
                   </div>
                   <div>
-                    <strong>{t("VoucherSeller")}:</strong>{" "}
-                    {selectedCustomer?.voucher_seller ?? 0}
+                    <strong>{t("ShippingProvider")}:</strong>{" "}
+                    {selectedCustomer?.orderItemInfo?.[0]?.shipment_provider ||
+                      t("NoData")}
                   </div>
                   <div>
-                    <strong>{t("VoucherAmount")}:</strong>{" "}
-                    {selectedCustomer?.voucher_amount ?? 0}
+                    <strong>{t("ShippingType")}:</strong>{" "}
+                    {selectedCustomer?.orderItemInfo?.[0]?.shipping_type ||
+                      t("NoData")}
                   </div>
                   <div>
-                    <strong>{t("ShippingFeeOriginal")}:</strong>{" "}
-                    {selectedCustomer?.shipping_fee_original ?? 0}
-                  </div>
-                  <div>
-                    <strong>{t("ShippingFeeDiscountPlatform")}:</strong>{" "}
-                    {selectedCustomer?.shipping_fee_discount_platform ?? 0}
-                  </div>
-                  <div>
-                    <strong>{t("ShippingFeeDiscountSeller")}:</strong>{" "}
-                    {selectedCustomer?.shipping_fee_discount_seller ?? 0}
-                  </div>
-                  <div>
-                    <strong>{t("ShippingAmount")}:</strong>{" "}
-                    {selectedCustomer?.shipping_amount ?? 0}
+                    <strong>{t("DeliveryOption")}:</strong>{" "}
+                    {selectedCustomer?.orderItemInfo?.[0]
+                      ?.shipping_provider_type || t("NoData")}
                   </div>
                   <div>
                     <strong>{t("PaymentMethod")}:</strong>{" "}
                     {selectedCustomer?.payment_method || t("NoData")}
+                  </div>
+                  <div>
+                    <strong>{t("Price")}:</strong>{" "}
+                    {selectedCustomer?.price ?? 0}{" "}
+                    {selectedCustomer?.orderItemInfo?.[0]?.currency}
+                  </div>
+                  <div>
+                    <strong>{t("ShippingFee")}:</strong>{" "}
+                    {selectedCustomer?.shipping_fee ?? 0}
                   </div>
                   <div>
                     <strong>{t("CreatedAt")}:</strong>{" "}
@@ -1129,6 +1149,35 @@ const LazadaBatchPrint = () => {
                   <div>
                     <strong>{t("UpdatedAt")}:</strong>{" "}
                     {new Date(selectedCustomer?.updated_at).toLocaleString()}
+                  </div>
+                </div>
+
+                {/* Divider */}
+                <hr className="my-6" />
+
+                {/* Customer Info */}
+                <h3 className="text-xl font-semibold mb-4">
+                  {t("CustomerInfo")}
+                </h3>
+                <div className="grid grid-cols-2 gap-4 text-sm text-gray-700 mb-6">
+                  <div>
+                    <strong>{t("CustomerName")}:</strong>{" "}
+                    {selectedCustomer?.customer_first_name || t("NoData")}
+                  </div>
+                  <div>
+                    <strong>{t("Phone")}:</strong>{" "}
+                    {selectedCustomer?.address_shipping?.phone || t("NoData")}
+                  </div>
+                  <div>
+                    <strong>{t("Address")}:</strong>{" "}
+                    {[
+                      selectedCustomer?.address_shipping?.country,
+                      selectedCustomer?.address_shipping?.city,
+                      selectedCustomer?.address_shipping?.post_code,
+                      selectedCustomer?.address_shipping?.address1,
+                    ]
+                      .filter(Boolean)
+                      .join(", ")}
                   </div>
                 </div>
 
