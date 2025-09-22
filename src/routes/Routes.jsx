@@ -144,6 +144,16 @@ export const routes = createBrowserRouter([
         ),
       },
       {
+        path: "/:cardInfo/TikTokOrderManagemnt",
+        element: (
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <BatchPrint />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
+        ),
+      },
+      {
         path: "/批量打印",
         element: (
           <PrivateRoute>
@@ -164,7 +174,27 @@ export const routes = createBrowserRouter([
         ),
       },
       {
+        path: "/:cardInfo/LazadaOrderManagement",
+        element: (
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <LazadaBatchPrint />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
+        ),
+      },
+      {
         path: "/ShopeeOrderManagement",
+        element: (
+          <PrivateRoute>
+            <PaymentPrivateRoute>
+              <ShopeeBatchPrint />
+            </PaymentPrivateRoute>
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/:cardInfo/ShopeeOrderManagement",
         element: (
           <PrivateRoute>
             <PaymentPrivateRoute>

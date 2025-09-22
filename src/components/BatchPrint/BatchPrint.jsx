@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { MdOutlineLocalPrintshop } from "react-icons/md";
 import { arrayToExcel } from "../../Share/Function/FunctionalComponent";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   checkedItemsChange,
@@ -25,6 +25,7 @@ import ConfirmationModal from "../../Share/ConfirmationModal";
 import { TiInfoOutline } from "react-icons/ti";
 import { AiOutlineCheckCircle } from "react-icons/ai";
 import { tikTokOrderStatusOptions } from "../../Share/Data/ClientData";
+import { fromUnixTime, isSameDay, parseISO } from "date-fns";
 
 const BatchPrint = () => {
   const [selectAll, setSelectAll] = useState(false);
@@ -77,6 +78,7 @@ const BatchPrint = () => {
   const [isActiveBtnAmount, setIsActiveBtnAmount] = useState(false);
   const [tiktokLoading, setTiktokLoading] = useState(false); // Local loading state
   const [printedData, setPrintedData] = useState([]);
+  const [cardStatus, setCardStatus] = useState(false);
   const [cipher, setCipher] = useState(() => {
     const stored = localStorage.getItem("tiktokShopInfo");
     return stored ? JSON.parse(stored) : [];
@@ -149,6 +151,29 @@ const BatchPrint = () => {
     }
   };
 
+  const location = useLocation();
+
+  useEffect(() => {
+    // Split path into parts
+    const parts = location.pathname.split("/");
+    // e.g. ["", "printed", "LazadaOrderManagement"]
+
+    if (parts.length === 3) {
+      console.log("Second part:", parts[1]); // LazadaOrderManagement
+      setCardStatus(true);
+      if (parts[1] === "printed") {
+        setTikTokOrderStatusCheck("AWAITING_COLLECTION_PRINTED");
+        setSelectedStatus("Printed");
+      } else if (parts[1] === "shipped") {
+        setTikTokOrderStatusCheck("IN_TRANSIT");
+        setSelectedStatus("On The Way");
+      } else if (parts[1] === "needPrint") {
+        setTikTokOrderStatusCheck("AWAITING_COLLECTION");
+        setSelectedStatus("shipping");
+      }
+    }
+  }, [location]);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -165,6 +190,8 @@ const BatchPrint = () => {
           const data = await res.json();
           if (Array.isArray(data)) {
             printedIds = data;
+            console.log(data, "1st stage printed ids");
+
             if (isMounted) setTikTokPrintedIds(data);
           } else {
             throw new Error("Expected array but got invalid response");
@@ -207,13 +234,52 @@ const BatchPrint = () => {
         );
 
         if (tikTokOrderStatusCheck === "AWAITING_COLLECTION") {
+          console.log(
+            filteredOrderList,
+            "skflkdsajfkadsfdkalfjasdk............."
+          );
           filteredOrderList = filteredOrderList.filter(
             (item) => !printedIdSet.has(item.id)
           );
         } else if (tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") {
-          filteredOrderList = filteredOrderList.filter((item) =>
-            printedIdSet.has(item.id)
-          );
+          console.log(cardStatus, "cardStatus");
+
+          if (cardStatus === true) {
+            const now = new Date();
+
+            // 1. Get today's printed IDs
+            const todayPrinted = printedIds.filter((item) =>
+              isSameDay(parseISO(item.createdAt), now)
+            );
+
+            // 2. Build a Set of today's printed TikTok IDs
+            const todayPrintedIdSet = new Set(
+              todayPrinted.map((item) => String(item.tikTokPrintedId))
+            );
+
+            // 3. Filter out orders that are in todayPrintedIdSet
+            filteredOrderList = filteredOrderList.filter((order) =>
+              todayPrintedIdSet.has(String(order.id))
+            );
+          } else {
+            filteredOrderList = filteredOrderList.filter((item) =>
+              printedIdSet.has(item.id)
+            );
+          }
+        } else if (
+          tikTokOrderStatusCheck === "IN_TRANSIT" &&
+          cardStatus === true
+        ) {
+          console.log("Filter IN_TRANSIT orders updated today...");
+
+          const now = new Date();
+
+          filteredOrderList = filteredOrderList.filter((order) => {
+            const updateDate = fromUnixTime(order.updateTime); // convert seconds → Date
+            return isSameDay(updateDate, now); // check if it's today
+          });
+          console.log(filteredOrderList, "filted shipped lsdjfklasjdflkasd");
+          setCardStatus(false);
         }
 
         if (isMounted) {
@@ -224,6 +290,7 @@ const BatchPrint = () => {
         console.error("❌ Error fetching TikTok orders:", error);
       } finally {
         if (isMounted) setTiktokLoading(false);
+        setCardStatus(false);
       }
     };
 

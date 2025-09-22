@@ -19,7 +19,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { useTranslation } from "react-i18next";
-
 import print from "../../assets/printer01.png";
 import shipped from "../../assets/shipped01.png";
 import needPrint from "../../assets/needtoprint01.png";
@@ -33,6 +32,7 @@ import {
   useLazyGetShopeeOrderDetailsQuery,
   useLazyGetShopeeOrdersQuery,
 } from "../../features/allApis/shopeeApi";
+import { useNavigate } from "react-router-dom";
 
 const Home = () => {
   const { t } = useTranslation();
@@ -44,9 +44,6 @@ const Home = () => {
   const [selectedPlatform, setSelectedPlatform] = useState(
     storedShopPlatform || "tiktok"
   );
-  useEffect(() => {
-    localStorage.setItem("SelectedPlatform", selectedPlatform);
-  }, [selectedPlatform]);
   const [selectedStore, setSelectedStore] = useState(null);
   const [openShop, setOpenShop] = useState(null);
   const [currentDate, setCurrentDate] = useState("");
@@ -55,8 +52,9 @@ const Home = () => {
   sevenDaysAgo.setDate(now.getDate() - 7);
   const start = startOfDay(now);
   const end = endOfDay(now);
+  const navigate = useNavigate();
 
-  // TikTok Info
+  // TikTok States
   const [tikTokPrintedIds, setTikTokPrintedIds] = useState([]);
   const [tikTokShippedToday, setTikTokShippedToday] = useState([]);
   const [tikTokPrintedToday, setTikTokPrintedToday] = useState([]);
@@ -70,7 +68,7 @@ const Home = () => {
   const [deliveredOrders, setDeliveredOrders] = useState([]);
   const [cancelledOrders, setCancelledOrders] = useState([]);
 
-  // Lazada Info
+  // Lazada States
   const [lazadaPrintedIds, setLazadaPrintedIds] = useState([]);
   const [lazadaShippedToday, setLazadaShippedToday] = useState([]);
   const [lazadaOnShipping, setLazadaOnShipping] = useState([]);
@@ -94,10 +92,16 @@ const Home = () => {
   const [shopeeCompletedOrders, setShopeeCompletedOrders] = useState([]);
   const [shopeeCancelledOrders, setShopeeCancelledOrders] = useState([]);
 
+  //TikTok Orders Call
   const [loadOrderList] = useLoadOrderListMutation();
   const [getLazadaOrders, { isLoading, isError }] =
     useLazyGetLazadaOrdersQuery();
 
+  // Shoppe Orders call
+  const [getShopeeOrderDetails] = useLazyGetShopeeOrderDetailsQuery();
+  const [getShopeeOrders] = useLazyGetShopeeOrdersQuery();
+
+  //Pie Chart intial part \
   const COLORS = ["#34D399", "#FBBF24", "#F87171", "#60A5FA"];
   const chartData = [
     {
@@ -145,7 +149,6 @@ const Home = () => {
           : 0,
     },
   ];
-
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
 
   const CustomTooltip = ({ active, payload }) => {
@@ -167,12 +170,16 @@ const Home = () => {
     return null;
   };
 
-  // TikTok Call API
+  // Get current Selected Platform
+  useEffect(() => {
+    localStorage.setItem("SelectedPlatform", selectedPlatform);
+  }, [selectedPlatform]);
+
+  // TikTok Fetch Printed IDs
   useEffect(() => {
     const fetchPrintedIds = async () => {
       try {
         const res = await fetch(
-          // "https://grozziieget.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds"
           "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds"
         );
         const data = await res.json();
@@ -194,6 +201,7 @@ const Home = () => {
     }
   }, [cipher, selectedStore]);
 
+  // TikTok Fetch Orders according to the Status
   useEffect(() => {
     const fetchStatusOrders = async () => {
       if (!cipher[0]?.cipher) return;
@@ -261,12 +269,11 @@ const Home = () => {
     fetchStatusOrders();
   }, [cipher, tikTokPrintedIds, selectedStore]);
 
-  // Lazada Call API
+  // Lazada Fetch Printed IDs
   useEffect(() => {
     const fetchPrintedIds = async () => {
       try {
         const res = await fetch(
-          // "https://grozziieget.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds"
           "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds"
         );
         const data = await res.json();
@@ -288,6 +295,7 @@ const Home = () => {
     }
   }, [selectedStore]);
 
+  // Lazada Fetch Orders according to the Status
   useEffect(() => {
     const fetchLazadaStatusOrders = async () => {
       const statuses = [
@@ -338,10 +346,9 @@ const Home = () => {
           } else if (status === "Packed") {
             setLazadaPacked(orderList);
             setLazadaPackedPrinted(printedOrders);
-            console.log(unprintedOrders, printedSet);
-
             setLazadaPackedUnprinted(unprintedOrders);
           } else if (status === "ready_to_ship") {
+          } else if (status === "shipped") {
             const today = new Date();
             const startOfDay = new Date(today.setHours(0, 0, 0, 0));
             const endOfDay = new Date(today.setHours(23, 59, 59, 999));
@@ -350,7 +357,6 @@ const Home = () => {
               return updatedAt >= startOfDay && updatedAt <= endOfDay;
             });
             setLazadaShippedToday(todayShipped);
-          } else if (status === "shipped") {
             // Optional: Could also capture "shipped" separately
           } else if (status === "delivered") {
             setLazadaDeliveredOrders(orderList);
@@ -391,10 +397,7 @@ const Home = () => {
     // }
   }, [selectedStore]);
 
-  const [getShopeeOrderDetails] = useLazyGetShopeeOrderDetailsQuery();
-  const [getShopeeOrders] = useLazyGetShopeeOrdersQuery();
-
-  // Shopee Fetch Orders by Status
+  // Shopee Fetch Orders according to the Status
   useEffect(() => {
     const fetchShopeeStatusOrders = async () => {
       const statuses = [
@@ -512,12 +515,28 @@ const Home = () => {
     // }
   }, [shopeePrintedIds, selectedStore]);
 
+  // Here complete the Onclick Card dynamic routing
+  const platformPaths = {
+    tiktok: "TikTokOrderManagemnt",
+    lazada: "LazadaOrderManagement",
+    shopee: "ShopeeOrderManagement",
+  };
+
+  const handleCardClick = (type) => {
+    const platformPath = platformPaths[selectedPlatform];
+    if (platformPath) {
+      navigate(`/${type}/${platformPath}`);
+    }
+  };
+
   return (
     <div className="bg-[#0043680D] grid grid-cols-6">
       <div className="col-span-1">
         <HomeSideNavbar />
       </div>
+
       <div className="pt-11 pl-[62px] mb-[17px] col-span-5">
+        {/* Multiple Shope Platform managing */}
         <ShopSelector
           openShop={openShop}
           setOpenShop={setOpenShop}
@@ -526,6 +545,8 @@ const Home = () => {
           selectedPlatform={selectedPlatform}
           setSelectedPlatform={setSelectedPlatform}
         />
+
+        {/* Today Data Showing Card */}
         <div className="flex items-center justify-between">
           <h3 className="text-[#004368] text-[25px] font-[500] capitalize">
             {t("Dashboard")}
@@ -537,60 +558,68 @@ const Home = () => {
             </span>
           </p>
         </div>
-
         <div className="mb-9 grid grid-cols-3 gap-6">
-          <DashboardCard
-            title={t("Printed Today")}
-            count={
-              selectedPlatform === "tiktok"
-                ? tikTokPrintedToday?.length?.toString().padStart(2, "0") ||
-                  "00"
-                : selectedPlatform === "lazada"
-                ? lazadaPrintedToday?.length?.toString().padStart(2, "0") ||
-                  "00"
-                : selectedPlatform === "shopee"
-                ? shopeeTodayPrinted?.length?.toString().padStart(2, "0") ||
-                  "00"
-                : "00"
-            }
-            image={print}
-          />
-          <DashboardCard
-            title={t("Shipped Today")}
-            count={
-              selectedPlatform === "tiktok"
-                ? tikTokShippedToday?.length?.toString().padStart(2, "0") ||
-                  "00"
-                : selectedPlatform === "lazada"
-                ? lazadaShippedToday?.length?.toString().padStart(2, "0") ||
-                  "00"
-                : selectedPlatform === "shopee"
-                ? shopeeShippedTodayOrders?.length
-                    ?.toString()
-                    .padStart(2, "0") || "00"
-                : "00"
-            }
-            image={shipped}
-          />
-          <DashboardCard
-            title={t("Need To Print")}
-            count={
-              selectedPlatform === "tiktok"
-                ? awaitingCollectionUnprinted?.length
-                    ?.toString()
-                    .padStart(2, "0") || "00"
-                : selectedPlatform === "lazada"
-                ? lazadaNewOrders?.length?.toString().padStart(2, "0") || "00"
-                : selectedPlatform === "shopee"
-                ? shopeeProcessedUnprinted?.length
-                    ?.toString()
-                    .padStart(2, "0") || "00"
-                : "00"
-            }
-            image={needPrint}
-          />
+          <button onClick={() => handleCardClick("printed")}>
+            <DashboardCard
+              title={t("Printed Today")}
+              count={
+                selectedPlatform === "tiktok"
+                  ? tikTokPrintedToday?.length?.toString().padStart(2, "0") ||
+                    "00"
+                  : selectedPlatform === "lazada"
+                  ? lazadaPrintedToday?.length?.toString().padStart(2, "0") ||
+                    "00"
+                  : selectedPlatform === "shopee"
+                  ? shopeeTodayPrinted?.length?.toString().padStart(2, "0") ||
+                    "00"
+                  : "00"
+              }
+              image={print}
+            />
+          </button>
+          <button onClick={() => handleCardClick("shipped")}>
+            <DashboardCard
+              title={t("Shipped Today")}
+              count={
+                selectedPlatform === "tiktok"
+                  ? tikTokShippedToday?.length?.toString().padStart(2, "0") ||
+                    "00"
+                  : selectedPlatform === "lazada"
+                  ? lazadaShippedToday?.length?.toString().padStart(2, "0") ||
+                    "00"
+                  : selectedPlatform === "shopee"
+                  ? shopeeShippedTodayOrders?.length
+                      ?.toString()
+                      .padStart(2, "0") || "00"
+                  : "00"
+              }
+              image={shipped}
+            />
+          </button>
+          <button onClick={() => handleCardClick("needPrint")}>
+            <DashboardCard
+              title={t("Need To Print")}
+              count={
+                selectedPlatform === "tiktok"
+                  ? awaitingCollectionUnprinted?.length
+                      ?.toString()
+                      .padStart(2, "0") || "00"
+                  : selectedPlatform === "lazada"
+                  ? lazadaPackedUnprinted?.length
+                      ?.toString()
+                      .padStart(2, "0") || "00"
+                  : selectedPlatform === "shopee"
+                  ? shopeeProcessedUnprinted?.length
+                      ?.toString()
+                      .padStart(2, "0") || "00"
+                  : "00"
+              }
+              image={needPrint}
+            />
+          </button>
         </div>
 
+        {/* Pie Chart Part with last 7 days data*/}
         <div className="grid grid-cols-5 mt-[73px] pb-[174px]">
           <div className="col-span-2 pr-14">
             <p className="text-[#004368] text-[25px] font-[500] capitalize mb-4">
@@ -648,6 +677,7 @@ const Home = () => {
             </div>
           </div>
 
+          {/* Table Showing Part with last 7 days data*/}
           <div className="col-span-3">
             <p className="text-[#004368] text-[25px] font-[500] capitalize">
               {t("Activities of last 7 days")}
@@ -745,3 +775,160 @@ const Home = () => {
 };
 
 export default Home;
+
+// import React, { useState, useEffect } from "react";
+// import HomeSideNavbar from "./HomeSideNavbar";
+// import ShopSelector from "./HomeComponents/ShopSelector";
+// import DashboardCard from "./HomeComponents/DashboardCard";
+// import ActivityRow from "./HomeComponents/ActivityRow";
+// import { CiCalendarDate, CiTimer, CiDeliveryTruck } from "react-icons/ci";
+// import { HiOutlineReceiptRefund } from "react-icons/hi2";
+// import { FiPrinter } from "react-icons/fi";
+// import print from "../../assets/printer01.png";
+// // import shipped from "../../assets/shipped01.png";
+// import shipped from "../../assets/shipped01.png";
+// import needPrint from "../../assets/needtoprint01.png";
+// // import { useTikTokOrders } from "../Hooks/useTikTokOrders";
+// import { useTikTokOrders } from "./HomeHooks/useTikTokOrders";
+// import { useLazadaOrders } from "./HomeHooks/useLazadaOrders";
+// import { useShopeeOrders } from "./HomeHooks/useShopeeOrders";
+// import { useTranslation } from "react-i18next";
+// import { useNavigate } from "react-router-dom";
+// import { format, subDays } from "date-fns";
+
+// const Home = () => {
+//   const { t } = useTranslation();
+//   const storedShopPlatform = localStorage.getItem("SelectedPlatform");
+//   const [selectedPlatform, setSelectedPlatform] = useState(
+//     storedShopPlatform || "tiktok"
+//   );
+//   const [selectedStore, setSelectedStore] = useState(null);
+//   const [openShop, setOpenShop] = useState(null);
+
+//   const navigate = useNavigate();
+//   const now = new Date();
+//   const sevenDaysAgo = subDays(now, 7);
+
+//   // 🔹 Use hooks for data fetching
+//   const tikTokData = useTikTokOrders(
+//     selectedStore ? JSON.parse(localStorage.getItem("tiktokShopInfo")) : [],
+//     selectedStore
+//   );
+//   const lazadaData = useLazadaOrders(selectedStore);
+//   const shopeeData = useShopeeOrders(selectedStore);
+
+//   const platformPaths = {
+//     tiktok: "TikTokOrderManagemnt",
+//     lazada: "LazadaOrderManagement",
+//     shopee: "ShopeeOrderManagement",
+//   };
+
+//   const handleCardClick = (type) => {
+//     const platformPath = platformPaths[selectedPlatform];
+//     if (platformPath) navigate(`/${type}/${platformPath}`);
+//   };
+
+//   // 🔹 Helper to get counts based on platform
+//   const getCount = (type) => {
+//     if (selectedPlatform === "tiktok") return tikTokData[type]?.length || 0;
+//     if (selectedPlatform === "lazada") return lazadaData[type]?.length || 0;
+//     if (selectedPlatform === "shopee") return shopeeData[type]?.length || 0;
+//     return 0;
+//   };
+
+//   return (
+//     <div className="bg-[#0043680D] grid grid-cols-6">
+//       <div className="col-span-1">
+//         <HomeSideNavbar />
+//       </div>
+//       <div className="pt-11 pl-[62px] mb-[17px] col-span-5">
+//         <ShopSelector
+//           openShop={openShop}
+//           setOpenShop={setOpenShop}
+//           selectedStore={selectedStore}
+//           setSelectedStore={setSelectedStore}
+//           selectedPlatform={selectedPlatform}
+//           setSelectedPlatform={setSelectedPlatform}
+//         />
+
+//         {/* Dashboard Cards */}
+//         <div className="mb-9 grid grid-cols-3 gap-6">
+//           <button onClick={() => handleCardClick("printed")}>
+//             <DashboardCard
+//               title={t("Printed Today")}
+//               count={getCount("printedToday")}
+//               image={print}
+//             />
+//           </button>
+//           <button onClick={() => handleCardClick("shipped")}>
+//             <DashboardCard
+//               title={t("Shipped Today")}
+//               count={getCount("shippedToday")}
+//               image={shipped}
+//             />
+//           </button>
+//           <button onClick={() => handleCardClick("needPrint")}>
+//             <DashboardCard
+//               title={t("Need To Print")}
+//               count={
+//                 getCount("awaitingCollectionUnprinted") ||
+//                 getCount("packedUnprinted") ||
+//                 getCount("processedUnprinted")
+//               }
+//               image={needPrint}
+//             />
+//           </button>
+//         </div>
+
+//         {/* Activities */}
+//         <div className="w-[600px] h-[413px] rounded-[17px] bg-white mt-4 pt-7 shadow-md">
+//           <div className="flex items-center mt-[14px] ml-7">
+//             <span className="w-[25px] h-[25px] bg-[#00436838] rounded-[6px] flex justify-center items-center">
+//               <CiCalendarDate className="w-[13px] h-[13.5px] text-[#004368]" />
+//             </span>
+//             <span className="text-[#00000099] text-[12px] font-[400] capitalize ml-2">
+//               {format(sevenDaysAgo, "dd MMM yyyy")} to{" "}
+//               {format(now, "dd MMM yyyy")}
+//             </span>
+//           </div>
+//           <div className="pt-[30px]">
+//             <ActivityRow
+//               icon={FiPrinter}
+//               label={t("Printed")}
+//               value={
+//                 getCount("awaitingCollectionPrinted") ||
+//                 getCount("packedPrinted") ||
+//                 getCount("processedPrinted")
+//               }
+//             />
+//             <ActivityRow
+//               icon={CiTimer}
+//               label={t("New Orders")}
+//               value={
+//                 getCount("awaitingShipment") ||
+//                 getCount("newOrders") ||
+//                 getCount("readyToShip")
+//               }
+//             />
+//             <ActivityRow
+//               icon={HiOutlineReceiptRefund}
+//               label={t("Cancelled")}
+//               value={getCount("cancelledOrders") || getCount("cancelled")}
+//             />
+//             <ActivityRow
+//               icon={CiDeliveryTruck}
+//               label={t("Processing for Delivery")}
+//               value={
+//                 getCount("awaitingCollection") ||
+//                 getCount("packed") ||
+//                 getCount("processedUnprinted")
+//               }
+//             />
+//           </div>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Home;
