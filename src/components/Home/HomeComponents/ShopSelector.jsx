@@ -366,18 +366,18 @@ const ShopSelector = ({
       cipher: "ROW_shopeeCipher1",
       code: "SHOPEE001",
       id: "shp001",
-      name: "Shopee Store A",
+      name: "Shopee Store Malaysia",
       region: "MY",
       sellerType: "LOCAL",
     },
-    {
-      cipher: "ROW_shopeeCipher2",
-      code: "SHOPEE002",
-      id: "shp002",
-      name: "Shopee Store B",
-      region: "MY",
-      sellerType: "LOCAL",
-    },
+    // {
+    //   cipher: "ROW_shopeeCipher2",
+    //   code: "SHOPEE002",
+    //   id: "shp002",
+    //   name: "Shopee Store B",
+    //   region: "MY",
+    //   sellerType: "LOCAL",
+    // },
   ];
 
   const lazadaShops = [
@@ -385,18 +385,18 @@ const ShopSelector = ({
       cipher: "ROW_lazadaCipher1",
       code: "LAZADA001",
       id: "lzd001",
-      name: "Lazada Supermart",
+      name: "Lazada Supermart Malaysia",
       region: "MY",
       sellerType: "LOCAL",
     },
-    {
-      cipher: "ROW_lazadaCipher2",
-      code: "LAZADA002",
-      id: "lzd002",
-      name: "Lazada Xpress",
-      region: "MY",
-      sellerType: "LOCAL",
-    },
+    // {
+    //   cipher: "ROW_lazadaCipher2",
+    //   code: "LAZADA002",
+    //   id: "lzd002",
+    //   name: "Lazada Xpress",
+    //   region: "MY",
+    //   sellerType: "LOCAL",
+    // },
   ];
 
   const shops = [

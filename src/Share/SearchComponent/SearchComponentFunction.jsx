@@ -32,6 +32,8 @@ export function filterDataByDateRange(data, startDate, endDate) {
 }
 
 export function filterLazadaDataByDateRange(data, startDate, endDate) {
+  console.log(data, startDate, endDate);
+
   const startDateTime = new Date(startDate);
   startDateTime.setHours(0, 0, 0, 0);
 
