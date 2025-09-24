@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { MdOutlineLocalPrintshop } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { checkedItemsChange } from "../../features/slice/userSlice";
 import * as XLSX from "xlsx";
 import NewSearchComponent from "../../Share/SearchComponent/NewSearchComponent";
@@ -74,6 +74,7 @@ const ShopeeBatchPrint = () => {
   const [isActiveBtnProduct, setIsActiveBtnProduct] = useState(false);
   const [isActiveBtnAmount, setIsActiveBtnAmount] = useState(false);
   const [lazadaPrintedIds, setLazadaPrintedIds] = useState([]);
+  const [cardStatus, setCardStatus] = useState(false);
   const [cipher, setCipher] = useState(() => {
     const stored = localStorage.getItem("tiktokShopInfo");
     return stored ? JSON.parse(stored) : [];
@@ -169,6 +170,29 @@ const ShopeeBatchPrint = () => {
       setSelectedShopeeDeliveryType(savedType);
     }
   }, []);
+
+  const location = useLocation();
+
+  useEffect(() => {
+    // Split path into parts
+    const parts = location.pathname.split("/");
+    // e.g. ["", "printed", "LazadaOrderManagement"]
+
+    if (parts.length === 3) {
+      console.log("Second part:", parts[1]); // LazadaOrderManagement
+      setCardStatus(true);
+      if (parts[1] === "printed") {
+        setShopeeOrderStatusCheck("PROCESSED_PRINTED");
+        setSelectedStatus("Processed_Printed");
+      } else if (parts[1] === "shipped") {
+        setShopeeOrderStatusCheck("SHIPPED");
+        setSelectedStatus("On The Way");
+      } else if (parts[1] === "needPrint") {
+        setShopeeOrderStatusCheck("PROCESSED");
+        setSelectedStatus("Processed");
+      }
+    }
+  }, [location]);
 
   useEffect(() => {
     let isMounted = true;

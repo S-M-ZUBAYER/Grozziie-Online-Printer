@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { MdOutlineLocalPrintshop } from "react-icons/md";
 import { lazadaArrayToExcel } from "../../Share/Function/FunctionalComponent";
 import { useDispatch, useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { checkedItemsChange } from "../../features/slice/userSlice";
 import * as XLSX from "xlsx";
 import NewSearchComponent from "../../Share/SearchComponent/NewSearchComponent";
@@ -19,6 +19,7 @@ import BatchPrinterModal from "../BatchPrint/BatchPrinterModal";
 import { useLazyGetLazadaOrdersQuery } from "../../features/allApis/lazadaApi";
 import axios from "axios";
 import { lazadaOrderStatusOptions } from "../../Share/Data/ClientData";
+import { isSameDay, parseISO } from "date-fns";
 
 const LazadaBatchPrint = () => {
   const [selectAll, setSelectAll] = useState(false);
@@ -29,6 +30,7 @@ const LazadaBatchPrint = () => {
   const [totalOrderData, setTotalOrderData] = useState(orderListDataGet);
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
+  const [cardStatus, setCardStatus] = useState(false);
   const selectedLazadaOrderStatus = useSelector(
     (state) => state.user.lazadaSelectStatus
   );
@@ -153,6 +155,29 @@ const LazadaBatchPrint = () => {
   const [leftPaginationBtn, setLeftPaginationBtn] = useState(false);
   const [rightPaginationBtn, setRightPaginationBtn] = useState(true);
 
+  const location = useLocation();
+
+  useEffect(() => {
+    // Split path into parts
+    const parts = location.pathname.split("/");
+    // e.g. ["", "printed", "LazadaOrderManagement"]
+
+    if (parts.length === 3) {
+      console.log("Second part:", parts[1]); // LazadaOrderManagement
+      setCardStatus(true);
+      if (parts[1] === "printed") {
+        setLazadaOrderStatusCheck("Packed_Printed");
+        setSelectedStatus("Printed");
+      } else if (parts[1] === "shipped") {
+        setLazadaOrderStatusCheck("shipped");
+        setSelectedStatus("On The Way");
+      } else if (parts[1] === "needPrint") {
+        setLazadaOrderStatusCheck("Packed");
+        setSelectedStatus("Packed");
+      }
+    }
+  }, [location]);
+
   useEffect(() => {
     let isMounted = true;
 
@@ -214,12 +239,37 @@ const LazadaBatchPrint = () => {
             (item) => !printedIdSet.has(String(item.order_id))
           );
         } else if (lazadaOrderStatusCheck === "Packed_Printed") {
-          filteredOrderList = filteredOrderList.filter((item) =>
-            printedIdSet.has(String(item.order_id))
-          );
+          if (cardStatus === true) {
+            filteredOrderList = filteredOrderList.filter((item) =>
+              printedIdSet.has(String(item.order_id))
+            );
+            const todayPrinted = lazadaPrintedIds.filter((item) =>
+              isSameDay(parseISO(item.createdAt), now)
+            );
+
+            filteredOrderList = todayPrinted;
+            setCardStatus(false);
+          } else {
+            filteredOrderList = filteredOrderList.filter((item) =>
+              printedIdSet.has(String(item.order_id))
+            );
+          }
+        } else if (
+          lazadaOrderStatusCheck === "shipped" &&
+          cardStatus === true
+        ) {
+          const today = new Date().toISOString().split("T")[0]; // format: YYYY-MM-DD
+          filteredOrderList = filteredOrderList.filter((item) => {
+            const itemDate = new Date(item.updated_at)
+              .toISOString()
+              .split("T")[0];
+            return (
+              !printedIdSet.has(String(item.order_id)) && itemDate === today
+            );
+          });
+          setCardStatus(false);
         }
 
-        // ✅ 4. Fetch item details for each order_id (No Auth Needed)
         // ✅ 4. Fetch item details for each order_id (No Auth Needed)
         const orderWithItems = [];
 
@@ -273,6 +323,7 @@ const LazadaBatchPrint = () => {
         console.error("❌ Lazada Order Fetch Error:", error);
       } finally {
         if (isMounted) setLazadaLoading(false);
+        setCardStatus(false);
       }
     };
 
@@ -356,25 +407,6 @@ const LazadaBatchPrint = () => {
 
   const handleDetailsClick = async (orderData) => {
     try {
-      // const orderId = orderData.order_id || orderData.order_number;
-      // if (!orderId) {
-      //   console.warn("No order ID provided.");
-      //   return;
-      // }
-      // setDetailsLoading(true);
-      // const response = await fetch(
-      //   `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}`
-      // );
-
-      // if (!response.ok) {
-      //   throw new Error("Failed to fetch order item details.");
-      // }
-
-      // const result = await response.json();
-      // const parsedBody = JSON.parse(result.body);
-      // const itemDetails = parsedBody.data?.[0]; // Assuming you want the first item
-      // console.log(itemDetails, "details");
-
       setSelectedCustomer(orderData);
       setIsModalOpen(true);
       setDetailsLoading(false);

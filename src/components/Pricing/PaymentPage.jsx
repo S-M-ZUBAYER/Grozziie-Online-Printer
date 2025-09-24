@@ -334,7 +334,7 @@ const PaymentPage = () => {
           email: newEmail,
           amount,
           currency,
-          purpose: "pdf",
+          purpose: "Grozziie Online Printer",
         }
       );
 
