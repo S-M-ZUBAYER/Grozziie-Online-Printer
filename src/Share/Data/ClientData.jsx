@@ -134,6 +134,7 @@ export const ShopeeOrderStatusOptions = [
     value: "CANCELLED",
   },
 ];
+
 export const orderList = [
   {
     address:

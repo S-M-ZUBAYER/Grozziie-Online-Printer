@@ -33,6 +33,7 @@ import {
   useLazyGetShopeeOrdersQuery,
 } from "../../features/allApis/shopeeApi";
 import { useNavigate } from "react-router-dom";
+import ShopeeAuthModal from "./ShopeeAuthModal";
 
 const Home = () => {
   const { t } = useTranslation();
@@ -91,6 +92,7 @@ const Home = () => {
   const [shopeeShippedOrders, setShopeeShippedOrders] = useState([]);
   const [shopeeCompletedOrders, setShopeeCompletedOrders] = useState([]);
   const [shopeeCancelledOrders, setShopeeCancelledOrders] = useState([]);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   //TikTok Orders Call
   const [loadOrderList] = useLoadOrderListMutation();
@@ -423,6 +425,22 @@ const Home = () => {
             timeTo: now,
             orderStatus: status,
           }).unwrap();
+          console.log(orderListResponse, "order details");
+
+          if (
+            orderListResponse?.error === "invalid_acceess_token" &&
+            selectedPlatform === "shopee"
+          ) {
+            console.warn(
+              "Shopee access token invalid, triggering OAuth flow..."
+            );
+
+            // Show the ShopeeAuthModal
+            setShowAuthModal(true);
+
+            // Stop further processing until token is refreshed
+            return;
+          }
 
           const orderList = orderListResponse?.response?.order_list || [];
 
@@ -770,6 +788,10 @@ const Home = () => {
           </div>
         </div>
       </div>
+      <ShopeeAuthModal
+        show={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+      />
     </div>
   );
 };
@@ -785,12 +807,10 @@ export default Home;
 // import { HiOutlineReceiptRefund } from "react-icons/hi2";
 // import { FiPrinter } from "react-icons/fi";
 // import print from "../../assets/printer01.png";
-// // import shipped from "../../assets/shipped01.png";
 // import shipped from "../../assets/shipped01.png";
 // import needPrint from "../../assets/needtoprint01.png";
-// // import { useTikTokOrders } from "../Hooks/useTikTokOrders";
 // import { useTikTokOrders } from "./HomeHooks/useTikTokOrders";
-// import { useLazadaOrders } from "./HomeHooks/useLazadaOrders";
+// // import { useLazadaOrders } from "./HomeHooks/useLazadaOrders";
 // import { useShopeeOrders } from "./HomeHooks/useShopeeOrders";
 // import { useTranslation } from "react-i18next";
 // import { useNavigate } from "react-router-dom";
@@ -798,24 +818,42 @@ export default Home;
 
 // const Home = () => {
 //   const { t } = useTranslation();
+//   const navigate = useNavigate();
+
 //   const storedShopPlatform = localStorage.getItem("SelectedPlatform");
 //   const [selectedPlatform, setSelectedPlatform] = useState(
 //     storedShopPlatform || "tiktok"
 //   );
 //   const [selectedStore, setSelectedStore] = useState(null);
 //   const [openShop, setOpenShop] = useState(null);
+//   const [printedIds, setPrintedIds] = useState([]); // ✅ default to empty array
 
-//   const navigate = useNavigate();
 //   const now = new Date();
 //   const sevenDaysAgo = subDays(now, 7);
 
-//   // 🔹 Use hooks for data fetching
+//   // ✅ Load only the selected platform's hook
 //   const tikTokData = useTikTokOrders(
-//     selectedStore ? JSON.parse(localStorage.getItem("tiktokShopInfo")) : [],
-//     selectedStore
+//     printedIds,
+//     selectedStore,
+//     selectedPlatform === "tiktok"
 //   );
-//   const lazadaData = useLazadaOrders(selectedStore);
-//   const shopeeData = useShopeeOrders(selectedStore);
+//   // const lazadaData = useLazadaOrders(
+//   //   printedIds,
+//   //   selectedStore,
+//   //   selectedPlatform === "lazada"
+//   // );
+//   const shopeeData = useShopeeOrders(
+//     printedIds,
+//     selectedStore,
+//     selectedPlatform === "shopee"
+//   );
+
+//   const platformData =
+//     selectedPlatform === "tiktok"
+//       ? tikTokData
+//       : selectedPlatform === "lazada"
+//       ? ""
+//       : shopeeData;
 
 //   const platformPaths = {
 //     tiktok: "TikTokOrderManagemnt",
@@ -828,19 +866,14 @@ export default Home;
 //     if (platformPath) navigate(`/${type}/${platformPath}`);
 //   };
 
-//   // 🔹 Helper to get counts based on platform
-//   const getCount = (type) => {
-//     if (selectedPlatform === "tiktok") return tikTokData[type]?.length || 0;
-//     if (selectedPlatform === "lazada") return lazadaData[type]?.length || 0;
-//     if (selectedPlatform === "shopee") return shopeeData[type]?.length || 0;
-//     return 0;
-//   };
+//   const getCount = (type) => platformData?.[type]?.length || 0;
 
 //   return (
 //     <div className="bg-[#0043680D] grid grid-cols-6">
 //       <div className="col-span-1">
 //         <HomeSideNavbar />
 //       </div>
+
 //       <div className="pt-11 pl-[62px] mb-[17px] col-span-5">
 //         <ShopSelector
 //           openShop={openShop}
