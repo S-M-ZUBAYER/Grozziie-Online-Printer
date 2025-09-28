@@ -323,5 +323,14 @@
   "Month": "Month",
   "Months": "Months",
   "Selected Shop Platform Country": "Selected Shop Platform Country",
-  "no_plans_available_for_this_particular_country": "No plans available for this particular country"
+  "no_plans_available_for_this_particular_country": "No plans available for this particular country",
+  "Free Trial": "Free Trial",
+  "free_plan_activation": "Free Plan Activation",
+  "card_number": "Card Number",
+  "cvc": "CVC",
+  "expiry": "MM/YY",
+  "free_plan_activated_success": "✅ Free plan activated successfully!",
+  "failed_to_store_payment_info": "❌ Failed to store payment info",
+  "Have you completed authorization?": "Have you completed authorization?",
+  "If completed and redirect URL is now showing, please press Confirm.": "If completed and redirect URL is now showing, please press Confirm."
 }

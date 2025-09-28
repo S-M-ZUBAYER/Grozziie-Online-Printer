@@ -324,5 +324,14 @@
   "Month": "Bulan",
   "Months": "Bulan-bulan",
   "Selected Shop Platform Country": "Negara Platform Kedai Dipilih",
-  "no_plans_available_for_this_particular_country": "Tiada pelan tersedia untuk negara ini"
+  "no_plans_available_for_this_particular_country": "Tiada pelan tersedia untuk negara ini",
+  "Free Trial": "Uji Coba Gratis",
+  "free_plan_activation": "Aktivasi Paket Gratis",
+  "card_number": "Nomor Kartu",
+  "cvc": "CVC",
+  "expiry": "Bulan/Tahun",
+  "free_plan_activated_success": "✅ Pelan percuma berjaya diaktifkan!",
+  "failed_to_store_payment_info": "❌ Gagal menyimpan maklumat pembayaran",
+  "Have you completed authorization?": "Adakah anda telah menyelesaikan kebenaran?",
+  "If completed and redirect URL is now showing, please press Confirm.": "Jika sudah selesai dan URL redirect kini dipaparkan, sila tekan Sahkan."
 }

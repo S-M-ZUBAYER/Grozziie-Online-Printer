@@ -324,5 +324,14 @@
   "Month": "เดือน",
   "Months": "หลายเดือน",
   "Selected Shop Platform Country": "ประเทศของร้านค้าที่เลือก",
-  "no_plans_available_for_this_particular_country": "ไม่มีแผนบริการสำหรับประเทศนี้"
+  "no_plans_available_for_this_particular_country": "ไม่มีแผนบริการสำหรับประเทศนี้",
+  "Free Trial": "ทดลองใช้ฟรี",
+  "free_plan_activation": "เปิดใช้งานแพ็กเกจฟรี",
+  "card_number": "หมายเลขบัตร",
+  "cvc": "CVC",
+  "expiry": "เดือน/ปี",
+  "free_plan_activated_success": "✅ แผนฟรีถูกเปิดใช้งานเรียบร้อยแล้ว!",
+  "failed_to_store_payment_info": "❌ ไม่สามารถบันทึกข้อมูลการชำระเงินได้",
+  "Have you completed authorization?": "คุณทำการอนุญาตเรียบร้อยแล้วหรือไม่?",
+  "If completed and redirect URL is now showing, please press Confirm.": "หากทำเสร็จแล้วและ URL รีไดเรกต์ปรากฏขึ้น โปรดกด ยืนยัน"
 }

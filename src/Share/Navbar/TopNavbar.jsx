@@ -31,12 +31,20 @@ const TopNavbar = () => {
       setActiveLi(0);
     } else {
       dispatch(mainRouteStateChange());
-      if (path.includes("settings")) setActiveLi(4);
-      else if (path.includes("tiktok")) setActiveLi(1);
-      else if (path.includes("lazada")) setActiveLi(2);
-      else if (path.includes("shopee")) setActiveLi(3);
-      else if (path.includes("contact")) setActiveLi(5);
-      else setActiveLi(null); // If no match
+      if (path.includes("settings")) {
+        setActiveLi(4);
+      } else if (path.includes("tiktok")) {
+        localStorage.setItem("SelectedPlatform", "tiktok");
+        setActiveLi(1);
+      } else if (path.includes("lazada")) {
+        localStorage.setItem("SelectedPlatform", "lazada");
+        setActiveLi(2);
+      } else if (path.includes("shopee")) {
+        localStorage.setItem("SelectedPlatform", "shopee");
+        setActiveLi(3);
+      } else if (path.includes("contact")) {
+        setActiveLi(5);
+      } else setActiveLi(null); // If no match
     }
   }, [location.pathname, dispatch]);
 
@@ -52,9 +60,9 @@ const TopNavbar = () => {
 
   const navItems = [
     { key: "home", path: "/home" },
-    { key: "TikTok", path: "/TikTokOrderManagemnt" },
-    { key: "Lazada", path: "/LazadaOrderManagement" },
-    { key: "Shopee", path: "/ShopeeOrderManagement" },
+    { key: "tiktok", path: "/TikTokOrderManagemnt" },
+    { key: "lazada", path: "/LazadaOrderManagement" },
+    { key: "shopee", path: "/ShopeeOrderManagement" },
     // { key: "singlePrint", path: "/singleprint" },
     // { key: "settings", path: "/settings/recipient information" },
     {
@@ -65,6 +73,10 @@ const TopNavbar = () => {
     // { key: "manualOrder", path: "/manualOrder" },
     { key: "contact", path: "/contact" },
   ];
+
+  const handleNavLiClick = (index, item) => {
+    setActiveLi(index);
+  };
 
   return (
     <div className="navbar bg-slate-200 grid grid-cols-6 h-24">
@@ -78,7 +90,7 @@ const TopNavbar = () => {
       <div className="hidden md:block col-span-3 items-center justify-center mx-auto">
         <ul className="flex items-center gap-6 text-base">
           {navItems.map((item, index) => (
-            <li key={item.key} onClick={() => setActiveLi(index)}>
+            <li key={item.key} onClick={() => handleNavLiClick(index, item)}>
               <Link
                 to={item.path}
                 className={`text-black ${

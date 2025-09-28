@@ -11,7 +11,7 @@ const initialState = {
   checkedExpressFromRedux: [],
   checkedDefaultExpressChange: [],
   allAvailableExpressCompany: [],
-  selectedLanguageRedux: "",
+  selectedLanguageRedux: ""
 };
 
 export const counterSlice = createSlice({
@@ -56,7 +56,7 @@ export const counterSlice = createSlice({
     },
     selectedLanguageChange: (state, action) => {
       state.selectedLanguageRedux = action.payload;
-    },
+    }
   },
 });
 
@@ -73,7 +73,7 @@ export const {
   checkedExpressChange,
   checkedDefaultExpressChange,
   allAvailableExpressCompanyChange,
-  selectedLanguageChange,
+  selectedLanguageChange
 } = counterSlice.actions;
 
 export default counterSlice.reducer;

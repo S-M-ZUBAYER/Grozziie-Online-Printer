@@ -213,7 +213,7 @@ const ShopeeAWBPrinting = () => {
         );
 
         const mergeRes = await fetch(
-          "https://grozziieget.zjweiting.com:8033/tht/shopee/merge-pdfs-base64",
+          "https://grozziieget.zjweiting.com:8033/tht/merge-pdfs-base64",
           // "http://localhost:2000/tht/merge-pdfs-base64",
           {
             method: "POST",
