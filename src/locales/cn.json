@@ -323,5 +323,14 @@
   "Month": "月",
   "Months": "月份",
   "Selected Shop Platform Country": "已选择的商店平台国家",
-  "no_plans_available_for_this_particular_country": "此特定国家暂无可用方案"
+  "no_plans_available_for_this_particular_country": "此特定国家暂无可用方案",
+  "Free Trial": "免费试用",
+  "free_plan_activation": "免费方案激活",
+  "card_number": "卡号",
+  "cvc": "安全码",
+  "expiry": "有效期 (月/年)",
+  "free_plan_activated_success": "✅ 免费计划已成功激活！",
+  "failed_to_store_payment_info": "❌ 存储支付信息失败",
+  "Have you completed authorization?": "您已完成授权吗？",
+  "If completed and redirect URL is now showing, please press Confirm.": "如果已完成且重定向 URL 已显示，请按确认。"
 }

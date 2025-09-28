@@ -324,5 +324,14 @@
   "Month": "Bulan",
   "Months": "Bulan-bulan",
   "Selected Shop Platform Country": "Negara Platform Toko Terpilih",
-  "no_plans_available_for_this_particular_country": "Tidak ada paket yang tersedia untuk negara ini"
+  "no_plans_available_for_this_particular_country": "Tidak ada paket yang tersedia untuk negara ini",
+  "Free Trial": "Libreng Pagsubok",
+  "free_plan_activation": "Pag-activate ng Libreng Plano",
+  "card_number": "Numero ng Card",
+  "cvc": "CVC",
+  "expiry": "Buwan/Taon",
+  "free_plan_activated_success": "✅ Paket gratis berhasil diaktifkan!",
+  "failed_to_store_payment_info": "❌ Gagal menyimpan informasi pembayaran",
+  "Have you completed authorization?": "Apakah Anda telah menyelesaikan otorisasi?",
+  "If completed and redirect URL is now showing, please press Confirm.": "Jika sudah selesai dan URL pengalihan sekarang muncul, silakan tekan Konfirmasi."
 }

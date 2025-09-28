@@ -7,23 +7,39 @@ import {
 } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 import axios from "axios";
-import { useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 
 const stripePromise = loadStripe(import.meta.env.VITE_PAYMENT_KEY);
 
 const convertToCents = (amount) => Math.round(amount * 100);
 import calculatePaymentExpireTime from "../../lib/calculatePaymentExpireTime";
+import { useLocation } from "react-router-dom";
 
 const PaymentForm = ({ email, setEmail, duration, amount, currency }) => {
   const stripe = useStripe();
   const elements = useElements();
   const currentUser = useSelector((state) => state.user.accountUser);
 
+  const storedShopPlatform = localStorage.getItem("SelectedPlatform");
   const [cipher, setCipher] = useState(() => {
     const stored = localStorage.getItem("tiktokShopInfo");
     return stored ? JSON.parse(stored) : [];
   });
+  const [lazadaShopId, setlazadaShopId] = useState(() => {
+    const stored = localStorage.getItem("lazadaShopInfo");
+    return stored ? JSON.parse(stored) : [];
+  });
+  const [shopeeShopId, setShopeeShopId] = useState(() => {
+    const stored = localStorage.getItem("shopeeShopInfo");
+    return stored ? JSON.parse(stored) : [];
+  });
+  console.log(
+    cipher,
+    lazadaShopId,
+    shopeeShopId,
+    storedShopPlatform,
+    "from payment system"
+  );
 
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
@@ -37,6 +53,10 @@ const PaymentForm = ({ email, setEmail, duration, amount, currency }) => {
           currency,
         }
       );
+      console.log(
+        "call this payment info........................................"
+      );
+
       await storePaymentInfo();
       await confirmPayment(data.clientSecret);
     } catch (err) {
@@ -75,14 +95,21 @@ const PaymentForm = ({ email, setEmail, duration, amount, currency }) => {
   const storePaymentInfo = async () => {
     const paymentInfo = {
       email: currentUser,
-      shopPlatform: "TikTok",
-      shopName: cipher[0].name,
+      shopPlatform: storedShopPlatform,
+      shopName:
+        storedShopPlatform === "shopee"
+          ? shopeeShopId[0]?.id
+          : storedShopPlatform === "lazada"
+          ? lazadaShopId[0]?.id
+          : cipher[0].id,
       paymentTime: new Date().toISOString().split(".")[0] + "Z",
       paymentExpireTime: calculatePaymentExpireTime(duration),
       amount,
       currency,
     };
-
+    console.log(
+      "call this payment info store........................................"
+    );
     try {
       const { data } = await axios.post(
         "https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/add",

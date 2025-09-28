@@ -325,5 +325,14 @@
   "Month": "Buwan",
   "Months": "Mga Buwan",
   "Selected Shop Platform Country": "Napiling Bansa ng Shop Platform",
-  "no_plans_available_for_this_particular_country": "Walang available na plano para sa bansang ito"
+  "no_plans_available_for_this_particular_country": "Walang available na plano para sa bansang ito",
+  "Free Trial": "Libreng Pagsubok",
+  "free_plan_activation": "Pag-activate ng Libreng Plano",
+  "card_number": "Numero ng Card",
+  "cvc": "CVC",
+  "expiry": "Buwan/Taon",
+  "free_plan_activated_success": "✅ Matagumpay na na-activate ang libreng plano!",
+  "failed_to_store_payment_info": "❌ Nabigong i-save ang impormasyon sa pagbabayad",
+  "Have you completed authorization?": "Nakumpleto mo na ba ang awtorisasyon?",
+  "If completed and redirect URL is now showing, please press Confirm.": "Kung nakumpleto na at nagpapakita na ang redirect URL, pakipindot ang Kumpirmahin."
 }
