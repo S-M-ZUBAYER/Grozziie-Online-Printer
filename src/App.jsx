@@ -10,7 +10,11 @@ import {
   paymentUserChange,
 } from "./features/slice/userSlice";
 import { useDispatch } from "react-redux";
-import { setAllShopList } from "./features/slice/allShopSlice";
+import {
+  setAllLazadaShopList,
+  setAllShopeeShopList,
+  setAllTikTokShopList,
+} from "./features/slice/allShopSlice";
 
 function App() {
   const dispatch = useDispatch();
@@ -45,7 +49,7 @@ function App() {
             "tiktokShopInfo",
             JSON.stringify(data.data.shops)
           );
-          dispatch(setAllShopList(data.data.shops));
+          dispatch(setAllTikTokShopList(data.data.shops));
         } else {
           console.warn("No shops found in API response.");
         }
@@ -55,6 +59,80 @@ function App() {
       });
   }, []);
 
+  useEffect(() => {
+    fetch(
+      "https://grozziie.zjweiting.com:3091/lazada-open-shop/country_user_info"
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        const lazadaInItData = [
+          {
+            cipher: data[0]?.seller_id,
+            code: data[0]?.short_code,
+            id: data[0]?.user_id,
+            name: data[0]?.short_code,
+            region: data[0]?.country,
+            sellerType: "LOCAL",
+          },
+        ];
+        console.log(lazadaInItData);
+
+        if (data[0]?.seller_id) {
+          localStorage.setItem(
+            "lazadaShopInfo",
+            JSON.stringify(lazadaInItData)
+          );
+          dispatch(setAllLazadaShopList(lazadaInItData));
+        } else {
+          console.warn("No shops found in API response.");
+        }
+      })
+      .catch((error) => {
+        console.error("There was a problem with the fetch operation:", error);
+      });
+  }, []);
+
+  useEffect(() => {
+    fetch(
+      "https://grozziie.zjweiting.com:3091/shopee-open-shop/auth/get_shops_by_partner?pageNo=1&pageSize=1"
+    )
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        const shopeeInItData = [
+          {
+            cipher: data?.authed_shop_list[0]?.shop_id,
+            code: data?.authed_shop_list[0]?.shop_id,
+            id: data?.authed_shop_list[0]?.shop_id,
+            name: data?.authed_shop_list[0]?.shop_id,
+            region: data?.authed_shop_list[0]?.region,
+            sellerType: "LOCAL",
+          },
+        ];
+
+        if (data?.authed_shop_list[0]) {
+          localStorage.setItem(
+            "shopeeShopInfo",
+            JSON.stringify(shopeeInItData)
+          );
+          dispatch(setAllShopeeShopList(shopeeInItData));
+        } else {
+          console.warn("No shops found in API response.");
+        }
+      })
+      .catch((error) => {
+        console.error("There was a problem with the fetch operation:", error);
+      });
+  }, []);
   // Fetch order list data
   // useEffect(() => {
   //   const fetchData = async () => {

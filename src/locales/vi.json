@@ -323,5 +323,14 @@
   "Month": "Tháng",
   "Months": "Các tháng",
   "Selected Shop Platform Country": "Quốc gia cửa hàng được chọn",
-  "no_plans_available_for_this_particular_country": "Không có gói nào khả dụng cho quốc gia này"
+  "no_plans_available_for_this_particular_country": "Không có gói nào khả dụng cho quốc gia này",
+  "Free Trial": "Dùng Thử Miễn Phí",
+  "free_plan_activation": "Kích Hoạt Gói Miễn Phí",
+  "card_number": "Số Thẻ",
+  "cvc": "CVC",
+  "expiry": "Tháng/Năm",
+  "free_plan_activated_success": "✅ Kích hoạt gói miễn phí thành công!",
+  "failed_to_store_payment_info": "❌ Không lưu được thông tin thanh toán",
+  "Have you completed authorization?": "Bạn đã hoàn tất xác thực chưa?",
+  "If completed and redirect URL is now showing, please press Confirm.": "Nếu đã hoàn tất và URL chuyển hướng đang hiển thị, vui lòng nhấn Xác nhận."
 }

@@ -337,7 +337,9 @@ const PaymentPage = () => {
           purpose: "Grozziie Online Printer",
         }
       );
-
+      console.log(
+        "call this payment info from pdf........................................"
+      );
       const { clientSecret } = response.data;
 
       if (!stripe || !elements) {

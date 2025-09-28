@@ -5,7 +5,10 @@ import orderListSlice from "./slice/orderListSlice";
 import logisticCompaniesSlice from "./slice/logisticCompaniesSlice";
 import allDeliveryCompanySlice from "./slice/allDeliveryCompanySlice";
 import shopDeliveryCompanySlice from "./slice/shopDeliveryCompanySlice";
-import allShopList from "./slice/allShopSlice";
+import allShopSlice from "./slice/allShopSlice";
+// import allTikTokShopList from "./slice/allShopSlice";
+// import allShopeeShopList from "./slice/allShopSlice";
+// import allLazadaShopList from "./slice/allShopSlice";
 
 export const store = configureStore({
   reducer: {
@@ -15,7 +18,7 @@ export const store = configureStore({
     logisticCompanies: logisticCompaniesSlice,
     deliveryCompanies: allDeliveryCompanySlice,
     shopDeliveryCompanyList: shopDeliveryCompanySlice,
-    allShopList: allShopList,
+    ...allShopSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(baseApi.middleware),
