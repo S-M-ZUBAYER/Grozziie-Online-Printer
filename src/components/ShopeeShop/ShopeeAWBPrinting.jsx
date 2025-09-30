@@ -4,6 +4,7 @@ import FadeLoader from "react-spinners/FadeLoader";
 import { HiOutlinePrinter } from "react-icons/hi2";
 import { checkedItemsChange } from "../../features/slice/userSlice";
 import { useTranslation } from "react-i18next";
+import ConfirmationModal from "../../Share/ConfirmationModal";
 
 const ShopeeAWBPrinting = () => {
   const checkedItems = useSelector((state) => state.user.checkedItemsFromRedux);
@@ -11,6 +12,12 @@ const ShopeeAWBPrinting = () => {
     (state) => state.user.selectedLanguageRedux
   );
   const currentUser = useSelector((state) => state.user.accountUser);
+
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [modalTitle, setModalTitle] = useState("");
+  const [modalMessage, setModalMessage] = useState("");
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [showConfirmButton, setShowConfirmButton] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -63,6 +70,18 @@ const ShopeeAWBPrinting = () => {
     }
   };
 
+  const showErrorModal = (message) => {
+    setModalTitle(
+      <div className="bg-red-200 w-16 h-16 rounded-full flex items-center justify-center">
+        <TiInfoOutline className="w-10 h-10 text-red-600" />
+      </div>
+    );
+    setModalMessage(<p>{message}</p>);
+    setConfirmAction(null);
+    setShowConfirmButton(false);
+    setIsConfirmModalOpen(true);
+  };
+
   const handleMergeAndPrint = async () => {
     try {
       setIsLoading(true);
@@ -75,7 +94,7 @@ const ShopeeAWBPrinting = () => {
       const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
       if (!checkedItems?.items?.length) {
-        alert("No orders selected.");
+        showErrorModal(t("NoItemsSelected"));
         setIsLoading(false);
         return;
       }
@@ -239,7 +258,7 @@ const ShopeeAWBPrinting = () => {
         const pdfUrl = URL.createObjectURL(pdfBlob);
         setLazadaPdf(pdfUrl);
       } else {
-        alert("No PDFs generated for the selected orders.");
+        showErrorModal(t("no_valid_labels"));
       }
 
       // 6️⃣ Save printed order ids
@@ -265,7 +284,7 @@ const ShopeeAWBPrinting = () => {
       }
     } catch (err) {
       console.error("❌ Merge print failed:", err);
-      alert("Something went wrong while generating the PDF(s).");
+      showErrorModal(t("pdf_error"));
     } finally {
       setIsLoading(false);
     }
@@ -374,6 +393,15 @@ const ShopeeAWBPrinting = () => {
           </div>
         </div>
       </div>
+      <ConfirmationModal
+        isOpen={isConfirmModalOpen}
+        title={modalTitle}
+        message={modalMessage}
+        onClose={() => setIsConfirmModalOpen(false)}
+        onConfirm={confirmAction}
+        showConfirmButton={showConfirmButton}
+        selectedLanguage={selectedLanguage}
+      />
     </div>
   );
 };

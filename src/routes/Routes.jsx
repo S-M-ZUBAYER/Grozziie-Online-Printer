@@ -58,7 +58,6 @@ import PaymentPrivateRoute from "../components/Private/PaymentPrivateRoute";
 import PaymentAlipay from "../components/Pricing/PaymentAlipay";
 import VerifyEmailPage from "../components/Auth/VerifyEmailPage";
 import BatchPrintPrinting from "../components/BatchPrintExpressDelivery/BatchPrintPrinting";
-import WrappedPaymentPage from "../components/Pricing/PaymentPage";
 import SuccessPage from "../components/Pricing/SuccessPage";
 import LazadaBatchPrint from "../components/LazadaShop/LazadaBatchPrint";
 import LazadaAWBPrinting from "../components/LazadaShop/LazadaAWBPrinting";
@@ -77,10 +76,6 @@ export const routes = createBrowserRouter([
     path: "/register",
     element: <Registration />,
   },
-  // {
-  //   path: "/payment",
-  //   element: <WrappedPaymentPage />,
-  // },
   {
     path: "/login",
     element: <Login />,

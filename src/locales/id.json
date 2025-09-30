@@ -333,5 +333,8 @@
   "free_plan_activated_success": "✅ Paket gratis berhasil diaktifkan!",
   "failed_to_store_payment_info": "❌ Gagal menyimpan informasi pembayaran",
   "Have you completed authorization?": "Apakah Anda telah menyelesaikan otorisasi?",
-  "If completed and redirect URL is now showing, please press Confirm.": "Jika sudah selesai dan URL pengalihan sekarang muncul, silakan tekan Konfirmasi."
+  "If completed and redirect URL is now showing, please press Confirm.": "Jika sudah selesai dan URL pengalihan sekarang muncul, silakan tekan Konfirmasi.",
+  "no_valid_package": "Tidak ditemukan package_id yang valid untuk pesanan.",
+  "no_valid_labels": "Tidak ditemukan label pengiriman yang valid.",
+  "pdf_error": "Terjadi kesalahan saat membuat PDF gabungan."
 }

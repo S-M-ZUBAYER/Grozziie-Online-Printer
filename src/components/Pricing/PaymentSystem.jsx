@@ -33,17 +33,11 @@ const PaymentForm = ({ email, setEmail, duration, amount, currency }) => {
     const stored = localStorage.getItem("shopeeShopInfo");
     return stored ? JSON.parse(stored) : [];
   });
-  console.log(
-    cipher,
-    lazadaShopId,
-    shopeeShopId,
-    storedShopPlatform,
-    "from payment system"
-  );
 
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
   const fetchClientSecret = async () => {
     try {
       const { data } = await axios.post(
@@ -53,16 +47,13 @@ const PaymentForm = ({ email, setEmail, duration, amount, currency }) => {
           currency,
         }
       );
-      console.log(
-        "call this payment info........................................"
-      );
-
       await storePaymentInfo();
       await confirmPayment(data.clientSecret);
     } catch (err) {
       console.error("Failed to create payment intent:", err);
     }
   };
+
   const confirmPayment = async (clientSecret) => {
     if (!stripe || !elements) return;
 
@@ -107,9 +98,6 @@ const PaymentForm = ({ email, setEmail, duration, amount, currency }) => {
       amount,
       currency,
     };
-    console.log(
-      "call this payment info store........................................"
-    );
     try {
       const { data } = await axios.post(
         "https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/add",
@@ -129,11 +117,9 @@ const PaymentForm = ({ email, setEmail, duration, amount, currency }) => {
       setError("Please enter a valid email address.");
       return;
     }
-
     setLoading(true);
     setError(null);
     await fetchClientSecret();
-
     setLoading(false);
   };
 

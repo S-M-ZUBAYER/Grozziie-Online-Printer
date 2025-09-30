@@ -12,7 +12,9 @@ import { CountrySelector, FreePlanModal, PlanCard } from "./FreePlanModal";
 
 // --- Helper: Get Shop ID based on platform ---
 const getCurrentShopId = (platform) => {
-  const cipher = JSON.parse(localStorage.getItem("tiktokShopInfo") || "[]");
+  const tiktokShopId = JSON.parse(
+    localStorage.getItem("tiktokShopInfo") || "[]"
+  );
   const lazadaShopId = JSON.parse(
     localStorage.getItem("lazadaShopInfo") || "[]"
   );
@@ -26,7 +28,7 @@ const getCurrentShopId = (platform) => {
     case "lazada":
       return lazadaShopId[0]?.id;
     default:
-      return cipher[0]?.id;
+      return tiktokShopId[0]?.id;
   }
 };
 
@@ -178,7 +180,7 @@ const Pricing = () => {
   // --- Handle plan selection ---
   const handleChoosePlan = (plan) => {
     setSelectedPlan(plan);
-    if (plan.amount === "0.00") {
+    if (plan.amount === 0) {
       setShowFreeModal(true);
     } else {
       navigate("/payment", { state: { plan } });

@@ -332,5 +332,8 @@
   "free_plan_activated_success": "✅ 免费计划已成功激活！",
   "failed_to_store_payment_info": "❌ 存储支付信息失败",
   "Have you completed authorization?": "您已完成授权吗？",
-  "If completed and redirect URL is now showing, please press Confirm.": "如果已完成且重定向 URL 已显示，请按确认。"
+  "If completed and redirect URL is now showing, please press Confirm.": "如果已完成且重定向 URL 已显示，请按确认。",
+  "no_valid_package": "未找到该订单的有效 package_id。",
+  "no_valid_labels": "未找到有效的运输标签。",
+  "pdf_error": "生成合并 PDF 时出现问题。"
 }
