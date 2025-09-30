@@ -5,9 +5,6 @@ const SuccessPage = () => {
   const paymentId = searchParams.get("payment_intent");
   const email = searchParams.get("email");
   const duration = searchParams.get("duration");
-  console.log(email);
-  console.log(duration);
-  console.log(paymentId);
   const status = searchParams.get("redirect_status");
 
   return (

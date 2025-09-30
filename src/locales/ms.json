@@ -333,5 +333,8 @@
   "free_plan_activated_success": "✅ Pelan percuma berjaya diaktifkan!",
   "failed_to_store_payment_info": "❌ Gagal menyimpan maklumat pembayaran",
   "Have you completed authorization?": "Adakah anda telah menyelesaikan kebenaran?",
-  "If completed and redirect URL is now showing, please press Confirm.": "Jika sudah selesai dan URL redirect kini dipaparkan, sila tekan Sahkan."
+  "If completed and redirect URL is now showing, please press Confirm.": "Jika sudah selesai dan URL redirect kini dipaparkan, sila tekan Sahkan.",
+  "no_valid_package": "Tiada package_id yang sah ditemui untuk pesanan.",
+  "no_valid_labels": "Tiada label penghantaran yang sah ditemui.",
+  "pdf_error": "Berlaku ralat semasa menghasilkan PDF yang digabungkan."
 }

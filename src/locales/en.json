@@ -332,5 +332,8 @@
   "free_plan_activated_success": "✅ Free plan activated successfully!",
   "failed_to_store_payment_info": "❌ Failed to store payment info",
   "Have you completed authorization?": "Have you completed authorization?",
-  "If completed and redirect URL is now showing, please press Confirm.": "If completed and redirect URL is now showing, please press Confirm."
+  "If completed and redirect URL is now showing, please press Confirm.": "If completed and redirect URL is now showing, please press Confirm.",
+  "no_valid_package": "No valid package_id found for order.",
+  "no_valid_labels": "No valid shipping labels found.",
+  "pdf_error": "Something went wrong while generating the merged PDF."
 }
