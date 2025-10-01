@@ -335,5 +335,14 @@
   "If completed and redirect URL is now showing, please press Confirm.": "If completed and redirect URL is now showing, please press Confirm.",
   "no_valid_package": "No valid package_id found for order.",
   "no_valid_labels": "No valid shipping labels found.",
-  "pdf_error": "Something went wrong while generating the merged PDF."
+  "pdf_error": "Something went wrong while generating the merged PDF.",
+  "voucherCode": "Voucher Code",
+  "giftOption": "Gift Option",
+  "giftMessage": "Gift Message",
+  "branchNumber": "Branch Number",
+  "nationalRegistration": "National Registration",
+  "financialInformation": "Financial Information",
+  "taxCode": "Tax Code",
+  "timeline": "Timeline",
+  "shipmentProvider": "Shipment Provider"
 }

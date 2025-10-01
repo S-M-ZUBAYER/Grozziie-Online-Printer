@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import NewSearchComponent from "../../../Share/SearchComponent/NewSearchComponent";
+import { filterLazadaDataBySearchFields } from "../../../Share/SearchComponent/SearchComponentFunction";
 
 const SearchSection = ({
   lazadaOrderStatusCheck,

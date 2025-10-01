@@ -336,5 +336,14 @@
   "If completed and redirect URL is now showing, please press Confirm.": "หากทำเสร็จแล้วและ URL รีไดเรกต์ปรากฏขึ้น โปรดกด ยืนยัน",
   "no_valid_package": "ไม่พบ package_id ที่ถูกต้องสำหรับคำสั่งซื้อ",
   "no_valid_labels": "ไม่พบป้ายกำกับการจัดส่งที่ถูกต้อง",
-  "pdf_error": "เกิดข้อผิดพลาดขณะสร้างไฟล์ PDF ที่ถูกรวม"
+  "pdf_error": "เกิดข้อผิดพลาดขณะสร้างไฟล์ PDF ที่ถูกรวม",
+  "voucherCode": "รหัสคูปอง",
+  "giftOption": "ตัวเลือกของขวัญ",
+  "giftMessage": "ข้อความของขวัญ",
+  "branchNumber": "หมายเลขสาขา",
+  "nationalRegistration": "การลงทะเบียนแห่งชาติ",
+  "financialInformation": "ข้อมูลทางการเงิน",
+  "taxCode": "รหัสภาษี",
+  "timeline": "ไทม์ไลน์",
+  "shipmentProvider": "ผู้ให้บริการจัดส่ง"
 }

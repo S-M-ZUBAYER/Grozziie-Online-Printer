@@ -336,5 +336,14 @@
   "If completed and redirect URL is now showing, please press Confirm.": "Jika sudah selesai dan URL pengalihan sekarang muncul, silakan tekan Konfirmasi.",
   "no_valid_package": "Tidak ditemukan package_id yang valid untuk pesanan.",
   "no_valid_labels": "Tidak ditemukan label pengiriman yang valid.",
-  "pdf_error": "Terjadi kesalahan saat membuat PDF gabungan."
+  "pdf_error": "Terjadi kesalahan saat membuat PDF gabungan.",
+  "voucherCode": "Kode Voucher",
+  "giftOption": "Opsi Hadiah",
+  "giftMessage": "Pesan Hadiah",
+  "branchNumber": "Nomor Cabang",
+  "nationalRegistration": "Registrasi Nasional",
+  "financialInformation": "Informasi Keuangan",
+  "taxCode": "Kode Pajak",
+  "timeline": "Linimasa",
+  "shipmentProvider": "Penyedia Pengiriman"
 }
