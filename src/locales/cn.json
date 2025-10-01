@@ -335,5 +335,14 @@
   "If completed and redirect URL is now showing, please press Confirm.": "如果已完成且重定向 URL 已显示，请按确认。",
   "no_valid_package": "未找到该订单的有效 package_id。",
   "no_valid_labels": "未找到有效的运输标签。",
-  "pdf_error": "生成合并 PDF 时出现问题。"
+  "pdf_error": "生成合并 PDF 时出现问题。",
+  "voucherCode": "优惠码",
+  "giftOption": "礼物选项",
+  "giftMessage": "礼物留言",
+  "branchNumber": "分行编号",
+  "nationalRegistration": "国家注册",
+  "financialInformation": "财务信息",
+  "taxCode": "税号",
+  "timeline": "时间线",
+  "shipmentProvider": "运输服务商"
 }

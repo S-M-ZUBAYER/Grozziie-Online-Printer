@@ -337,5 +337,14 @@
   "If completed and redirect URL is now showing, please press Confirm.": "Kung nakumpleto na at nagpapakita na ang redirect URL, pakipindot ang Kumpirmahin.",
   "no_valid_package": "Walang wastong package_id na natagpuan para sa order.",
   "no_valid_labels": "Walang wastong shipping label na natagpuan.",
-  "pdf_error": "May nagkamali habang gumagawa ng pinagsamang PDF."
+  "pdf_error": "May nagkamali habang gumagawa ng pinagsamang PDF.",
+  "voucherCode": "Code ng Voucher",
+  "giftOption": "Opsyon ng Regalo",
+  "giftMessage": "Mensahe ng Regalo",
+  "branchNumber": "Numero ng Sanga",
+  "nationalRegistration": "Pambansang Rehistro",
+  "financialInformation": "Impormasyon Pinansyal",
+  "taxCode": "Code sa Buwis",
+  "timeline": "Timeline",
+  "shipmentProvider": "Tagapaghatid ng Padala"
 }

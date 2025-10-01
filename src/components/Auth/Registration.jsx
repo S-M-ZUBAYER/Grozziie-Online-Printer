@@ -293,7 +293,7 @@ const Registration = () => {
                     : "Password must be 8-20 characters and include at least one uppercase letter, one lowercase letter, one number, and one special character."}
                 </p> */}
                 <p className="text-xs pt-1 text-red-500 font-bold">
-                  {error.slice(6)}
+                  {error?.slice(6)}
                 </p>
               </div>
 

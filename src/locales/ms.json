@@ -336,5 +336,14 @@
   "If completed and redirect URL is now showing, please press Confirm.": "Jika sudah selesai dan URL redirect kini dipaparkan, sila tekan Sahkan.",
   "no_valid_package": "Tiada package_id yang sah ditemui untuk pesanan.",
   "no_valid_labels": "Tiada label penghantaran yang sah ditemui.",
-  "pdf_error": "Berlaku ralat semasa menghasilkan PDF yang digabungkan."
+  "pdf_error": "Berlaku ralat semasa menghasilkan PDF yang digabungkan.",
+  "voucherCode": "Kod Baucar",
+  "giftOption": "Pilihan Hadiah",
+  "giftMessage": "Mesej Hadiah",
+  "branchNumber": "Nombor Cawangan",
+  "nationalRegistration": "Pendaftaran Kebangsaan",
+  "financialInformation": "Maklumat Kewangan",
+  "taxCode": "Kod Cukai",
+  "timeline": "Garis Masa",
+  "shipmentProvider": "Penyedia Penghantaran"
 }
