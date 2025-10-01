@@ -332,5 +332,17 @@
   "free_plan_activated_success": "✅ Kích hoạt gói miễn phí thành công!",
   "failed_to_store_payment_info": "❌ Không lưu được thông tin thanh toán",
   "Have you completed authorization?": "Bạn đã hoàn tất xác thực chưa?",
-  "If completed and redirect URL is now showing, please press Confirm.": "Nếu đã hoàn tất và URL chuyển hướng đang hiển thị, vui lòng nhấn Xác nhận."
+  "If completed and redirect URL is now showing, please press Confirm.": "Nếu đã hoàn tất và URL chuyển hướng đang hiển thị, vui lòng nhấn Xác nhận.",
+  "no_valid_package": "Không tìm thấy package_id hợp lệ cho đơn hàng.",
+  "no_valid_labels": "Không tìm thấy nhãn vận chuyển hợp lệ.",
+  "pdf_error": "Đã xảy ra lỗi khi tạo tệp PDF đã gộp.",
+  "voucherCode": "Mã phiếu giảm giá",
+  "giftOption": "Tuỳ chọn quà tặng",
+  "giftMessage": "Lời nhắn quà tặng",
+  "branchNumber": "Số chi nhánh",
+  "nationalRegistration": "Đăng ký quốc gia",
+  "financialInformation": "Thông tin tài chính",
+  "taxCode": "Mã số thuế",
+  "timeline": "Dòng thời gian",
+  "shipmentProvider": "Nhà cung cấp vận chuyển"
 }

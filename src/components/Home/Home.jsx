@@ -310,7 +310,7 @@ const Home = () => {
       ];
 
       const now = new Date();
-      const tenDaysAgo = new Date(now.getTime() - 10 * 24 * 60 * 60 * 1000);
+      const tenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       const toISOString = (date) => date.toISOString().split(".")[0] + "Z";
 
       // Precompute printed set
@@ -334,6 +334,20 @@ const Home = () => {
 
           const parsedBody = JSON.parse(response?.body || "{}");
           const orderList = parsedBody?.data?.orders || [];
+          console.log(
+            {
+              sortBy: "updated_at",
+              createdAfter: toISOString(tenDaysAgo),
+              createdBefore: toISOString(now),
+              updateAfter: toISOString(tenDaysAgo),
+              updateBefore: toISOString(now),
+              status,
+              sortDirection: "DESC",
+              offset: 0,
+              limit: 100,
+            },
+            orderList
+          );
 
           const printedOrders = orderList.filter((item) =>
             printedSet.has(String(item.order_id))
@@ -346,6 +360,7 @@ const Home = () => {
           if (status === "pending") {
             setLazadaNewOrders(orderList);
           } else if (status === "Packed") {
+            console.log(orderList, "packed");
             setLazadaPacked(orderList);
             setLazadaPackedPrinted(printedOrders);
             setLazadaPackedUnprinted(unprintedOrders);
@@ -487,7 +502,7 @@ const Home = () => {
 
             const now = new Date();
 
-            // Filter printed today
+            // Filter printed today  (Here have the issue need to solve)
             const todayPrinted = printedOrders.filter((order) => {
               const updateTime = fromUnix(
                 order.update_time || order.createdAtUnix
@@ -498,7 +513,8 @@ const Home = () => {
                 updateTime.getFullYear() === now.getFullYear()
               );
             });
-            setShopeeTodayPrinted(todayPrinted);
+
+            setShopeeTodayPrinted(printedOrders);
           } else if (status === "SHIPPED") {
             setShopeeShippedOrders(mergedOrders);
 
