@@ -113,9 +113,9 @@ const TopNavbar = () => {
 
       {/* Language & User Section */}
       <div className="flex items-center mx-auto col-span-2 mr-[10px]">
-        <div className="flex items-center  mr-3  bg-[#004368]  rounded-md px-2 py-[8px]">
+        {/* <div className="flex items-center  mr-3  bg-[#004368]  rounded-md px-2 py-[8px]">
           <img src={customerSupport} alt="mic" className="w-5" />
-        </div>
+        </div> */}
         <div className="flex items-center bg-transparent mr-3 border border-[#004368] border-opacity-60 rounded-md px-2 py-[2px]">
           <HiOutlineLanguage className="w-5 h-5" />
           <select

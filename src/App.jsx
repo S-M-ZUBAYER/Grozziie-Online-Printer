@@ -61,7 +61,8 @@ function App() {
 
   useEffect(() => {
     fetch(
-      "https://grozziie.zjweiting.com:3091/lazada-open-shop/country_user_info"
+      // "https://grozziie.zjweiting.com:3091/lazada-open-shop/country_user_info"
+      "https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/country_user_info"
     )
       .then((response) => {
         if (!response.ok) {

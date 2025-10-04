@@ -47,7 +47,6 @@ const Home = () => {
   );
   const [selectedStore, setSelectedStore] = useState(null);
   const [openShop, setOpenShop] = useState(null);
-  const [currentDate, setCurrentDate] = useState("");
   const now = new Date();
   const sevenDaysAgo = new Date(now);
   sevenDaysAgo.setDate(now.getDate() - 7);
@@ -171,6 +170,36 @@ const Home = () => {
     }
     return null;
   };
+
+  //Lazada Shope Confirmation
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const lgdState = urlParams.get("lgd-state"); // e.g. 135059
+
+    if (lgdState) {
+      // 1. Store in localStorage
+      localStorage.setItem("lazadaAppKey", lgdState);
+
+      // 2. Update backend Lazada shop → active = true
+      fetch("http://localhost:2000/tht/grozziiePrinter/lazada/shop/activate", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          LazadaAPPKey: lgdState,
+          active: true,
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          console.log("Lazada activation success:", data);
+        })
+        .catch((err) => console.error("Activation error:", err));
+
+      // 3. Remove query params → redirect to homepage
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
 
   // Get current Selected Platform
   useEffect(() => {
@@ -585,12 +614,6 @@ const Home = () => {
           <h3 className="text-[#004368] text-[25px] font-[500] capitalize">
             {t("Dashboard")}
           </h3>
-          <p className="flex items-center gap-[12px] pr-[82px] text-[12px] text-[#00000099]">
-            {currentDate}
-            <span className="w-[25px] h-[25px] bg-[#0043684D] rounded-[6px] flex justify-center items-center">
-              <CiCalendarDate className="text-white w-[13px] h-[13.5px]" />
-            </span>
-          </p>
         </div>
         <div className="mb-9 grid grid-cols-3 gap-6">
           <button onClick={() => handleCardClick("printed")}>
@@ -678,7 +701,9 @@ const Home = () => {
                       outerRadius={110}
                       paddingAngle={3}
                       dataKey="value"
-                      isAnimationActive
+                      isAnimationActive={false} // disable flicker animation
+                      activeIndex={-1} // prevents active highlight
+                      onClick={() => {}} // disables click behavior
                     >
                       {(total === 0
                         ? [{ fill: "#d1d5db" }] // grey for no data
@@ -691,11 +716,22 @@ const Home = () => {
                           {...style}
                           stroke="#fff"
                           strokeWidth={2}
+                          cursor="default" // disables pointer cursor
                         />
                       ))}
                     </Pie>
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend verticalAlign="bottom" iconType="circle" />
+
+                    {/* ✅ Tooltip only on hover */}
+                    <Tooltip
+                      content={<CustomTooltip />}
+                      trigger="hover" // explicitly set to hover only
+                    />
+
+                    <Legend
+                      verticalAlign="bottom"
+                      iconType="circle"
+                      onClick={() => {}} // disable legend click
+                    />
                   </PieChart>
                 </ResponsiveContainer>
 
