@@ -791,7 +791,7 @@ const BatchPrint = () => {
 
             <div className="col-span-1 flex items-center justify-center">
               <p className="text-black opacity-40 text-sm font-medium capitalize">
-                500 {t("Buyers")}
+                0 {t("Buyers")}
               </p>
               <div className="w-[1px] h-8 bg-black opacity-40 mx-2"></div>
               <p className="text-black opacity-40 text-sm font-medium capitalize">

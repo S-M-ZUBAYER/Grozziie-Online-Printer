@@ -40,7 +40,7 @@ const TableHeader = ({
 
     <div className="flex items-center justify-center">
       <p className="text-black opacity-40 text-sm font-medium capitalize">
-        500 {t("Buyers")}
+        0 {t("Buyers")}
       </p>
       <div className="w-[1px] h-8 bg-black opacity-40 mx-2"></div>
       <p className="text-black opacity-40 text-sm font-medium capitalize">
@@ -48,16 +48,18 @@ const TableHeader = ({
       </p>
     </div>
 
-    <PaginationControls pagination={pagination} />
+    <div className="flex items-center justify-center">
+      <PaginationControls pagination={pagination} />
 
-    <button
-      onClick={onExport}
-      className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[115px] h-10 px-8 py-2 rounded-md cursor-pointer"
-    >
-      <p className="text-[15px] font-medium capitalize cursor-pointer whitespace-nowrap">
-        {t("Export")}
-      </p>
-    </button>
+      <button
+        onClick={onExport}
+        className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[115px] h-10 px-8 py-2 ml-5 rounded-md cursor-pointer"
+      >
+        <p className="text-[15px] font-medium capitalize cursor-pointer whitespace-nowrap">
+          {t("Export")}
+        </p>
+      </button>
+    </div>
   </div>
 );
 

@@ -41,7 +41,8 @@ const PaymentForm = ({ email, setEmail, duration, amount, currency }) => {
   const fetchClientSecret = async () => {
     try {
       const { data } = await axios.post(
-        "https://grozziieget.zjweiting.com:8033/tht/payment-intent",
+        // "https://grozziieget.zjweiting.com:8033/tht/payment-intent",
+        "http://localhost:2000/tht/payment-intent",
         {
           amount: convertToCents(amount),
           currency,
