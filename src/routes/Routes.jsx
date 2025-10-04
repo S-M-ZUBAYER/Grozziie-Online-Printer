@@ -101,21 +101,21 @@ export const routes = createBrowserRouter([
       {
         path: "/",
         element: (
-          // <PrivateRoute>
-          // <PaymentPrivateRoute>
-          <Home />
-          // </PaymentPrivateRoute>
-          // </PrivateRoute>
+          <PrivateRoute>
+            {/* <PaymentPrivateRoute> */}
+            <Home />
+            {/* </PaymentPrivateRoute> */}
+          </PrivateRoute>
         ),
       },
       {
         path: "/home",
         element: (
-          // <PrivateRoute>
-          // <PaymentPrivateRoute>
-          <Home />
-          // </PaymentPrivateRoute>
-          // </PrivateRoute>
+          <PrivateRoute>
+            {/* <PaymentPrivateRoute> */}
+            <Home />
+            {/* </PaymentPrivateRoute> */}
+          </PrivateRoute>
         ),
       },
       {

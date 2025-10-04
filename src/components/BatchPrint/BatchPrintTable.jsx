@@ -18,6 +18,7 @@ const BatchPrintTable = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { t } = useTranslation();
+  console.log(tikTokOrderStatusCheck, "orderchacek");
 
   const formatText = (text) => {
     if (!text) return "No Data";
@@ -93,13 +94,20 @@ const BatchPrintTable = ({
                 <span className="mr-[10px]">{t("DeliveryCompany")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
-              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 ">
+              <th
+                className={`sticky top-0 bg-[#0043681A] bg-opacity-80 ${
+                  tikTokOrderStatusCheck != "AWAITING_COLLECTION" ||
+                  tikTokOrderStatusCheck != "AWAITING_COLLECTION_PRINTED"
+                    ? "rounded-r-md"
+                    : ""
+                } `}
+              >
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
                 {t("ProductDetails")}
               </th>
               {(tikTokOrderStatusCheck === "AWAITING_COLLECTION" ||
                 tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") && (
-                <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-r-md">
+                <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
                   <span className="mr-[10px]">{t("Tracking")}</span>
                 </th>
               )}
@@ -178,10 +186,10 @@ const BatchPrintTable = ({
                     </td>
 
                     {/* Tracking Code */}
-                    <td className="px-3 py-2 text-left text-black opacity-80 text-sm font-normal">
-                      {tikTokOrderStatusCheck === "AWAITING_COLLECTION" ||
-                      tikTokOrderStatusCheck ===
-                        "AWAITING_COLLECTION_PRINTED" ? (
+
+                    {tikTokOrderStatusCheck === "AWAITING_COLLECTION" ||
+                    tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED" ? (
+                      <td className="px-3 py-2 text-left text-black opacity-80 text-sm font-normal">
                         <p
                           className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
                           onClick={() => handleGetTracking(order)}
@@ -189,10 +197,10 @@ const BatchPrintTable = ({
                         >
                           {order?.trackingNumber || t("NoData")}
                         </p>
-                      ) : (
-                        <span className="text-gray-400">{t("NoData")}</span>
-                      )}
-                    </td>
+                      </td>
+                    ) : (
+                      ""
+                    )}
                   </tr>
                 );
               })}
