@@ -113,6 +113,7 @@ const shope = [
 const lazadaCountries = [
   { code: "MY", name: "Malaysia" },
   { code: "TH", name: "Thailand" },
+  { code: "SG", name: "Singapore" },
   { code: "VN", name: "Vietnam" },
   { code: "ID", name: "Indonesia" },
   { code: "PH", name: "Philippines" },
@@ -137,7 +138,8 @@ function AddShopeModal() {
       try {
         // Store Lazada shop in DB before redirect
         const response = await fetch(
-          "http://localhost:2000/tht/grozziiePrinter/lazada/shop/add", // adjust to your backend API base
+          // "http://localhost:2000/tht/grozziiePrinter/lazada/shop/add",
+          "https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/add",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -280,8 +282,48 @@ function AddShopeModal() {
                 </div>
               )}
 
+              {/* TikTok extra inputs */}
+              {selectedShop === 3 && (
+                <div className="space-y-4 my-6">
+                  <div>
+                    <label className="block text-sm font-medium text-[#004368] mb-1">
+                      {t("Select Country")}
+                    </label>
+                    <select
+                      className="w-full border rounded px-3 py-2"
+                      value={lazadaCountry} // reuse state for simplicity
+                      onChange={(e) => setLazadaCountry(e.target.value)}
+                    >
+                      <option value="">{t("Choose a country")}</option>
+                      {lazadaCountries.map((c) => (
+                        <option key={c.code} value={c.code}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button
+                    className="bg-[#004368] text-white px-4 py-2 rounded w-full"
+                    onClick={() => {
+                      if (!lazadaCountry) {
+                        alert("Please select a country.");
+                        return;
+                      }
+                      // Save selected TikTok country in localStorage
+                      localStorage.setItem("tiktokAuthCountry", lazadaCountry);
+
+                      // Redirect in same tab
+                      window.location.href = `https://partner.tiktokshop.com/v2_sandbox/config?activeTab=manage_account&region=${lazadaCountry}`;
+                    }}
+                  >
+                    {t("Submit")}
+                  </button>
+                </div>
+              )}
+
               {/* Footer buttons: show only when NOT Lazada */}
-              {selectedShop !== 2 && (
+              {selectedShop !== 2 && selectedShop !== 3 && (
                 <div className="flex justify-end gap-4 mt-6">
                   <button
                     className="bg-[#0043681A] text-[#004368] px-4 py-2 rounded"
