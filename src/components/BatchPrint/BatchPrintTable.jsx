@@ -18,6 +18,7 @@ const BatchPrintTable = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const { t } = useTranslation();
+  const tiktokAppKey = localStorage.getItem("tiktokAppKey");
   console.log(tikTokOrderStatusCheck, "orderchacek");
 
   const formatText = (text) => {
@@ -30,9 +31,15 @@ const BatchPrintTable = ({
     setError("");
     setTrackingInfo(null);
     try {
-      const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/tracking?cipher=${encodeURIComponent(
+      // const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/tracking?cipher=${encodeURIComponent(
+      //   cipher[0]?.cipher
+      // )}&orderId=${encodeURIComponent(order?.id)}`;
+
+      const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner-debug/api/dev/package/tracking?cipher=${encodeURIComponent(
         cipher[0]?.cipher
-      )}&orderId=${encodeURIComponent(order?.id)}`;
+      )}&orderId=${encodeURIComponent(order?.id)}&appKey=${encodeURIComponent(
+        tiktokAppKey
+      )}`;
 
       const res = await fetch(url);
       const json = await res.json();

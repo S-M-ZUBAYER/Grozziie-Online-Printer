@@ -19,12 +19,14 @@ import {
 function App() {
   const dispatch = useDispatch();
   const [tikTokShopCipher, setTikTokShopCipher] = useState("");
+  const [currentUser, setCurrentUser] = useState("");
 
   useEffect(() => {
     const storedUser = localStorage.getItem("printerUser");
     if (storedUser) {
       try {
         const user = JSON.parse(storedUser);
+        setCurrentUser(user?.email);
         dispatch(accountUserChange(user?.email));
       } catch (err) {
         console.error("Failed to parse user from localStorage", err);
@@ -33,70 +35,121 @@ function App() {
   }, [dispatch]);
 
   useEffect(() => {
-    fetch(
-      "https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/shops/authorizedShops"
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
+    const fetchTikTokShops = async () => {
+      try {
+        // 1️⃣ Call your backend API with dynamic email
+        const backendRes = await fetch(
+          `https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/tiktok/shop/${currentUser}`
+        );
+        if (!backendRes.ok)
+          throw new Error("Failed to fetch TikTok shops from backend");
+        const backendData = await backendRes.json();
+
+        if (!backendData?.data?.length) {
+          console.warn("No TikTok shops found in backend response.");
+          return;
         }
-        return response.json();
-      })
-      .then((data) => {
-        setTikTokShopCipher(data.data.shops[0].cipher);
-        if (data?.data?.shops) {
-          localStorage.setItem(
-            "tiktokShopInfo",
-            JSON.stringify(data.data.shops)
+
+        const allAuthorizedShops = [];
+
+        // 2️⃣ Loop through all TikTok shops and fetch authorized shops for each appKey
+        for (const shop of backendData.data) {
+          const appKey = shop.TikTokAPPKey;
+          const partnerRes = await fetch(
+            `https://grozziie.zjweiting.com:3091/tiktokshop-partner-debug/api/dev/shops/authorizedShops?appKey=${appKey}`
           );
-          dispatch(setAllTikTokShopList(data.data.shops));
-        } else {
-          console.warn("No shops found in API response.");
+          if (!partnerRes.ok) {
+            console.warn(
+              `Failed to fetch authorized shops for appKey: ${appKey}`
+            );
+            continue;
+          }
+          const partnerData = await partnerRes.json();
+          if (partnerData?.data?.shops?.length) {
+            // 3️⃣ Attach the appKey from backend to each authorized shop
+            const shopsWithAppKey = partnerData.data.shops.map((s) => ({
+              ...s,
+              appKey, // new field added for this particular shop
+            }));
+
+            allAuthorizedShops.push(...shopsWithAppKey);
+          }
         }
-      })
-      .catch((error) => {
-        console.error("There was a problem with the fetch operation:", error);
-      });
-  }, []);
+
+        if (allAuthorizedShops.length === 0) {
+          console.warn("No authorized TikTok shops found for any appKey.");
+          return;
+        }
+
+        // 4️⃣ Save first cipher (optional)
+        setTikTokShopCipher(allAuthorizedShops[0].cipher);
+
+        // 5️⃣ Save all authorized shops with added appKey to localStorage and Redux
+        localStorage.setItem(
+          "tiktokShopInfo",
+          JSON.stringify(allAuthorizedShops)
+        );
+        dispatch(setAllTikTokShopList(allAuthorizedShops));
+
+        console.log(
+          "✅ All TikTok authorized shops with appKey:",
+          allAuthorizedShops
+        );
+      } catch (error) {
+        console.error("Error fetching TikTok shops:", error);
+      }
+    };
+
+    fetchTikTokShops();
+  }, [currentUser]);
 
   useEffect(() => {
-    fetch(
-      // "https://grozziie.zjweiting.com:3091/lazada-open-shop/country_user_info"
-      "https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/country_user_info"
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        const lazadaInItData = [
-          {
-            cipher: data[0]?.seller_id,
-            code: data[0]?.short_code,
-            id: data[0]?.user_id,
-            name: data[0]?.short_code,
-            region: data[0]?.country,
-            sellerType: "LOCAL",
-          },
-        ];
-        console.log(lazadaInItData);
+    if (!currentUser) return; // ✅ Skip if no user
 
-        if (data[0]?.seller_id) {
-          localStorage.setItem(
-            "lazadaShopInfo",
-            JSON.stringify(lazadaInItData)
-          );
-          dispatch(setAllLazadaShopList(lazadaInItData));
-        } else {
-          console.warn("No shops found in API response.");
+    const fetchActiveLazadaShops = async () => {
+      try {
+        const res = await fetch(
+          `https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/${currentUser}/active`
+        );
+
+        if (!res.ok) throw new Error("Network response was not ok");
+
+        const { data } = await res.json();
+
+        if (!Array.isArray(data) || data.length === 0) {
+          console.warn("⚠️ No active Lazada shops found for this user.");
+          return;
         }
-      })
-      .catch((error) => {
-        console.error("There was a problem with the fetch operation:", error);
-      });
-  }, []);
+
+        // ✅ Create lazadaInitData directly from API response
+        const lazadaInitData = data.map((shop, index) => {
+          const appKey = shop.LazadaAPPKey?.toString() || "";
+          const lastTwo = appKey.slice(-2); // ✅ get last 2 digits safely
+
+          return {
+            cipher: appKey,
+            code: appKey,
+            id: appKey,
+            name: `${shop.ShopCountry}-(***${lastTwo})`, // ✅ example: MY-1(59)
+            region: shop.ShopCountry,
+            sellerType: "LOCAL",
+          };
+        });
+
+        // ✅ Store new data into localStorage
+        localStorage.setItem("lazadaShopInfo", JSON.stringify(lazadaInitData));
+
+        // ✅ Dispatch to Redux store
+        dispatch(setAllLazadaShopList(lazadaInitData));
+
+        console.log("✅ Lazada shops initialized and stored:", lazadaInitData);
+      } catch (error) {
+        console.error("❌ Error fetching Lazada shops:", error);
+      }
+    };
+
+    fetchActiveLazadaShops();
+  }, [currentUser, dispatch]);
 
   useEffect(() => {
     fetch(
