@@ -45,16 +45,48 @@ const ShopSelector = ({
     localStorage.setItem(key, JSON.stringify(shopArray));
   };
 
+  // // When selecting platform, automatically select the first store of that platform
+  // const handlePlatformSelect = (platformId) => {
+  //   setSelectedPlatform(platformId);
+  //   localStorage.setItem("SelectedPlatform", platformId);
+  //   // Find the platform and get its first store
+  //   const platformObj = shops.find((shop) => shop.id === platformId);
+  //   if (platformObj && platformObj.stores.length > 0) {
+  //     const firstStore = platformObj.stores[0];
+  //     setSelectedStore(firstStore.name);
+  //     saveShopToLocalStorage(platformId, [firstStore]);
+  //   } else {
+  //     setSelectedStore(null);
+  //   }
+  // };
+
   // When selecting platform, automatically select the first store of that platform
   const handlePlatformSelect = (platformId) => {
     setSelectedPlatform(platformId);
     localStorage.setItem("SelectedPlatform", platformId);
-    // Find the platform and get its first store
+
     const platformObj = shops.find((shop) => shop.id === platformId);
-    if (platformObj && platformObj.stores.length > 0) {
+
+    if (!platformObj) return;
+
+    // 🟦 Special handling for Lazada
+    if (platformId === "lazada") {
+      const savedLazada = JSON.parse(localStorage.getItem("lazadaShopInfo"));
+      if (savedLazada && savedLazada.length > 0) {
+        // ✅ If Lazada previously selected → restore it
+        setSelectedStore(savedLazada[0].name);
+        saveShopToLocalStorage("lazada", savedLazada);
+        saveShopToLocalStorage("lazadaAppKey", Number(savedLazada[0].cipher));
+        return;
+      }
+    }
+
+    // 🟩 Default: select first store if available
+    if (platformObj.stores.length > 0) {
       const firstStore = platformObj.stores[0];
       setSelectedStore(firstStore.name);
       saveShopToLocalStorage(platformId, [firstStore]);
+      saveShopToLocalStorage("lazadaAppKey", Number(firstStore.cipher));
     } else {
       setSelectedStore(null);
     }
@@ -66,7 +98,6 @@ const ShopSelector = ({
     localStorage.setItem("SelectedPlatform", platformId);
     setSelectedStore(storeName);
 
-    // Find the full shop object for that store name
     const platformObj = shops.find((shop) => shop.id === platformId);
     if (!platformObj) return;
 
@@ -76,6 +107,22 @@ const ShopSelector = ({
 
     if (fullShopObj) {
       saveShopToLocalStorage(platformId, [fullShopObj]);
+
+      // 🟦 Lazada: also save the APP key as number
+      if (platformId === "lazada") {
+        localStorage.setItem(
+          "lazadaAppKey",
+          JSON.stringify(Number(fullShopObj.cipher))
+        );
+      }
+      // ✅ Fix typo: tiktok
+      else if (platformId === "tiktok") {
+        console.log("tiktok", fullShopObj?.appKey);
+        localStorage.setItem(
+          "tiktokAppKey",
+          JSON.stringify(fullShopObj?.appKey)
+        );
+      }
     }
   };
 

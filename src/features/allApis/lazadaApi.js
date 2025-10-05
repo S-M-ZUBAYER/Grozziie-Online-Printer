@@ -14,6 +14,19 @@ const lazadaApi = baseApi.injectEndpoints({
                 offset = 0,
                 limit = 100,
             }) => {
+                const lazadaAppKey = localStorage.getItem("lazadaAppKey");
+                console.log({
+                    sortBy,
+                    createdBefore,
+                    createdAfter,
+                    updateBefore,
+                    updateAfter,
+                    sortDirection,
+                    offset: offset.toString(),
+                    limit: limit.toString(),
+                    appKey: lazadaAppKey || "", // add appKey to query
+                }, "Lazada request");
+
                 const params = new URLSearchParams({
                     sortBy,
                     createdBefore,
@@ -23,6 +36,7 @@ const lazadaApi = baseApi.injectEndpoints({
                     sortDirection,
                     offset: offset.toString(),
                     limit: limit.toString(),
+                    appKey: lazadaAppKey || "", // add appKey to query
                 });
 
                 if (status) {
@@ -30,7 +44,8 @@ const lazadaApi = baseApi.injectEndpoints({
                 }
 
                 return {
-                    url: `/lazada-open-shop/api/dev/orders?${params.toString()}`,
+                    // url: `/lazada-open-shop/api/dev/orders?${params.toString()}`,
+                    url: `/lazada-open-shop-debug/api/dev/orders?${params.toString()}`,
                     method: "GET",
                 };
             },

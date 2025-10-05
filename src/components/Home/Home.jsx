@@ -34,6 +34,7 @@ import {
 } from "../../features/allApis/shopeeApi";
 import { useNavigate } from "react-router-dom";
 import ShopeeAuthModal from "./ShopeeAuthModal";
+import { useSelector } from "react-redux";
 
 const Home = () => {
   const { t } = useTranslation();
@@ -182,17 +183,21 @@ const Home = () => {
       localStorage.setItem("lazadaAppKey", lgdState);
 
       // 2. Update backend Lazada shop → active = true
-      fetch("http://localhost:2000/tht/grozziiePrinter/lazada/shop/activate", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          LazadaAPPKey: lgdState,
-          active: true,
-        }),
-      })
+      // fetch("http://localhost:2000/tht/grozziiePrinter/lazada/shop/activate", {
+      fetch(
+        "https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/activate",
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            LazadaAPPKey: lgdState,
+            active: true,
+          }),
+        }
+      )
         .then((res) => res.json())
         .then((data) => {
-          console.log("Lazada activation success:", data);
+          // console.log("Lazada activation success:", data);
         })
         .catch((err) => console.error("Activation error:", err));
 
@@ -200,6 +205,59 @@ const Home = () => {
       navigate("/", { replace: true });
     }
   }, [navigate]);
+
+  // ✅ Parse the user from localStorage properly
+  const storedUser = localStorage.getItem("printerUser");
+  const user = storedUser ? JSON.parse(storedUser) : null;
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tiktokState = urlParams.get("tiktok-state"); // e.g. 6grr1iku02uoh
+
+    if (tiktokState && user) {
+      // 1️⃣ Save TikTok APP key (state) locally
+      localStorage.setItem("tiktokAppKey", tiktokState);
+
+      // 2️⃣ Prepare data
+      const ShopCountry = localStorage.getItem("tiktokAuthCountry") || "SG"; // default if missing
+      const payload = {
+        TikTokUserEmail: user.email,
+        ShopCountry,
+        TikTokAPPKey: tiktokState,
+        active: true,
+      };
+
+      console.log("🟢 Adding TikTok shop:", payload);
+
+      // 3️⃣ Send to backend
+      fetch(
+        "https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/tiktok/shop/add",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      )
+        .then(async (res) => {
+          // Handle cases where backend sends no JSON
+          if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
+
+          const text = await res.text(); // Read as text first
+          return text ? JSON.parse(text) : {}; // Parse only if not empty
+        })
+        .then((data) => {
+          console.log("✅ TikTok shop added:", data);
+        })
+        .catch((err) => {
+          console.error(
+            "❌ There was a problem with the fetch operation:",
+            err
+          );
+        });
+
+      // 4️⃣ Clean URL → redirect home
+      navigate("/", { replace: true });
+    }
+  }, [navigate, user]);
 
   // Get current Selected Platform
   useEffect(() => {
@@ -329,6 +387,7 @@ const Home = () => {
   // Lazada Fetch Orders according to the Status
   useEffect(() => {
     const fetchLazadaStatusOrders = async () => {
+      setLazadaOnShipping(true);
       const statuses = [
         "pending",
         "Packed",
@@ -363,21 +422,6 @@ const Home = () => {
 
           const parsedBody = JSON.parse(response?.body || "{}");
           const orderList = parsedBody?.data?.orders || [];
-          console.log(
-            {
-              sortBy: "updated_at",
-              createdAfter: toISOString(tenDaysAgo),
-              createdBefore: toISOString(now),
-              updateAfter: toISOString(tenDaysAgo),
-              updateBefore: toISOString(now),
-              status,
-              sortDirection: "DESC",
-              offset: 0,
-              limit: 100,
-            },
-            orderList
-          );
-
           const printedOrders = orderList.filter((item) =>
             printedSet.has(String(item.order_id))
           );
@@ -389,7 +433,6 @@ const Home = () => {
           if (status === "pending") {
             setLazadaNewOrders(orderList);
           } else if (status === "Packed") {
-            console.log(orderList, "packed");
             setLazadaPacked(orderList);
             setLazadaPackedPrinted(printedOrders);
             setLazadaPackedUnprinted(unprintedOrders);
@@ -469,7 +512,6 @@ const Home = () => {
             timeTo: now,
             orderStatus: status,
           }).unwrap();
-          console.log(orderListResponse, "order details");
 
           if (
             orderListResponse?.error === "invalid_acceess_token" &&
@@ -591,6 +633,8 @@ const Home = () => {
       navigate(`/${type}/${platformPath}`);
     }
   };
+
+  console.log(selectedStore, "slelcte");
 
   return (
     <div className="bg-[#0043680D] grid grid-cols-6">

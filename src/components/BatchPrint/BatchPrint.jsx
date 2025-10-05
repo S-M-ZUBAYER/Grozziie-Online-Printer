@@ -441,6 +441,7 @@ const BatchPrint = () => {
   const [modalMessage, setModalMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState(null);
   const [showConfirmButton, setShowConfirmButton] = useState(false);
+  const tiktokAppKey = localStorage.getItem("tiktokAppKey");
 
   // modal show function
   const handleToCheckItemsPackageUpdate = () => {
@@ -554,9 +555,12 @@ const BatchPrint = () => {
           let body = null;
 
           // Use new API
-          url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
+          // url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
+          //   cipherValue
+          // )}`;
+          url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner-debug/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
             cipherValue
-          )}`;
+          )}&appKey=${encodeURIComponent(tiktokAppKey)}`;
 
           body = {
             packageId,
