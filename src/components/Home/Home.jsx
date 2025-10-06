@@ -38,10 +38,8 @@ import { useSelector } from "react-redux";
 
 const Home = () => {
   const { t } = useTranslation();
-  const [cipher, setCipher] = useState(() => {
-    const stored = localStorage.getItem("tiktokShopInfo");
-    return stored ? JSON.parse(stored) : [];
-  });
+  const [cipher, setCipher] = useState("");
+  const tiktokAppKey = localStorage.getItem("tiktokAppKey");
   const storedShopPlatform = localStorage.getItem("SelectedPlatform");
   const [selectedPlatform, setSelectedPlatform] = useState(
     storedShopPlatform || "tiktok"
@@ -172,6 +170,23 @@ const Home = () => {
     return null;
   };
 
+  // Cipher Manage for Tiktok
+  useEffect(() => {
+    console.log("now.........................");
+    if (!tiktokAppKey) return; // wait until key is ready
+
+    const storedCipher = localStorage.getItem("tiktokShopInfo");
+    if (storedCipher) {
+      try {
+        setCipher(JSON.parse(storedCipher));
+      } catch (err) {
+        console.error("Failed to parse tiktokShopInfo:", err);
+      }
+    } else {
+      setCipher([]);
+    }
+  }, [tiktokAppKey, selectedPlatform]);
+
   //Lazada Shope Confirmation
 
   useEffect(() => {
@@ -218,15 +233,13 @@ const Home = () => {
       localStorage.setItem("tiktokAppKey", tiktokState);
 
       // 2️⃣ Prepare data
-      const ShopCountry = localStorage.getItem("tiktokAuthCountry") || "SG"; // default if missing
+      const ShopCountry = localStorage.getItem("tiktokAuthCountry") || "MY"; // default if missing
       const payload = {
         TikTokUserEmail: user.email,
         ShopCountry,
         TikTokAPPKey: tiktokState,
         active: true,
       };
-
-      console.log("🟢 Adding TikTok shop:", payload);
 
       // 3️⃣ Send to backend
       fetch(
@@ -292,7 +305,9 @@ const Home = () => {
 
   // TikTok Fetch Orders according to the Status
   useEffect(() => {
+    console.log("star................1");
     const fetchStatusOrders = async () => {
+      console.log("star................2", cipher[0]?.cipher, tiktokAppKey);
       if (!cipher[0]?.cipher) return;
 
       const statuses = [
@@ -303,15 +318,18 @@ const Home = () => {
         "CANCELLED",
       ];
       const nowUnix = Math.floor(Date.now() / 1000);
-      const sevenDaysAgoUnix = nowUnix - 10 * 24 * 60 * 60;
+      const sevenDaysAgoUnix = nowUnix - 7 * 24 * 60 * 60;
       const printedSet = new Set(
         tikTokPrintedIds.map((item) => item.tikTokPrintedId?.toString())
       );
 
       for (const status of statuses) {
+        console.log("tiktokAppKey", tiktokAppKey);
+        console.log("star................3");
         try {
           const response = await loadOrderList({
             cipher: cipher[0]?.cipher,
+            appKey: tiktokAppKey,
             createTimeGe: sevenDaysAgoUnix,
             createTimeLt: nowUnix,
             updateTimeGe: sevenDaysAgoUnix,
@@ -633,8 +651,6 @@ const Home = () => {
       navigate(`/${type}/${platformPath}`);
     }
   };
-
-  console.log(selectedStore, "slelcte");
 
   return (
     <div className="bg-[#0043680D] grid grid-cols-6">

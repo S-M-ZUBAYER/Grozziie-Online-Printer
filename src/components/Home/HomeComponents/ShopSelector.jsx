@@ -61,19 +61,48 @@ const ShopSelector = ({
   // };
 
   // When selecting platform, automatically select the first store of that platform
+  // const handlePlatformSelect = (platformId) => {
+  //   setSelectedPlatform(platformId);
+  //   localStorage.setItem("SelectedPlatform", platformId);
+
+  //   const platformObj = shops.find((shop) => shop.id === platformId);
+
+  //   if (!platformObj) return;
+
+  //   // 🟦 Special handling for Lazada
+  //   if (platformId === "lazada") {
+  //     const savedLazada = JSON.parse(localStorage.getItem("lazadaShopInfo"));
+  //     if (savedLazada && savedLazada.length > 0) {
+  //       // ✅ If Lazada previously selected → restore it
+  //       setSelectedStore(savedLazada[0].name);
+  //       saveShopToLocalStorage("lazada", savedLazada);
+  //       saveShopToLocalStorage("lazadaAppKey", Number(savedLazada[0].cipher));
+  //       return;
+  //     }
+  //   }
+
+  //   // 🟩 Default: select first store if available
+  //   if (platformObj.stores.length > 0) {
+  //     const firstStore = platformObj.stores[0];
+  //     setSelectedStore(firstStore.name);
+  //     saveShopToLocalStorage(platformId, [firstStore]);
+  //     saveShopToLocalStorage("lazadaAppKey", Number(firstStore.cipher));
+  //   } else {
+  //     setSelectedStore(null);
+  //   }
+  // };
+
   const handlePlatformSelect = (platformId) => {
     setSelectedPlatform(platformId);
     localStorage.setItem("SelectedPlatform", platformId);
 
     const platformObj = shops.find((shop) => shop.id === platformId);
-
     if (!platformObj) return;
 
-    // 🟦 Special handling for Lazada
+    // 🟦 Lazada special handling
     if (platformId === "lazada") {
       const savedLazada = JSON.parse(localStorage.getItem("lazadaShopInfo"));
       if (savedLazada && savedLazada.length > 0) {
-        // ✅ If Lazada previously selected → restore it
         setSelectedStore(savedLazada[0].name);
         saveShopToLocalStorage("lazada", savedLazada);
         saveShopToLocalStorage("lazadaAppKey", Number(savedLazada[0].cipher));
@@ -81,7 +110,42 @@ const ShopSelector = ({
       }
     }
 
-    // 🟩 Default: select first store if available
+    // 🟪 TikTok special handling
+    if (platformId === "tiktok") {
+      const savedTikTok =
+        JSON.parse(localStorage.getItem("tiktokShopInfo")) || [];
+      const prevSelected = JSON.parse(
+        localStorage.getItem("SelectedTikTokStore")
+      );
+
+      let selectedStoreObj;
+
+      if (prevSelected) {
+        // ✅ If previously selected store exists, restore it
+        selectedStoreObj = savedTikTok.find((s) => s.name === prevSelected);
+      }
+
+      if (!selectedStoreObj && platformObj.stores.length > 0) {
+        // ✅ Otherwise, use the first one
+        selectedStoreObj = platformObj.stores[0];
+      }
+
+      if (selectedStoreObj) {
+        setSelectedStore(selectedStoreObj.name);
+        localStorage.setItem(
+          "SelectedTikTokStore",
+          JSON.stringify(selectedStoreObj.name)
+        );
+        saveShopToLocalStorage("tiktok", [selectedStoreObj]);
+        localStorage.setItem(
+          "tiktokAppKey",
+          JSON.stringify(selectedStoreObj.appKey)
+        );
+      }
+      return;
+    }
+
+    // 🟩 Default handling for other platforms
     if (platformObj.stores.length > 0) {
       const firstStore = platformObj.stores[0];
       setSelectedStore(firstStore.name);

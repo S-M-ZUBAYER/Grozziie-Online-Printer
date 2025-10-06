@@ -212,6 +212,7 @@ const BatchPrint = () => {
 
         const response = await loadOrderList({
           cipher: cipher[0]?.cipher,
+          appKey: tiktokAppKey,
           shippingType: "TIKTOK",
           createTimeGe: sevenDaysAgo,
           createTimeLt: now,
