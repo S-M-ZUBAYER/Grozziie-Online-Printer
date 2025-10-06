@@ -27,9 +27,15 @@ const batchPrintApi = baseApi.injectEndpoints({
         sortField = "create_time",
         sortOrder = "ASC",
       }) => {
+
+        // 🟩 Get TikTok appKey from localStorage
+
+        const tiktokAppKey = localStorage.getItem("tiktokAppKey");
+
         const queryParams = new URLSearchParams({
           pageSize: pageSize.toString(),
           cipher,
+          appKey: tiktokAppKey?.toString() || "", // ✅ include appKey if available
           createTimeGe: createTimeGe?.toString(),
           createTimeLt: createTimeLt?.toString(),
           updateTimeGe: updateTimeGe?.toString(),
@@ -42,7 +48,8 @@ const batchPrintApi = baseApi.injectEndpoints({
         });
 
         return {
-          url: `/tiktokshop-partner/api/dev/order/list/filter?${queryParams.toString()}`,
+          // url: `/tiktokshop-partner/api/dev/order/list/filter?${queryParams.toString()}`,
+          url: `/tiktokshop-partner-debug/api/dev/order/list/filter?${queryParams.toString()}`,
           method: "POST",
           headers: {
             "Content-Type": "application/json",
