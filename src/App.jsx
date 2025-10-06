@@ -83,7 +83,7 @@ function App() {
 
         // 4️⃣ Save first cipher (optional)
         setTikTokShopCipher(allAuthorizedShops[0].cipher);
-
+        localStorage.setItem("tiktokAppKey", allAuthorizedShops[0].appKey);
         // 5️⃣ Save all authorized shops with added appKey to localStorage and Redux
         localStorage.setItem(
           "tiktokShopInfo",

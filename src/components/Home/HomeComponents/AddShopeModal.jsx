@@ -111,54 +111,152 @@ const shope = [
 ];
 
 const lazadaCountries = [
-  { code: "MY", name: "Malaysia" },
-  { code: "TH", name: "Thailand" },
-  { code: "SG", name: "Singapore" },
-  { code: "VN", name: "Vietnam" },
-  { code: "ID", name: "Indonesia" },
-  { code: "PH", name: "Philippines" },
-  { code: "CN", name: "China" },
+  { code: "MY", name: "Malaysia", baseUrl: "https://api.lazada.com.my/rest" },
+  // { code: "TH", name: "Thailand" },
+  // { code: "SG", name: "Singapore" },
+  // { code: "VN", name: "Vietnam" },
+  // { code: "ID", name: "Indonesia" },
+  // { code: "PH", name: "Philippines" },
+  // { code: "CN", name: "China" },
+];
+
+const tiktokCountries = [
+  {
+    code: "MY",
+    name: "Malaysia",
+    baseUrl: "https://open-api.tiktokglobalshop.com",
+  },
+  // { code: "TH", name: "Thailand" },
+  // { code: "SG", name: "Singapore" },
+  // { code: "VN", name: "Vietnam" },
+  // { code: "ID", name: "Indonesia" },
+  // { code: "PH", name: "Philippines" },
+  // { code: "CN", name: "China" },
 ];
 
 function AddShopeModal() {
   const { t } = useTranslation();
+  const userEmail = useSelector((state) => state.user.accountUser);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedShop, setSelectedShop] = useState(null);
   const [lazadaCountry, setLazadaCountry] = useState("");
   const [appKey, setAppKey] = useState("");
-  const userEmail = useSelector((state) => state.user.accountUser);
+  const [appSecret, setAppSecret] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const [tiktokCountry, setTiktokCountry] = useState("");
+  const [tiktokAppKey, setTiktokAppKey] = useState("");
+  const [tiktokAppSecret, setTiktokAppSecret] = useState("");
+  const [isTikTokLoading, setIsTikTokLoading] = useState(false);
+
+  // const handleLazadaSubmit = async () => {
+  //   if (selectedShop === 2) {
+  //     if (!lazadaCountry || !appKey) {
+  //       alert("Please select a country and enter an APP key.");
+  //       return;
+  //     }
+
+  //     try {
+  //       // Store Lazada shop in DB before redirect
+  //       const response = await fetch(
+  //         // "http://localhost:2000/tht/grozziiePrinter/lazada/shop/add",
+  //         "https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/add",
+  //         {
+  //           method: "POST",
+  //           headers: { "Content-Type": "application/json" },
+  //           body: JSON.stringify({
+  //             LazadaUserEmail: userEmail, // from redux
+  //             ShopCountry: lazadaCountry,
+  //             LazadaAPPKey: appKey,
+  //             active: false, // default inactive until OAuth success
+  //           }),
+  //         }
+  //       );
+
+  //       const result = await response.json();
+  //       if (result.code !== 201) {
+  //         alert("Failed to save Lazada shop. Please try again.");
+  //         return;
+  //       }
+
+  //       // ✅ Only redirect if save success
+  //       const redirectUrl = `https://auth.lazada.com/oauth/authorize?response_type=code&force_auth=true&redirect_uri=https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/dynamic&client_id=${encodeURIComponent(
+  //         appKey
+  //       )}&state=${encodeURIComponent(appKey)}`;
+
+  //       localStorage.setItem("SelectedPlatform", "lazada");
+  //       window.location.href = redirectUrl;
+  //     } catch (err) {
+  //       console.error("Error saving Lazada shop:", err);
+  //       alert("Something went wrong while saving Lazada shop.");
+  //     }
+  //   }
+  // };
 
   const handleLazadaSubmit = async () => {
     if (selectedShop === 2) {
-      if (!lazadaCountry || !appKey) {
-        alert("Please select a country and enter an APP key.");
+      if (!lazadaCountry || !appKey || !appSecret) {
+        alert("Please select a country and enter both APP Key and APP Secret.");
         return;
       }
 
+      setIsLoading(true); // 🟩 Start loading
+
+      const selectedCountry = lazadaCountries.find(
+        (c) => c.code === lazadaCountry
+      );
+      const baseUrl = selectedCountry?.baseUrl || "https://api.lazada.com/rest";
+
       try {
-        // Store Lazada shop in DB before redirect
-        const response = await fetch(
-          // "http://localhost:2000/tht/grozziiePrinter/lazada/shop/add",
+        // 🟦 Step 1: Call dynamic/add-new API
+        const dynamicResponse = await fetch(
+          "https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/api/dev/dynamic/add-new",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              accept: "*/*",
+            },
+            body: JSON.stringify({
+              appKey: appKey,
+              appSecret: appSecret,
+              baseUrl: baseUrl,
+            }),
+          }
+        );
+
+        const dynamicResult = await dynamicResponse.json();
+        console.log("Dynamic API result:", dynamicResult);
+
+        if (dynamicResponse.status !== 200 || dynamicResult !== true) {
+          alert("Failed to register app with dynamic config API.");
+          setIsLoading(false);
+          return;
+        }
+
+        // 🟩 Step 2: Save Lazada shop
+        const saveResponse = await fetch(
           "https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/add",
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              LazadaUserEmail: userEmail, // from redux
+              LazadaUserEmail: userEmail,
               ShopCountry: lazadaCountry,
               LazadaAPPKey: appKey,
-              active: false, // default inactive until OAuth success
+              active: false,
             }),
           }
         );
 
-        const result = await response.json();
-        if (result.code !== 201) {
+        const saveResult = await saveResponse.json();
+        if (saveResult.code !== 201) {
           alert("Failed to save Lazada shop. Please try again.");
+          setIsLoading(false);
           return;
         }
 
-        // ✅ Only redirect if save success
+        // 🟦 Step 3: Redirect to Lazada OAuth
         const redirectUrl = `https://auth.lazada.com/oauth/authorize?response_type=code&force_auth=true&redirect_uri=https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/dynamic&client_id=${encodeURIComponent(
           appKey
         )}&state=${encodeURIComponent(appKey)}`;
@@ -166,9 +264,66 @@ function AddShopeModal() {
         localStorage.setItem("SelectedPlatform", "lazada");
         window.location.href = redirectUrl;
       } catch (err) {
-        console.error("Error saving Lazada shop:", err);
-        alert("Something went wrong while saving Lazada shop.");
+        console.error("Error during Lazada shop setup:", err);
+        alert("Something went wrong while setting up Lazada shop.");
+      } finally {
+        setIsLoading(false); // 🟥 Stop loading after all operations
       }
+    }
+  };
+
+  const handleTikTokSubmit = async () => {
+    if (!tiktokCountry || !tiktokAppKey || !tiktokAppSecret) {
+      alert(
+        "Please fill in all required fields (Country, App Key, App Secret)."
+      );
+      return;
+    }
+
+    setIsTikTokLoading(true);
+
+    try {
+      // 🟣 Step 1: Define base URL for TikTok (can be updated as needed)
+      const baseUrl = "https://open-api.tiktokglobalshop.com";
+
+      // 🟣 Step 2: Call TikTok dynamic API
+      const response = await fetch(
+        "https://grozziie.zjweiting.com:3091/tiktokshop-partner-debug/api/dev/dynamic/add-new",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            accept: "*/*",
+          },
+          body: JSON.stringify({
+            appKey: tiktokAppKey,
+            appSecret: tiktokAppSecret,
+            baseUrl: baseUrl,
+            shop_REGION: tiktokCountry,
+          }),
+        }
+      );
+
+      const result = await response.json();
+      console.log("TikTok Dynamic API result:", result);
+
+      if (response.status !== 200 || result !== true) {
+        alert("Failed to register TikTok app with dynamic config API.");
+        setIsTikTokLoading(false);
+        return;
+      }
+
+      // 🟢 Step 3: Save selected country and app info
+      localStorage.setItem("tiktokAuthCountry", tiktokCountry);
+      localStorage.setItem("tiktokAppKey", JSON.stringify(tiktokAppKey));
+
+      // 🟢 Step 4: Redirect to TikTok Partner Config
+      window.location.href = `https://partner.tiktokshop.com/v2_sandbox/config?activeTab=manage_account&region=${tiktokCountry}`;
+    } catch (error) {
+      console.error("Error during TikTok setup:", error);
+      alert("Something went wrong while setting up TikTok app.");
+    } finally {
+      setIsTikTokLoading(false);
     }
   };
 
@@ -242,6 +397,7 @@ function AddShopeModal() {
               {/* Lazada extra inputs */}
               {selectedShop === 2 && (
                 <div className="space-y-4 my-6">
+                  {/* Select Country */}
                   <div>
                     <label className="block text-sm font-medium text-[#004368] mb-1">
                       {t("Select Country")}
@@ -250,6 +406,7 @@ function AddShopeModal() {
                       className="w-full border rounded px-3 py-2"
                       value={lazadaCountry}
                       onChange={(e) => setLazadaCountry(e.target.value)}
+                      required
                     >
                       <option value="">{t("Choose a country")}</option>
                       {lazadaCountries.map((c) => (
@@ -260,6 +417,7 @@ function AddShopeModal() {
                     </select>
                   </div>
 
+                  {/* APP Key */}
                   <div>
                     <label className="block text-sm font-medium text-[#004368] mb-1">
                       {t("APP Key")}
@@ -270,32 +428,83 @@ function AddShopeModal() {
                       value={appKey}
                       onChange={(e) => setAppKey(e.target.value)}
                       placeholder="Enter APP Key"
+                      required
                     />
                   </div>
 
+                  {/* APP Secret */}
+                  <div>
+                    <label className="block text-sm font-medium text-[#004368] mb-1">
+                      {t("APP Secret")}
+                    </label>
+                    <input
+                      type="password"
+                      className="w-full border rounded px-3 py-2"
+                      value={appSecret}
+                      onChange={(e) => setAppSecret(e.target.value)}
+                      placeholder="Enter APP Secret"
+                      required
+                    />
+                  </div>
+
+                  {/* Submit button */}
                   <button
-                    className="bg-[#004368] text-white px-4 py-2 rounded w-full"
+                    className={`${
+                      isLoading
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-[#004368]"
+                    } text-white px-4 py-2 rounded w-full flex items-center justify-center`}
                     onClick={handleLazadaSubmit}
+                    disabled={isLoading}
                   >
-                    {t("Submit")}
+                    {isLoading ? (
+                      <>
+                        <svg
+                          className="animate-spin h-5 w-5 mr-2 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                          ></path>
+                        </svg>
+                        {t("Loading...")}
+                      </>
+                    ) : (
+                      t("Submit")
+                    )}
                   </button>
                 </div>
               )}
 
               {/* TikTok extra inputs */}
+              {/* 🟣 TikTok extra inputs */}
               {selectedShop === 3 && (
                 <div className="space-y-4 my-6">
+                  {/* Select Country */}
                   <div>
                     <label className="block text-sm font-medium text-[#004368] mb-1">
                       {t("Select Country")}
                     </label>
                     <select
                       className="w-full border rounded px-3 py-2"
-                      value={lazadaCountry} // reuse state for simplicity
-                      onChange={(e) => setLazadaCountry(e.target.value)}
+                      value={tiktokCountry}
+                      onChange={(e) => setTiktokCountry(e.target.value)}
+                      required
                     >
                       <option value="">{t("Choose a country")}</option>
-                      {lazadaCountries.map((c) => (
+                      {tiktokCountries.map((c) => (
                         <option key={c.code} value={c.code}>
                           {c.name}
                         </option>
@@ -303,21 +512,73 @@ function AddShopeModal() {
                     </select>
                   </div>
 
-                  <button
-                    className="bg-[#004368] text-white px-4 py-2 rounded w-full"
-                    onClick={() => {
-                      if (!lazadaCountry) {
-                        alert("Please select a country.");
-                        return;
-                      }
-                      // Save selected TikTok country in localStorage
-                      localStorage.setItem("tiktokAuthCountry", lazadaCountry);
+                  {/* App Key */}
+                  <div>
+                    <label className="block text-sm font-medium text-[#004368] mb-1">
+                      {t("APP Key")}
+                    </label>
+                    <input
+                      type="text"
+                      className="w-full border rounded px-3 py-2"
+                      value={tiktokAppKey}
+                      onChange={(e) => setTiktokAppKey(e.target.value)}
+                      placeholder="Enter APP Key"
+                      required
+                    />
+                  </div>
 
-                      // Redirect in same tab
-                      window.location.href = `https://partner.tiktokshop.com/v2_sandbox/config?activeTab=manage_account&region=${lazadaCountry}`;
-                    }}
+                  {/* App Secret */}
+                  <div>
+                    <label className="block text-sm font-medium text-[#004368] mb-1">
+                      {t("APP Secret")}
+                    </label>
+                    <input
+                      type="password"
+                      className="w-full border rounded px-3 py-2"
+                      value={tiktokAppSecret}
+                      onChange={(e) => setTiktokAppSecret(e.target.value)}
+                      placeholder="Enter APP Secret"
+                      required
+                    />
+                  </div>
+
+                  {/* Submit button */}
+                  <button
+                    className={`${
+                      isTikTokLoading
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-[#004368]"
+                    } text-white px-4 py-2 rounded w-full flex items-center justify-center`}
+                    onClick={handleTikTokSubmit}
+                    disabled={isTikTokLoading}
                   >
-                    {t("Submit")}
+                    {isTikTokLoading ? (
+                      <>
+                        <svg
+                          className="animate-spin h-5 w-5 mr-2 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                          ></path>
+                        </svg>
+                        {t("Loading...")}
+                      </>
+                    ) : (
+                      t("Submit")
+                    )}
                   </button>
                 </div>
               )}
