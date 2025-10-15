@@ -5,6 +5,8 @@ const shopeeApi = baseApi.injectEndpoints({
 
         // 1️⃣ First API: order list
         getShopeeOrders: builder.query({
+
+
             query: ({
                 timeFrom,
                 timeTo,
@@ -12,7 +14,10 @@ const shopeeApi = baseApi.injectEndpoints({
                 pageSize = 20,
                 response_optional_fields = "order_status",
             }) => {
+                const shopeeAuthCountry = localStorage.getItem("shopeeAuthCountry");
+
                 const params = new URLSearchParams({
+                    countryCode: shopeeAuthCountry?.toString() || "",
                     timeFrom: timeFrom.toString(),
                     timeTo: timeTo.toString(),
                     pageSize: pageSize.toString(),
@@ -23,7 +28,7 @@ const shopeeApi = baseApi.injectEndpoints({
                     params.append("orderStatus", orderStatus);
                 }
 
-                const url = `/shopee-open-shop/api/dev/order/get-order-list?${params}`;
+                const url = `/shopee-open-shop-country/api/dev/order/get-order-list?${params}`;
 
                 return {
                     url,
@@ -84,14 +89,16 @@ const shopeeApi = baseApi.injectEndpoints({
                 }
 
                 // 1️⃣ Call Shopee order details API
+                const shopeeAuthCountry = localStorage.getItem("shopeeAuthCountry");
                 const params = new URLSearchParams({
+                    countryCode: shopeeAuthCountry?.toString() || "",
                     orderSnList: orderSnList.join(","),
                     request_order_status_pending: request_order_status_pending.toString(),
                     response_optional_fields,
                 });
 
                 const orderDetailsRes = await fetchWithBQ(
-                    `/shopee-open-shop/api/dev/order/get-order-details?${params.toString()}`
+                    `/shopee-open-shop-country/api/dev/order/get-order-details?${params.toString()}`
                 );
 
                 if (orderDetailsRes.error) return { error: orderDetailsRes.error };

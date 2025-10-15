@@ -31,7 +31,7 @@ const ShopeeAWBPrinting = () => {
     const stored = localStorage.getItem("tiktokShopInfo");
     return stored ? JSON.parse(stored) : [];
   });
-  console.log(checkedItems, "checkedItems");
+  const shopeeAuthCountry = localStorage.getItem("shopeeAuthCountry");
 
   const currentItem = checkedItems?.items?.[0]; // Show first item for warehouse/delivery
 
@@ -50,7 +50,7 @@ const ShopeeAWBPrinting = () => {
   const fetchShipmentProviders = async () => {
     try {
       const res = await fetch(
-        "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-channel-list"
+        `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/get-channel-list?countryCode=${shopeeAuthCountry}`
       );
       const json = await res.json();
 
@@ -115,7 +115,7 @@ const ShopeeAWBPrinting = () => {
           );
 
           const docTypeRes = await fetch(
-            "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-shipping-document-parameter",
+            `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/get-shipping-document-parameter?countryCode=${shopeeAuthCountry}`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -134,7 +134,7 @@ const ShopeeAWBPrinting = () => {
 
           if (!skipStatuses.includes(checkedItems?.from)) {
             // 2️⃣ Get tracking number
-            const trackingUrl = `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-tracking-number?orderSn=${orderSn}&packageNumber=-&responseOptionalFields=first_mile_tracking_number`;
+            const trackingUrl = `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/get-tracking-number?countryCode=${shopeeAuthCountry}&orderSn=${orderSn}&packageNumber=-&responseOptionalFields=first_mile_tracking_number`;
             console.log("📤 Calling get-tracking-number:", trackingUrl);
 
             const trackingRes = await fetch(trackingUrl);
@@ -160,7 +160,7 @@ const ShopeeAWBPrinting = () => {
             );
 
             const createRes = await fetch(
-              "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/create-shipping-document",
+              `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/create-shipping-document?countryCode=${shopeeAuthCountry}`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -172,7 +172,7 @@ const ShopeeAWBPrinting = () => {
             await delay(1000);
           }
           const pdfRes = await fetch(
-            "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/download-shipping-document",
+            `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/download-shipping-document?countryCode=${shopeeAuthCountry}`,
             {
               method: "POST",
               headers: {

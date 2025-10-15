@@ -34,7 +34,7 @@ const ErrorPage = () => {
         {/* button */}
         <div className="mt-20">
           <Link
-            to="/"
+            to="/onlineprint/"
             className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[234px] h-12 px-8 py-2 rounded-md cursor-pointer"
           >
             {selectedLanguage === "zh-CN" ? "返回首页" : "Back To Home"}

@@ -66,9 +66,21 @@ const settingsInfo = [
     name: "Delivery Type",
     image: <LiaShippingFastSolid />, // pick any suitable icon
     children: [
-      { id: "8-3", name: "Shopee Shop", path: "/settings/deliveryType/shopee" },
-      { id: "8-2", name: "Lazada Shop", path: "/settings/deliveryType/lazada" },
-      { id: "8-1", name: "TikTok Shop", path: "/settings/deliveryType/tiktok" },
+      {
+        id: "8-3",
+        name: "Shopee Shop",
+        path: "/onlineprint/settings/deliveryType/shopee",
+      },
+      {
+        id: "8-2",
+        name: "Lazada Shop",
+        path: "/onlineprint/settings/deliveryType/lazada",
+      },
+      {
+        id: "8-1",
+        name: "TikTok Shop",
+        path: "/onlineprint/settings/deliveryType/tiktok",
+      },
     ],
   },
 ];
@@ -205,8 +217,8 @@ const SettingLayout = () => {
                           </p>
                         </li>
 
-                        {/* Always show children */}
-                        {setting.children && (
+                        {/* Always show children without disable shopee and lazad */}
+                        {/* {setting.children && (
                           <ul className="ml-6 mb-4 border-l border-gray-200 pl-4">
                             {setting.children.map((child) => {
                               const isActive =
@@ -226,6 +238,44 @@ const SettingLayout = () => {
                                     {t(child.name)}
                                   </li>
                                 </Link>
+                              );
+                            })}
+                          </ul>
+                        )} */}
+
+                        {/* Always show children with disable shopee and lazad */}
+                        {setting.children && (
+                          <ul className="ml-6 mb-4 border-l border-gray-200 pl-4">
+                            {setting.children.map((child) => {
+                              const isActive =
+                                location.pathname === child.path ||
+                                active?.id === child.id;
+
+                              // Disable Shopee and Lazada
+                              const isDisabled =
+                                child.name === "Shopee Shop" ||
+                                child.name === "Lazada Shop";
+
+                              return (
+                                <li
+                                  key={child.id}
+                                  className={`mb-2 text-[14px] pl-2 ${
+                                    isDisabled
+                                      ? "text-gray-400 cursor-not-allowed"
+                                      : isActive
+                                      ? "text-[#004368] font-semibold cursor-pointer"
+                                      : "text-gray-600 hover:text-[#004368] cursor-pointer"
+                                  }`}
+                                  onClick={() => {
+                                    if (!isDisabled) setActive(child);
+                                  }}
+                                >
+                                  {isDisabled ? (
+                                    <span>{t(child.name)}</span>
+                                  ) : (
+                                    <Link to={child.path}>{t(child.name)}</Link>
+                                  )}
+                                </li>
                               );
                             })}
                           </ul>

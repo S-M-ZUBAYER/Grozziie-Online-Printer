@@ -79,6 +79,7 @@ const BatchPrintExpressDelivery = () => {
   const [packageDetails, setPackageDetails] = useState(null);
   const [waybillUrl, setWaybillUrl] = useState(null); // If there's any
   const tiktokAppKey = localStorage.getItem("tiktokAppKey");
+  const tiktokAuthCountry = localStorage.getItem("tiktokAuthCountry");
 
   useEffect(() => {
     if (!cipher || !packageId) return;
@@ -90,11 +91,11 @@ const BatchPrintExpressDelivery = () => {
         //   `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/details?cipher=${cipher[0].cipher}&packageId=${packageId}`
         // );
         const res = await fetch(
-          `https://grozziie.zjweiting.com:3091/tiktokshop-partner-debug/api/dev/package/details?cipher=${encodeURIComponent(
+          `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/details?cipher=${encodeURIComponent(
             cipher[0].cipher
           )}&packageId=${encodeURIComponent(
             packageId
-          )}&appKey=${encodeURIComponent(tiktokAppKey)}`
+          )}&countryCode=${encodeURIComponent(tiktokAuthCountry)}`
         );
 
         const json = await res.json();

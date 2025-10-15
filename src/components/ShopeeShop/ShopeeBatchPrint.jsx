@@ -560,7 +560,7 @@
 //         try {
 //           // 1️⃣ Get shipping parameters
 //           const shippingParamRes = await fetch(
-//             `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-shipping-parameter?orderSn=${orderSn}`
+//             `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/get-shipping-parameter?orderSn=${orderSn}`
 //           );
 //           const shippingParamData = await shippingParamRes.json();
 
@@ -630,7 +630,7 @@
 
 //           // 3️⃣ Call ship-order API
 //           const shipRes = await fetch(
-//             "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/ship-order",
+//             "https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/ship-order",
 //             {
 //               method: "POST",
 //               headers: { "Content-Type": "application/json" },
@@ -1327,6 +1327,7 @@ const ShopeeBatchPrint = () => {
   const [shopeeLoading, setShopeeLoading] = useState(false);
   const [packageLoading, setPackageLoading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const shopeeAuthCountry = localStorage.getItem("shopeeAuthCountry");
 
   const {
     selectedCustomer,
@@ -1406,15 +1407,20 @@ const ShopeeBatchPrint = () => {
     console.log("Current path:", location.pathname); // Debug
     console.log("Path parts:", parts); // Debug
 
-    if (parts.length >= 2) {
+    if (parts.length >= 3) {
       const statusMap = {
+        NewOrders: {
+          status: "READY_TO_SHIP",
+          display: "Ready To Ship",
+        },
         printed: { status: "PROCESSED_PRINTED", display: "Processed_Printed" },
         shipped: { status: "SHIPPED", display: "On The Way" },
         needPrint: { status: "PROCESSED", display: "Processed" },
+        Cancelled: { status: "CANCELLED", display: "Cancelled" },
       };
 
       // The status is usually in parts[1] for routes like /printed/shopee
-      const routeStatus = parts[1];
+      const routeStatus = parts[2];
       console.log("Route status:", routeStatus); // Debug
 
       const mappedStatus = statusMap[routeStatus];
@@ -1450,6 +1456,7 @@ const ShopeeBatchPrint = () => {
             ? "PROCESSED"
             : shopeeOrderStatusCheck || "READY_TO_SHIP",
       }).unwrap();
+      console.log(orderListResponse, "shopeee.................. responese");
 
       const orderList = orderListResponse?.response?.order_list || [];
       if (orderList.length === 0) {
@@ -1518,7 +1525,7 @@ const ShopeeBatchPrint = () => {
       setCustomersData(mergedOrders);
     } catch (error) {
       console.error("Shopee Order Fetch Error:", error);
-      toast.error("Failed to fetch orders");
+      // toast.error("Failed to fetch orders");
     } finally {
       setShopeeLoading(false);
     }
@@ -1617,7 +1624,7 @@ const ShopeeBatchPrint = () => {
     dispatch(
       checkedItemsChange({ items: checkedItems, from: shopeeOrderStatusCheck })
     );
-    navigate("/shopeeAWBPrinting");
+    navigate("/onlineprint/shopeeAWBPrinting");
     closeConfirmModal();
   }, [
     dispatch,
@@ -1641,7 +1648,7 @@ const ShopeeBatchPrint = () => {
         try {
           // 1️⃣ Get shipping parameters
           const shippingParamRes = await fetch(
-            `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-shipping-parameter?orderSn=${orderSn}`
+            `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/get-shipping-parameter?countryCode=${shopeeAuthCountry}&orderSn=${orderSn}`
           );
           const shippingParamData = await shippingParamRes.json();
 
@@ -1659,6 +1666,7 @@ const ShopeeBatchPrint = () => {
             shippingParamData?.body?.response?.pickup?.address_list?.[0]
               ?.address_id || null;
           const dropoff = shippingParamData?.body?.response?.dropoff;
+          console.log(addressId, "adddress iddd");
 
           // 2️⃣ Build request body dynamically
           let requestBody = {
@@ -1710,7 +1718,7 @@ const ShopeeBatchPrint = () => {
 
           // 3️⃣ Call ship-order API
           const shipRes = await fetch(
-            "https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/ship-order",
+            `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/ship-order?countryCode=${shopeeAuthCountry}`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },

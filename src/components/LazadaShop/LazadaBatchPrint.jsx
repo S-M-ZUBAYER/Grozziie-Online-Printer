@@ -1474,7 +1474,7 @@ const LazadaBatchPrint = () => {
         })
       );
 
-      navigate("/lazadaAWBPrinting");
+      navigate("/onlineprint/lazadaAWBPrinting");
       closeConfirmModal();
     } catch (error) {
       console.error("🚨 Error in handleConfirmShipping:", error);

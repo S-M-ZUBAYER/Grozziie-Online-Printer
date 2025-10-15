@@ -40,7 +40,7 @@ const SuccessPage = () => {
         </div>
 
         <Link
-          to="/"
+          to="/onlineprint/"
           className="mt-6 inline-block bg-[#004368] text-white px-6 py-2 rounded-lg  transition"
         >
           Go Back Home

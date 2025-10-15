@@ -146,7 +146,7 @@ const Registration = () => {
         // setEmailError(res.message);
         setEmailError(t("email_already_in_use"));
       } else if (res.status === 201) {
-        navigate("/verifyemail");
+        navigate("/onlineprint/verifyemail");
         // Reset form data
         setFormData({
           fullName: "",
@@ -491,7 +491,10 @@ const Registration = () => {
           </form>
           <p className="text-black text-opacity-60">
             {t("already_have_account")}
-            <Link to="/login" className="font-semibold text-[#004368]">
+            <Link
+              to="/onlineprint/login"
+              className="font-semibold text-[#004368]"
+            >
               {t("login")}
             </Link>
           </p>
