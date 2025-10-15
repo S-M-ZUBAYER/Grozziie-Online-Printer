@@ -25,6 +25,7 @@ const BatchPrintPrinting = () => {
   const [shipmentProviders, setShipmentProviders] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const tiktokAppKey = localStorage.getItem("tiktokAppKey");
+  const tiktokAuthCountry = localStorage.getItem("tiktokAuthCountry");
   const { t } = useTranslation();
 
   const [cipher] = useState(() => {
@@ -40,9 +41,9 @@ const BatchPrintPrinting = () => {
       //   `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/logistics/warehouse-list?cipher=${cipher[0].cipher}`
       // );
       const res = await fetch(
-        `https://grozziie.zjweiting.com:3091/tiktokshop-partner-debug/api/dev/logistics/warehouse-list?cipher=${encodeURIComponent(
+        `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/logistics/warehouse-list?cipher=${encodeURIComponent(
           cipher[0].cipher
-        )}&appKey=${encodeURIComponent(tiktokAppKey)}`
+        )}&countryCode=${encodeURIComponent(tiktokAuthCountry)}`
       );
       const json = await res.json();
       if (json.code === 0) setWarehouses(json.data.warehouses || []);
@@ -57,11 +58,11 @@ const BatchPrintPrinting = () => {
       //   `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/logistics/warehouse/delivery-option?warehouseId=${currentItem?.warehouseId}&cipher=${cipher[0].cipher}`
       // );
       const res = await fetch(
-        `https://grozziie.zjweiting.com:3091/tiktokshop-partner-debug/api/dev/logistics/warehouse/delivery-option?warehouseId=${encodeURIComponent(
+        `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/logistics/warehouse/delivery-option?warehouseId=${encodeURIComponent(
           currentItem?.warehouseId
         )}&cipher=${encodeURIComponent(
           cipher[0].cipher
-        )}&appKey=${encodeURIComponent(tiktokAppKey)}`
+        )}&countryCode=${encodeURIComponent(tiktokAuthCountry)}`
       );
       const json = await res.json();
       if (json.code === 0)
@@ -157,11 +158,11 @@ const BatchPrintPrinting = () => {
             //   )}&packageId=${encodeURIComponent(packageId)}`
             // );
             const res = await fetch(
-              `https://grozziie.zjweiting.com:3091/tiktokshop-partner-debug/api/dev/package/ship-doc?cipher=${encodeURIComponent(
+              `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/ship-doc?cipher=${encodeURIComponent(
                 cipher[0].cipher
               )}&packageId=${encodeURIComponent(
                 packageId
-              )}&appKey=${encodeURIComponent(tiktokAppKey)}`
+              )}&countryCode=${encodeURIComponent(tiktokAuthCountry)}`
             );
             const data = await res.json();
             const docUrl = data?.data?.docUrl;

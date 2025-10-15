@@ -31,11 +31,11 @@ const batchPrintApi = baseApi.injectEndpoints({
         // 🟩 Get TikTok appKey from localStorage
 
         const tiktokAppKey = localStorage.getItem("tiktokAppKey");
-
+        const tiktokAuthCountry = localStorage.getItem("tiktokAuthCountry");
         const queryParams = new URLSearchParams({
           pageSize: pageSize.toString(),
           cipher,
-          appKey: tiktokAppKey?.toString() || "", // ✅ include appKey if available
+          countryCode: tiktokAuthCountry?.toString() || "", // ✅ include appKey if available
           createTimeGe: createTimeGe?.toString(),
           createTimeLt: createTimeLt?.toString(),
           updateTimeGe: updateTimeGe?.toString(),
@@ -49,7 +49,7 @@ const batchPrintApi = baseApi.injectEndpoints({
 
         return {
           // url: `/tiktokshop-partner/api/dev/order/list/filter?${queryParams.toString()}`,
-          url: `/tiktokshop-partner-debug/api/dev/order/list/filter?${queryParams.toString()}`,
+          url: `/tiktokshop-partner-country/api/dev/order/list/filter?${queryParams.toString()}`,
           method: "POST",
           headers: {
             "Content-Type": "application/json",

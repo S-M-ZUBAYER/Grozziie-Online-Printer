@@ -15,7 +15,7 @@ const HomeSideNavbar = () => {
               <li className="ml-2">
                 <Link
                   className="text-[#004368] text-[15px] font-bold capitalize transition hover:font-bold hover:text-[#004368]"
-                  to="/home"
+                  to="/onlineprint/home"
                 >
                   {t("home")}
                 </Link>
@@ -25,31 +25,34 @@ const HomeSideNavbar = () => {
             <li className="my-2 ml-4">
               <Link
                 className="text-black text-[15px] font-medium capitalize transition hover:font-bold hover:text-[#004368]"
-                to="/TikTokOrderManagemnt"
+                to="/onlineprint/TikTokOrderManagemnt"
               >
                 {t("TikTok")}
               </Link>
             </li>
-            <li className="my-2 ml-4">
+            <li className="my-2 ml-4 opacity-40 cursor-not-allowed">
               <Link
-                className="text-black text-[15px] font-medium capitalize transition hover:font-bold hover:text-[#004368]"
-                to="/LazadaOrderManagement"
+                className="text-black text-[15px] font-medium capitalize transition text-gray-400 pointer-events-none"
+                to="#"
+                onClick={(e) => e.preventDefault()}
               >
                 {t("Lazada")}
               </Link>
             </li>
+
             <li className="my-2 ml-4">
               <Link
-                className="text-black text-[15px] font-medium capitalize transition hover:font-bold hover:text-[#004368]"
-                to="/ShopeeOrderManagement"
+                className="text-black text-[15px] font-medium capitalize transition "
+                to="/onlineprint/ShopeeOrderManagement"
               >
                 {t("Shopee")}
               </Link>
             </li>
+
             <li className="my-2 ml-4">
               <Link
                 className="text-black text-[15px] font-medium capitalize transition hover:font-bold hover:text-[#004368]"
-                to="/settings/deliveryType/shopee"
+                to="/onlineprint/settings/deliveryType/tiktok"
               >
                 {t("settings")}
               </Link>
@@ -86,7 +89,7 @@ const HomeSideNavbar = () => {
             <li className="my-2 ml-4">
               <Link
                 className="text-black text-[15px] font-medium capitalize transition hover:font-bold hover:text-[#004368]"
-                to="/contact"
+                to="/onlineprint/contact"
               >
                 {t("contact")}
               </Link>

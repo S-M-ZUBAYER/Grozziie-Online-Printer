@@ -26,7 +26,7 @@ const TopNavbar = () => {
 
   useEffect(() => {
     const path = location.pathname.toLowerCase();
-    if (path === "/" || path === "/home") {
+    if (path === "/onlineprint/" || path === "/onlineprint/home") {
       dispatch(mainRouteStateFalseChange());
       setActiveLi(0);
     } else {
@@ -55,23 +55,23 @@ const TopNavbar = () => {
   const handleLogout = () => {
     localStorage.removeItem("printerUser");
     dispatch(accountUserChange(""));
-    navigate("/login");
+    navigate("/onlineprint/login");
   };
 
   const navItems = [
-    { key: "home", path: "/home" },
-    { key: "tiktok", path: "/TikTokOrderManagemnt" },
-    { key: "lazada", path: "/LazadaOrderManagement" },
-    { key: "shopee", path: "/ShopeeOrderManagement" },
+    { key: "home", path: "/onlineprint/home" },
+    { key: "tiktok", path: "/onlineprint/TikTokOrderManagemnt" },
+    { key: "lazada", path: "/onlineprint/LazadaOrderManagement" },
+    { key: "shopee", path: "/onlineprint/ShopeeOrderManagement" },
     // { key: "singlePrint", path: "/singleprint" },
     // { key: "settings", path: "/settings/recipient information" },
     {
       key: "settings",
-      path: "/settings/deliveryType/shopee",
+      path: "/onlineprint/settings/deliveryType/tiktok",
     },
     // { key: "utility", path: "/utility/delivery record" },
     // { key: "manualOrder", path: "/manualOrder" },
-    { key: "contact", path: "/contact" },
+    { key: "contact", path: "/onlineprint/contact" },
   ];
 
   const handleNavLiClick = (index, item) => {
@@ -81,7 +81,7 @@ const TopNavbar = () => {
   return (
     <div className="navbar bg-slate-200 grid grid-cols-6 h-24">
       <div className="flex justify-start items-center col-span-1 ml-[30px]">
-        <Link to="/" className="text-xl">
+        <Link to="/onlineprint/" className="text-xl">
           <img src={grozziieLogo} alt="Logo" className="w-32 h-7" />
         </Link>
       </div>
@@ -89,7 +89,8 @@ const TopNavbar = () => {
       {/* Navigation Menu */}
       <div className="hidden md:block col-span-3 items-center justify-center mx-auto">
         <ul className="flex items-center gap-6 text-base">
-          {navItems.map((item, index) => (
+          {/* This code without disable lazada and shope */}
+          {/* {navItems.map((item, index) => (
             <li key={item.key} onClick={() => handleNavLiClick(index, item)}>
               <Link
                 to={item.path}
@@ -107,7 +108,46 @@ const TopNavbar = () => {
                 </div>
               )}
             </li>
-          ))}
+          ))} */}
+
+          {/* This code with disable lazada and shopee */}
+          {navItems.map((item, index) => {
+            // const isDisabled = item.key === "lazada" || item.key === "shopee";
+            const isDisabled = item.key === "lazada";
+
+            return (
+              <li
+                key={item.key}
+                onClick={() => {
+                  if (!isDisabled) handleNavLiClick(index, item);
+                }}
+                className={`${
+                  isDisabled ? "opacity-40 cursor-not-allowed" : ""
+                }`}
+              >
+                <Link
+                  to={isDisabled ? "#" : item.path}
+                  className={`text-black ${
+                    routeState ? "block" : "hidden"
+                  } text-[15px] font-medium capitalize transition whitespace-nowrap ${
+                    isDisabled
+                      ? "pointer-events-none text-gray-400"
+                      : "hover:text-[#004368]"
+                  } ${
+                    activeLi === index ? "font-semibold text-[#004368]" : ""
+                  }`}
+                >
+                  {t(item.key)}
+                </Link>
+
+                {routeState && activeLi === index && !isDisabled && (
+                  <div className="w-full flex justify-center">
+                    <p className="w-[15px] h-[2px] rounded-[14px] bg-[#004368]"></p>
+                  </div>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </div>
 
@@ -163,7 +203,7 @@ const TopNavbar = () => {
                 >
                   <li>
                     <Link
-                      to="/resetpassword"
+                      to="/onlineprint/resetpassword"
                       className="hover:font-semibold hover:text-[#004368]"
                     >
                       {t("resetPassword")}
@@ -181,7 +221,7 @@ const TopNavbar = () => {
               </div>
             </>
           ) : (
-            <Link to="/login">{t("login")}</Link>
+            <Link to="/onlineprint/login">{t("login")}</Link>
           )}
         </div>
       </div>

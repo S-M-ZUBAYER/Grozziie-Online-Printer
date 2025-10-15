@@ -112,12 +112,6 @@ const shope = [
 
 const lazadaCountries = [
   { code: "MY", name: "Malaysia", baseUrl: "https://api.lazada.com.my/rest" },
-  // { code: "TH", name: "Thailand" },
-  // { code: "SG", name: "Singapore" },
-  // { code: "VN", name: "Vietnam" },
-  // { code: "ID", name: "Indonesia" },
-  // { code: "PH", name: "Philippines" },
-  // { code: "CN", name: "China" },
 ];
 
 const tiktokCountries = [
@@ -134,11 +128,20 @@ const tiktokCountries = [
   // { code: "CN", name: "China" },
 ];
 
+const shopeeCountries = [
+  {
+    code: "MY",
+    name: "Malaysia",
+    baseUrl: "https://open-api.tiktokglobalshop.com",
+  },
+];
+
 function AddShopeModal() {
   const { t } = useTranslation();
   const userEmail = useSelector((state) => state.user.accountUser);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedShop, setSelectedShop] = useState(null);
+
   const [lazadaCountry, setLazadaCountry] = useState("");
   const [appKey, setAppKey] = useState("");
   const [appSecret, setAppSecret] = useState("");
@@ -148,6 +151,11 @@ function AddShopeModal() {
   const [tiktokAppKey, setTiktokAppKey] = useState("");
   const [tiktokAppSecret, setTiktokAppSecret] = useState("");
   const [isTikTokLoading, setIsTikTokLoading] = useState(false);
+
+  const [shopeeCountry, setShopeeCountry] = useState("");
+  const [shopeeAppKey, setShopeeAppKey] = useState("");
+  const [shopeeAppSecret, setShopeeAppSecret] = useState("");
+  const [isShopeeLoading, setIsShopeeLoading] = useState(false);
 
   // const handleLazadaSubmit = async () => {
   //   if (selectedShop === 2) {
@@ -273,57 +281,75 @@ function AddShopeModal() {
   };
 
   const handleTikTokSubmit = async () => {
-    if (!tiktokCountry || !tiktokAppKey || !tiktokAppSecret) {
-      alert(
-        "Please fill in all required fields (Country, App Key, App Secret)."
-      );
+    // if (!tiktokCountry || !tiktokAppKey || !tiktokAppSecret) {
+    if (!tiktokCountry) {
+      alert("Please fill in all required fields (Country).");
       return;
     }
 
     setIsTikTokLoading(true);
 
     try {
-      // 🟣 Step 1: Define base URL for TikTok (can be updated as needed)
-      const baseUrl = "https://open-api.tiktokglobalshop.com";
+      // // 🟣 Step 1: Define base URL for TikTok (can be updated as needed)
+      // const baseUrl = "https://open-api.tiktokglobalshop.com";
 
-      // 🟣 Step 2: Call TikTok dynamic API
-      const response = await fetch(
-        "https://grozziie.zjweiting.com:3091/tiktokshop-partner-debug/api/dev/dynamic/add-new",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            accept: "*/*",
-          },
-          body: JSON.stringify({
-            appKey: tiktokAppKey,
-            appSecret: tiktokAppSecret,
-            baseUrl: baseUrl,
-            shop_REGION: tiktokCountry,
-          }),
-        }
-      );
+      // // 🟣 Step 2: Call TikTok dynamic API
+      // const response = await fetch(
+      //   "https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/dynamic/add-new",
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //       accept: "*/*",
+      //     },
+      //     body: JSON.stringify({
+      //       appKey: tiktokAppKey,
+      //       appSecret: tiktokAppSecret,
+      //       baseUrl: baseUrl,
+      //       shop_REGION: tiktokCountry,
+      //     }),
+      //   }
+      // );
 
-      const result = await response.json();
-      console.log("TikTok Dynamic API result:", result);
+      // const result = await response.json();
+      // console.log("TikTok Dynamic API result:", result);
 
-      if (response.status !== 200 || result !== true) {
-        alert("Failed to register TikTok app with dynamic config API.");
-        setIsTikTokLoading(false);
-        return;
-      }
+      // if (response.status !== 200 || result !== true) {
+      //   alert("Failed to register TikTok app with dynamic config API.");
+      //   setIsTikTokLoading(false);
+      //   return;
+      // }
 
-      // 🟢 Step 3: Save selected country and app info
-      localStorage.setItem("tiktokAuthCountry", tiktokCountry);
-      localStorage.setItem("tiktokAppKey", JSON.stringify(tiktokAppKey));
+      // // 🟢 Step 3: Save selected country and app info
+      // localStorage.setItem("tiktokAuthCountry", tiktokCountry);
+      // localStorage.setItem("tiktokAppKey", JSON.stringify(tiktokAppKey));
 
       // 🟢 Step 4: Redirect to TikTok Partner Config
-      window.location.href = `https://partner.tiktokshop.com/v2_sandbox/config?activeTab=manage_account&region=${tiktokCountry}`;
+      window.location.href = `https://services.tiktokshops.us/open/authorize?service_id=7525737223036126981`;
     } catch (error) {
       console.error("Error during TikTok setup:", error);
       alert("Something went wrong while setting up TikTok app.");
     } finally {
       setIsTikTokLoading(false);
+    }
+  };
+
+  const handleShopeeSubmit = async () => {
+    if (!shopeeCountry) {
+      alert("Please fill in all required fields (Country).");
+      return;
+    }
+    localStorage.setItem("shopeeAuthCountry", shopeeCountry);
+    setIsShopeeLoading(true);
+
+    try {
+      // 🟢 Step 4: Redirect to Shopee Partner Config
+      window.location.href = `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/auth/url-generate/dynamic?countryCode=${shopeeCountry}`;
+    } catch (error) {
+      console.error("Error during Shopee setup:", error);
+      alert("Something went wrong while setting up Shopee app.");
+    } finally {
+      setIsShopeeLoading(false);
     }
   };
 
@@ -353,7 +379,9 @@ function AddShopeModal() {
               transition={{ duration: 0.2 }}
             >
               {/* ❌ Close button only for Lazada */}
-              {selectedShop === 2 && (
+              {(selectedShop === 1 ||
+                selectedShop === 2 ||
+                selectedShop === 3) && (
                 <button
                   className="absolute top-3 right-3 text-gray-500 hover:text-gray-800"
                   onClick={() => setIsOpen(false)}
@@ -361,13 +389,11 @@ function AddShopeModal() {
                   <Cross2Icon className="w-5 h-5" />
                 </button>
               )}
-
               <h2 className="text-xl font-bold mb-4 text-[#004368] text-center ">
                 {t("AddNewShop")}
               </h2>
-
-              {/* Shop selection */}
-              <div className="flex gap-8 pb-6 pt-4">
+              {/* Shop selection without disable shopee and lazada */}
+              {/* <div className="flex gap-8 pb-6 pt-4">
                 {shope.map((shop) => (
                   <div
                     key={shop.id}
@@ -392,8 +418,50 @@ function AddShopeModal() {
                     </label>
                   </div>
                 ))}
-              </div>
+              </div> */}
+              {/* Shop selection with disable shopee and lazada */}
+              <div className="flex gap-8 pb-6 pt-4">
+                {shope.map((shop) => {
+                  const isDisabled = shop.name === "Lazada";
 
+                  return (
+                    <div
+                      key={shop.id}
+                      className={`flex items-center gap-2 ${
+                        isDisabled
+                          ? "opacity-40 cursor-not-allowed"
+                          : "cursor-pointer"
+                      }`}
+                      onClick={() => {
+                        if (!isDisabled) setSelectedShop(shop.id);
+                      }}
+                    >
+                      <Checkbox.Root
+                        className="flex size-[20px] appearance-none items-center justify-center rounded border border-[#004368] bg-white outline-none"
+                        checked={selectedShop === shop.id}
+                        onCheckedChange={() => {
+                          if (!isDisabled) setSelectedShop(shop.id);
+                        }}
+                        id={`shop-${shop.id}`}
+                        disabled={isDisabled}
+                      >
+                        <Checkbox.Indicator className="text-[#004368]">
+                          <CheckIcon />
+                        </Checkbox.Indicator>
+                      </Checkbox.Root>
+
+                      <label
+                        className={`text-[15px] leading-none ${
+                          isDisabled ? "text-gray-400" : "text-[#004368]"
+                        }`}
+                        htmlFor={`shop-${shop.id}`}
+                      >
+                        {t(shop.name)}
+                      </label>
+                    </div>
+                  );
+                })}
+              </div>
               {/* Lazada extra inputs */}
               {selectedShop === 2 && (
                 <div className="space-y-4 my-6">
@@ -488,7 +556,70 @@ function AddShopeModal() {
                 </div>
               )}
 
-              {/* TikTok extra inputs */}
+              {/* 🟣 TikTok extra inputs */}
+              {selectedShop === 1 && (
+                <div className="space-y-4 my-6">
+                  {/* Select Country */}
+                  <div>
+                    <label className="block text-sm font-medium text-[#004368] mb-1">
+                      {t("Select Country")}
+                    </label>
+                    <select
+                      className="w-full border rounded px-3 py-2"
+                      value={shopeeCountry}
+                      onChange={(e) => setShopeeCountry(e.target.value)}
+                      required
+                    >
+                      <option value="">{t("Choose a country")}</option>
+                      {shopeeCountries.map((c) => (
+                        <option key={c.code} value={c.code}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Submit button */}
+                  <button
+                    className={`${
+                      isShopeeLoading
+                        ? "bg-gray-400 cursor-not-allowed"
+                        : "bg-[#004368]"
+                    } text-white px-4 py-2 rounded w-full flex items-center justify-center`}
+                    onClick={handleShopeeSubmit}
+                    disabled={isShopeeLoading}
+                  >
+                    {isShopeeLoading ? (
+                      <>
+                        <svg
+                          className="animate-spin h-5 w-5 mr-2 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v8z"
+                          ></path>
+                        </svg>
+                        {t("Loading...")}
+                      </>
+                    ) : (
+                      t("Submit")
+                    )}
+                  </button>
+                </div>
+              )}
+
               {/* 🟣 TikTok extra inputs */}
               {selectedShop === 3 && (
                 <div className="space-y-4 my-6">
@@ -513,7 +644,7 @@ function AddShopeModal() {
                   </div>
 
                   {/* App Key */}
-                  <div>
+                  {/* <div>
                     <label className="block text-sm font-medium text-[#004368] mb-1">
                       {t("APP Key")}
                     </label>
@@ -525,10 +656,10 @@ function AddShopeModal() {
                       placeholder="Enter APP Key"
                       required
                     />
-                  </div>
+                  </div> */}
 
                   {/* App Secret */}
-                  <div>
+                  {/* <div>
                     <label className="block text-sm font-medium text-[#004368] mb-1">
                       {t("APP Secret")}
                     </label>
@@ -540,7 +671,7 @@ function AddShopeModal() {
                       placeholder="Enter APP Secret"
                       required
                     />
-                  </div>
+                  </div> */}
 
                   {/* Submit button */}
                   <button
@@ -582,26 +713,27 @@ function AddShopeModal() {
                   </button>
                 </div>
               )}
-
               {/* Footer buttons: show only when NOT Lazada */}
-              {selectedShop !== 2 && selectedShop !== 3 && (
-                <div className="flex justify-end gap-4 mt-6">
-                  <button
-                    className="bg-[#0043681A] text-[#004368] px-4 py-2 rounded"
-                    style={{ width: "250px" }}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    {t("Cancel")}
-                  </button>
-                  <button
-                    className="bg-[#004368] text-white px-4 py-2 rounded"
-                    style={{ width: "250px" }}
-                    disabled={!selectedShop}
-                  >
-                    {t("Next")}
-                  </button>
-                </div>
-              )}
+              {selectedShop !== 1 &&
+                selectedShop !== 2 &&
+                selectedShop !== 3 && (
+                  <div className="flex justify-end gap-4 mt-6">
+                    <button
+                      className="bg-[#0043681A] text-[#004368] px-4 py-2 rounded"
+                      style={{ width: "250px" }}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      {t("Cancel")}
+                    </button>
+                    <button
+                      className="bg-[#004368] text-white px-4 py-2 rounded"
+                      style={{ width: "250px" }}
+                      disabled={!selectedShop}
+                    >
+                      {t("Next")}
+                    </button>
+                  </div>
+                )}
             </motion.div>
           </motion.div>
         )}

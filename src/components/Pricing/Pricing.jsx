@@ -58,12 +58,18 @@ const Pricing = () => {
   const [modalMessage, setModalMessage] = useState("");
   const [confirmAction, setConfirmAction] = useState(null);
   const [showConfirmButton, setShowConfirmButton] = useState(false);
+  const [showShopModal, setShowShopModal] = useState(false);
 
   const currentShopId = getCurrentShopId(storedShopPlatform);
 
   // --- Fetch plans ---
   const fetchPlans = useCallback(
     async (countryCode) => {
+      if (!currentUser) return; // 🔒 prevent bad calls
+      if (!currentShopId) {
+        setShowShopModal(true); // Show modal
+        return; // Stop further execution
+      }
       setLoading(true);
       setError("");
 
@@ -110,11 +116,12 @@ const Pricing = () => {
             (p) => p.amount !== 0
           );
           setPlans(newStoredShopPlans);
-          setActivePlan(storedShopPlans[1] || null);
-        } else {
-          setPlans(storedShopPlans.slice(0, -1));
           setActivePlan(storedShopPlans[0] || null);
         }
+        // else {
+        //   setPlans(storedShopPlans.slice(0, -1));
+        //   setActivePlan(storedShopPlans[0] || null);
+        // }
       } catch (err) {
         console.error(err);
         setError("Error fetching plans. Please try again later.");
@@ -125,10 +132,11 @@ const Pricing = () => {
     },
     [currentUser, storedShopPlatform, currentShopId]
   );
-
   useEffect(() => {
-    fetchPlans(country);
-  }, [country, fetchPlans]);
+    if (currentUser) {
+      fetchPlans(country);
+    }
+  }, [country, fetchPlans, currentUser]);
 
   // --- Handle Free Plan Submit ---
   const handleFreePlanSubmit = async () => {
@@ -158,7 +166,7 @@ const Pricing = () => {
         </div>
       );
       setModalMessage(<p>{t("free_plan_activated_success")}</p>);
-      setConfirmAction(() => () => navigate("/home"));
+      setConfirmAction(() => () => navigate("/onlineprint/home"));
     } catch (err) {
       console.error("Failed to store payment info:", err);
 
@@ -183,7 +191,7 @@ const Pricing = () => {
     if (plan.amount === 0) {
       setShowFreeModal(true);
     } else {
-      navigate("/payment", { state: { plan } });
+      navigate("/onlineprint/payment", { state: { plan } });
     }
   };
 
@@ -236,6 +244,26 @@ const Pricing = () => {
           </div>
         )}
       </div>
+
+      {showShopModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white p-6 rounded-lg w-[400px] text-center">
+            <h2 className="text-lg font-bold mb-4">Notice</h2>
+            <p className="mb-6">
+              First, please add your shop before selecting a plan.
+            </p>
+            <button
+              className="bg-[#004368] text-white px-4 py-2 rounded hover:bg-opacity-80"
+              onClick={() => {
+                setShowShopModal(false);
+                window.location.href = "/online"; // Redirect to /online
+              }}
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Free Plan Modal */}
       <FreePlanModal

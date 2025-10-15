@@ -35,11 +35,14 @@ import {
 import { useNavigate } from "react-router-dom";
 import ShopeeAuthModal from "./ShopeeAuthModal";
 import { useSelector } from "react-redux";
+import calculatePaymentExpireTime from "../../lib/calculatePaymentExpireTime";
 
 const Home = () => {
   const { t } = useTranslation();
   const [cipher, setCipher] = useState("");
   const tiktokAppKey = localStorage.getItem("tiktokAppKey");
+  const tiktokAuthCountry = localStorage.getItem("tiktokAuthCountry");
+  const shopeeAuthCountry = localStorage.getItem("shopeeAuthCountry");
   const storedShopPlatform = localStorage.getItem("SelectedPlatform");
   const [selectedPlatform, setSelectedPlatform] = useState(
     storedShopPlatform || "tiktok"
@@ -91,6 +94,10 @@ const Home = () => {
   const [shopeeCompletedOrders, setShopeeCompletedOrders] = useState([]);
   const [shopeeCancelledOrders, setShopeeCancelledOrders] = useState([]);
   const [showAuthModal, setShowAuthModal] = useState(false);
+
+  // ✅ Parse the user from localStorage properly
+  const storedUser = localStorage.getItem("printerUser");
+  const user = storedUser ? JSON.parse(storedUser) : null;
 
   //TikTok Orders Call
   const [loadOrderList] = useLoadOrderListMutation();
@@ -172,10 +179,10 @@ const Home = () => {
 
   // Cipher Manage for Tiktok
   useEffect(() => {
-    console.log("now.........................");
-    if (!tiktokAppKey) return; // wait until key is ready
+    if (!tiktokAuthCountry) return; // wait until key is ready
 
     const storedCipher = localStorage.getItem("tiktokShopInfo");
+
     if (storedCipher) {
       try {
         setCipher(JSON.parse(storedCipher));
@@ -185,7 +192,7 @@ const Home = () => {
     } else {
       setCipher([]);
     }
-  }, [tiktokAppKey, selectedPlatform]);
+  }, [tiktokAuthCountry, selectedPlatform]);
 
   //Lazada Shope Confirmation
 
@@ -217,13 +224,10 @@ const Home = () => {
         .catch((err) => console.error("Activation error:", err));
 
       // 3. Remove query params → redirect to homepage
-      navigate("/", { replace: true });
+      navigate("/onlineprint/", { replace: true });
     }
   }, [navigate]);
 
-  // ✅ Parse the user from localStorage properly
-  const storedUser = localStorage.getItem("printerUser");
-  const user = storedUser ? JSON.parse(storedUser) : null;
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const tiktokState = urlParams.get("tiktok-state"); // e.g. 6grr1iku02uoh
@@ -231,7 +235,7 @@ const Home = () => {
     if (tiktokState && user) {
       // 1️⃣ Save TikTok APP key (state) locally
       localStorage.setItem("tiktokAppKey", tiktokState);
-
+      localStorage.setItem("tiktokAuthCountry", "MY");
       // 2️⃣ Prepare data
       const ShopCountry = localStorage.getItem("tiktokAuthCountry") || "MY"; // default if missing
       const payload = {
@@ -258,7 +262,7 @@ const Home = () => {
           return text ? JSON.parse(text) : {}; // Parse only if not empty
         })
         .then((data) => {
-          console.log("✅ TikTok shop added:", data);
+          window.location.reload();
         })
         .catch((err) => {
           console.error(
@@ -268,7 +272,7 @@ const Home = () => {
         });
 
       // 4️⃣ Clean URL → redirect home
-      navigate("/", { replace: true });
+      navigate("/onlineprint/", { replace: true });
     }
   }, [navigate, user]);
 
@@ -305,9 +309,7 @@ const Home = () => {
 
   // TikTok Fetch Orders according to the Status
   useEffect(() => {
-    console.log("star................1");
     const fetchStatusOrders = async () => {
-      console.log("star................2", cipher[0]?.cipher, tiktokAppKey);
       if (!cipher[0]?.cipher) return;
 
       const statuses = [
@@ -324,12 +326,10 @@ const Home = () => {
       );
 
       for (const status of statuses) {
-        console.log("tiktokAppKey", tiktokAppKey);
-        console.log("star................3");
         try {
           const response = await loadOrderList({
             cipher: cipher[0]?.cipher,
-            appKey: tiktokAppKey,
+            // appKey: tiktokAppKey,
             createTimeGe: sevenDaysAgoUnix,
             createTimeLt: nowUnix,
             updateTimeGe: sevenDaysAgoUnix,
@@ -538,9 +538,18 @@ const Home = () => {
             console.warn(
               "Shopee access token invalid, triggering OAuth flow..."
             );
-
-            // Show the ShopeeAuthModal
-            setShowAuthModal(true);
+            // Delay 2 seconds before redirecting
+            setTimeout(() => {
+              // 🟢 Double-check platform before redirecting
+              const currentPlatform = localStorage.getItem("SelectedPlatform");
+              if (currentPlatform === "shopee") {
+                window.location.href = `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/auth/url-generate/dynamic?countryCode=${shopeeAuthCountry}`;
+                // setShowAuthModal(true);
+                console.log("Redirecting to Shopee auth page...");
+              } else {
+                console.log("Skipped Shopee auth redirect — platform changed.");
+              }
+            }, 2000);
 
             // Stop further processing until token is refreshed
             return;
@@ -648,7 +657,7 @@ const Home = () => {
   const handleCardClick = (type) => {
     const platformPath = platformPaths[selectedPlatform];
     if (platformPath) {
-      navigate(`/${type}/${platformPath}`);
+      navigate(`/onlineprint/${type}/${platformPath}`);
     }
   };
 
@@ -822,79 +831,95 @@ const Home = () => {
                   {format(now, "dd MMMM yyyy")}
                 </span>
               </div>
+
               <div className="pt-[30px]">
-                <ActivityRow
-                  icon={FiPrinter}
-                  label={t("Printed")}
-                  value={
-                    selectedPlatform === "tiktok"
-                      ? awaitingCollectionPrinted?.length
-                          ?.toString()
-                          .padStart(2, "0") || "00"
-                      : selectedPlatform === "lazada"
-                      ? lazadaPackedPrinted?.length
-                          ?.toString()
-                          .padStart(2, "0") || "00"
-                      : selectedPlatform === "shopee"
-                      ? shopeeProcessedPrinted?.length
-                          ?.toString()
-                          .padStart(2, "0") || "00"
-                      : "00"
-                  }
-                />
-                <ActivityRow
-                  icon={CiTimer}
-                  label={t("New Orders")}
-                  value={
-                    selectedPlatform === "tiktok"
-                      ? awaitingShipment?.length?.toString().padStart(2, "0") ||
-                        "00"
-                      : selectedPlatform === "lazada"
-                      ? lazadaNewOrders?.length?.toString().padStart(2, "0") ||
-                        "00"
-                      : selectedPlatform === "shopee"
-                      ? shopeeReadyToShip?.length
-                          ?.toString()
-                          .padStart(2, "0") || "00"
-                      : "00"
-                  }
-                />
-                <ActivityRow
-                  icon={HiOutlineReceiptRefund}
-                  label={t("Cancelled")}
-                  value={
-                    selectedPlatform === "tiktok"
-                      ? cancelledOrders?.length?.toString().padStart(2, "0") ||
-                        "00"
-                      : selectedPlatform === "lazada"
-                      ? lazadacancelledOrders?.length
-                          ?.toString()
-                          .padStart(2, "0") || "00"
-                      : selectedPlatform === "shopee"
-                      ? shopeeCancelledOrders?.length
-                          ?.toString()
-                          .padStart(2, "0") || "00"
-                      : "00"
-                  }
-                />
-                <ActivityRow
-                  icon={CiDeliveryTruck}
-                  label={t("Processing for Delivery")}
-                  value={
-                    selectedPlatform === "tiktok"
-                      ? awaitingCollection?.length
-                          ?.toString()
-                          .padStart(2, "0") || "00"
-                      : selectedPlatform === "lazada"
-                      ? lazadaOnShipping?.length?.toString().padStart(2, "0") ||
-                        "00"
-                      : selectedPlatform === "shopee"
-                      ? shopeeProcessedUnprinted?.length
-                          ?.toString()
-                          .padStart(2, "0") || "00"
-                      : "00"
-                  }
-                />
+                <div onClick={() => handleCardClick("printed")}>
+                  <ActivityRow
+                    icon={FiPrinter}
+                    label={t("Printed")}
+                    value={
+                      selectedPlatform === "tiktok"
+                        ? awaitingCollectionPrinted?.length
+                            ?.toString()
+                            .padStart(2, "0") || "00"
+                        : selectedPlatform === "lazada"
+                        ? lazadaPackedPrinted?.length
+                            ?.toString()
+                            .padStart(2, "0") || "00"
+                        : selectedPlatform === "shopee"
+                        ? shopeeProcessedPrinted?.length
+                            ?.toString()
+                            .padStart(2, "0") || "00"
+                        : "00"
+                    }
+                  />
+                </div>
+
+                <div onClick={() => handleCardClick("NewOrders")}>
+                  <ActivityRow
+                    icon={CiTimer}
+                    label={t("New Orders")}
+                    value={
+                      selectedPlatform === "tiktok"
+                        ? awaitingShipment?.length
+                            ?.toString()
+                            .padStart(2, "0") || "00"
+                        : selectedPlatform === "lazada"
+                        ? lazadaNewOrders?.length
+                            ?.toString()
+                            .padStart(2, "0") || "00"
+                        : selectedPlatform === "shopee"
+                        ? shopeeReadyToShip?.length
+                            ?.toString()
+                            .padStart(2, "0") || "00"
+                        : "00"
+                    }
+                  />
+                </div>
+
+                <div onClick={() => handleCardClick("Cancelled")}>
+                  <ActivityRow
+                    icon={HiOutlineReceiptRefund}
+                    label={t("Cancelled")}
+                    value={
+                      selectedPlatform === "tiktok"
+                        ? cancelledOrders?.length
+                            ?.toString()
+                            .padStart(2, "0") || "00"
+                        : selectedPlatform === "lazada"
+                        ? lazadacancelledOrders?.length
+                            ?.toString()
+                            .padStart(2, "0") || "00"
+                        : selectedPlatform === "shopee"
+                        ? shopeeCancelledOrders?.length
+                            ?.toString()
+                            .padStart(2, "0") || "00"
+                        : "00"
+                    }
+                  />
+                </div>
+
+                <div onClick={() => handleCardClick("needPrint")}>
+                  <ActivityRow
+                    icon={CiDeliveryTruck}
+                    label={t("Processing for Delivery")}
+                    value={
+                      selectedPlatform === "tiktok"
+                        ? awaitingCollection?.length
+                            ?.toString()
+                            .padStart(2, "0") || "00"
+                        : selectedPlatform === "lazada"
+                        ? lazadaOnShipping?.length
+                            ?.toString()
+                            .padStart(2, "0") || "00"
+                        : selectedPlatform === "shopee"
+                        ? shopeeProcessedUnprinted?.length
+                            ?.toString()
+                            .padStart(2, "0") || "00"
+                        : "00"
+                    }
+                  />
+                </div>
               </div>
             </div>
           </div>

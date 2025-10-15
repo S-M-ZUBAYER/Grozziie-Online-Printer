@@ -22,7 +22,7 @@ const DashboardSection = ({ selectedPlatform, selectedStore }) => {
     };
     const platformPath = platformPaths[selectedPlatform];
     if (platformPath) {
-      navigate(`/${type}/${platformPath}`);
+      navigate(`/onlineprint/${type}/${platformPath}`);
     }
   };
 

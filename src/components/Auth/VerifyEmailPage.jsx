@@ -44,7 +44,7 @@ const VerifyEmailPage = () => {
       );
 
       if (response.status === 200) {
-        navigate("/login");
+        navigate("/onlineprint/login");
       } else if (response.status === 404) {
         setVerifyCodeError(t("wrong_verification_code"));
       } else {

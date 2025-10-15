@@ -53,6 +53,7 @@ const BatchPrint = () => {
     );
     return matchedOption?.status || defaultOption?.status || "";
   });
+  console.log(selectedStatus, "selectedStatussssssssssssss");
 
   const [tikTokPrintedIds, setTikTokPrintedIds] = useState([]);
 
@@ -158,18 +159,24 @@ const BatchPrint = () => {
     const parts = location.pathname.split("/");
     // e.g. ["", "printed", "LazadaOrderManagement"]
 
-    if (parts.length === 3) {
-      console.log("Second part:", parts[1]); // LazadaOrderManagement
+    if (parts.length === 4) {
+      console.log("Second part:", parts[2]); // LazadaOrderManagement
       setCardStatus(true);
-      if (parts[1] === "printed") {
+      if (parts[2] === "printed") {
         setTikTokOrderStatusCheck("AWAITING_COLLECTION_PRINTED");
         setSelectedStatus("Printed");
-      } else if (parts[1] === "shipped") {
+      } else if (parts[2] === "shipped") {
         setTikTokOrderStatusCheck("IN_TRANSIT");
         setSelectedStatus("On The Way");
-      } else if (parts[1] === "needPrint") {
+      } else if (parts[2] === "needPrint") {
         setTikTokOrderStatusCheck("AWAITING_COLLECTION");
         setSelectedStatus("shipping");
+      } else if (parts[2] === "NewOrders") {
+        setTikTokOrderStatusCheck("AWAITING_SHIPMENT");
+        setSelectedStatus("Waiting For Shipment");
+      } else if (parts[2] === "Cancelled") {
+        setTikTokOrderStatusCheck("CANCELLED");
+        setSelectedStatus("Cancel");
       }
     }
   }, [location]);
@@ -212,7 +219,6 @@ const BatchPrint = () => {
 
         const response = await loadOrderList({
           cipher: cipher[0]?.cipher,
-          appKey: tiktokAppKey,
           shippingType: "TIKTOK",
           createTimeGe: sevenDaysAgo,
           createTimeLt: now,
@@ -443,6 +449,7 @@ const BatchPrint = () => {
   const [confirmAction, setConfirmAction] = useState(null);
   const [showConfirmButton, setShowConfirmButton] = useState(false);
   const tiktokAppKey = localStorage.getItem("tiktokAppKey");
+  const tiktokAuthCountry = localStorage.getItem("tiktokAuthCountry");
 
   // modal show function
   const handleToCheckItemsPackageUpdate = () => {
@@ -559,9 +566,9 @@ const BatchPrint = () => {
           // url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
           //   cipherValue
           // )}`;
-          url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner-debug/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
+          url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
             cipherValue
-          )}&appKey=${encodeURIComponent(tiktokAppKey)}`;
+          )}&countryCode=${encodeURIComponent(tiktokAuthCountry)}`;
 
           body = {
             packageId,
@@ -611,7 +618,7 @@ const BatchPrint = () => {
     dispatch(
       checkedItemsChange({ items: checkedItems, from: tikTokOrderStatusCheck })
     );
-    navigate("/tikTokPrintPrinting");
+    navigate("/onlineprint/tikTokPrintPrinting");
   };
 
   const handleFileChange = async (e) => {

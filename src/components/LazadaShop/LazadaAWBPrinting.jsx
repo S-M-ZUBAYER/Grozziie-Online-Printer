@@ -36,30 +36,30 @@ const LazadaAWBPrinting = () => {
 
   const currentItem = checkedItems?.items?.[0]; // Show first item for warehouse/delivery
 
-  // const fetchWarehouses = async () => {
-  //   try {
-  //     const res = await fetch(
-  //       `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/logistics/warehouse-list?cipher=${cipher[0].cipher}`
-  //     );
-  //     const json = await res.json();
-  //     if (json.code === 0) setWarehouses(json.data.warehouses || []);
-  //   } catch (err) {
-  //     console.error("Failed to fetch warehouses:", err);
-  //   }
-  // };
+  const fetchWarehouses = async () => {
+    try {
+      const res = await fetch(
+        `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/logistics/warehouse-list?cipher=${cipher[0].cipher}`
+      );
+      const json = await res.json();
+      if (json.code === 0) setWarehouses(json.data.warehouses || []);
+    } catch (err) {
+      console.error("Failed to fetch warehouses:", err);
+    }
+  };
 
-  // const fetchShipmentProviders = async () => {
-  //   try {
-  //     const res = await fetch(
-  //       `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/logistics/warehouse/delivery-option?warehouseId=${currentItem?.warehouseId}&cipher=${cipher[0].cipher}`
-  //     );
-  //     const json = await res.json();
-  //     if (json.code === 0)
-  //       setShipmentProviders(json.data.deliveryOptions || []);
-  //   } catch (err) {
-  //     console.error("Failed to fetch shipment providers:", err);
-  //   }
-  // };
+  const fetchShipmentProviders = async () => {
+    try {
+      const res = await fetch(
+        `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/logistics/warehouse/delivery-option?warehouseId=${currentItem?.warehouseId}&cipher=${cipher[0].cipher}`
+      );
+      const json = await res.json();
+      if (json.code === 0)
+        setShipmentProviders(json.data.deliveryOptions || []);
+    } catch (err) {
+      console.error("Failed to fetch shipment providers:", err);
+    }
+  };
 
   const showErrorModal = (message) => {
     setModalTitle(

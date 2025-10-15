@@ -19,8 +19,8 @@ export const useLazadaOrders = ({ lazadaOrderStatusCheck, setLazadaOrderStatusCh
     // Route-based status updates
     useEffect(() => {
         const parts = location.pathname.split("/");
-        if (parts.length === 3) {
-            const routeStatus = parts[1];
+        if (parts.length === 4) {
+            const routeStatus = parts[2];
             const statusMap = {
                 'printed': "Packed_Printed",
                 'shipped': "shipped",
