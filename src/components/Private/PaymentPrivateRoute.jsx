@@ -223,7 +223,7 @@ const PaymentPrivateRoute = ({ children }) => {
 
   const closeModal = () => {
     setIsModalOpen(false);
-    navigate("/pricing");
+    navigate("/onlineprint/pricing");
   };
 
   return (

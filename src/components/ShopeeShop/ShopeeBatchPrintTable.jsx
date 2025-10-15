@@ -19,6 +19,7 @@ const ShopeeBatchPrintTable = ({
   const [trackingInfo, setTrackingInfo] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const shopeeAuthCountry = localStorage.getItem("shopeeAuthCountry");
 
   const formatText = (text) => {
     if (!text) return t("NoData");
@@ -43,7 +44,7 @@ const ShopeeBatchPrintTable = ({
 
       // 🔹 Call your backend Shopee API
       const res = await fetch(
-        `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-tracking-info?orderSn=${orderSn}`
+        `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/get-tracking-info?countryCode=${shopeeAuthCountry}&orderSn=${orderSn}`
       );
 
       if (!res.ok) {

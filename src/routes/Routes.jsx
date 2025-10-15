@@ -73,23 +73,23 @@ export const routes = createBrowserRouter([
     element: <ErrorPage />,
   },
   {
-    path: "/register",
+    path: "/onlineprint/register",
     element: <Registration />,
   },
   {
-    path: "/login",
+    path: "/onlineprint/login",
     element: <Login />,
   },
   {
-    path: "/forgotpassword",
+    path: "/onlineprint/forgotpassword",
     element: <ForgotPassword />,
   },
   {
-    path: "/resetpassword",
+    path: "/onlineprint/resetpassword",
     element: <ResetPassword />,
   },
   {
-    path: "/verifyemail",
+    path: "/onlineprint/verifyemail",
     element: <VerifyEmailPage />,
   },
   {
@@ -99,7 +99,7 @@ export const routes = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       {
-        path: "/",
+        path: "/onlineprint/",
         element: (
           <PrivateRoute>
             {/* <PaymentPrivateRoute> */}
@@ -109,7 +109,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/home",
+        path: "/onlineprint/home",
         element: (
           <PrivateRoute>
             {/* <PaymentPrivateRoute> */}
@@ -118,28 +118,18 @@ export const routes = createBrowserRouter([
           </PrivateRoute>
         ),
       },
+      // {
+      //   path: "/onlineprint/首页",
+      //   element: (
+      //     // <PrivateRoute>
+      //     // <PaymentPrivateRoute>
+      //     <Home />
+      //     // </PaymentPrivateRoute>
+      //     // </PrivateRoute>
+      //   ),
+      // },
       {
-        path: "/首页",
-        element: (
-          // <PrivateRoute>
-          // <PaymentPrivateRoute>
-          <Home />
-          // </PaymentPrivateRoute>
-          // </PrivateRoute>
-        ),
-      },
-      {
-        path: "/TikTokOrderManagemnt",
-        element: (
-          <PrivateRoute>
-            <PaymentPrivateRoute>
-              <BatchPrint />
-            </PaymentPrivateRoute>
-          </PrivateRoute>
-        ),
-      },
-      {
-        path: "/:cardInfo/TikTokOrderManagemnt",
+        path: "/onlineprint/TikTokOrderManagemnt",
         element: (
           <PrivateRoute>
             <PaymentPrivateRoute>
@@ -149,7 +139,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/批量打印",
+        path: "/onlineprint/:cardInfo/TikTokOrderManagemnt",
         element: (
           <PrivateRoute>
             <PaymentPrivateRoute>
@@ -158,8 +148,18 @@ export const routes = createBrowserRouter([
           </PrivateRoute>
         ),
       },
+      // {
+      //   path: "/批量打印",
+      //   element: (
+      //     <PrivateRoute>
+      //       <PaymentPrivateRoute>
+      //         <BatchPrint />
+      //       </PaymentPrivateRoute>
+      //     </PrivateRoute>
+      //   ),
+      // },
       {
-        path: "/LazadaOrderManagement",
+        path: "/onlineprint/LazadaOrderManagement",
         element: (
           <PrivateRoute>
             <PaymentPrivateRoute>
@@ -169,7 +169,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/:cardInfo/LazadaOrderManagement",
+        path: "/onlineprint/:cardInfo/LazadaOrderManagement",
         element: (
           <PrivateRoute>
             <PaymentPrivateRoute>
@@ -179,7 +179,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/ShopeeOrderManagement",
+        path: "/onlineprint/ShopeeOrderManagement",
         element: (
           <PrivateRoute>
             <PaymentPrivateRoute>
@@ -189,7 +189,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/:cardInfo/ShopeeOrderManagement",
+        path: "/onlineprint/:cardInfo/ShopeeOrderManagement",
         element: (
           <PrivateRoute>
             <PaymentPrivateRoute>
@@ -198,58 +198,58 @@ export const routes = createBrowserRouter([
           </PrivateRoute>
         ),
       },
+      // {
+      //   path: "/singlePrint",
+      //   element: (
+      //     <PrivateRoute>
+      //       <PaymentPrivateRoute>
+      //         <SinglePrint />
+      //       </PaymentPrivateRoute>
+      //     </PrivateRoute>
+      //   ),
+      // },
+      // {
+      //   path: "/单个打印",
+      //   element: (
+      //     // <PrivateRoute>
+      //     // <PaymentPrivateRoute>
+      //     <SinglePrint />
+      //     // </PaymentPrivateRoute>
+      //     // </PrivateRoute>
+      //   ),
+      // },
+      // {
+      //   path: "/manualOrder",
+      //   element: (
+      //     <PrivateRoute>
+      //       <PaymentPrivateRoute>
+      //         <ManualOrder />
+      //       </PaymentPrivateRoute>
+      //     </PrivateRoute>
+      //   ),
+      // },
+      // {
+      //   path: "/手动订单",
+      //   element: (
+      //     // <PrivateRoute>
+      //     // <PaymentPrivateRoute>
+      //     <ManualOrder />
+      //     // </PaymentPrivateRoute>
+      //     // </PrivateRoute>
+      //   ),
+      // },
       {
-        path: "/singlePrint",
-        element: (
-          <PrivateRoute>
-            <PaymentPrivateRoute>
-              <SinglePrint />
-            </PaymentPrivateRoute>
-          </PrivateRoute>
-        ),
-      },
-      {
-        path: "/单个打印",
-        element: (
-          // <PrivateRoute>
-          // <PaymentPrivateRoute>
-          <SinglePrint />
-          // </PaymentPrivateRoute>
-          // </PrivateRoute>
-        ),
-      },
-      {
-        path: "/manualOrder",
-        element: (
-          <PrivateRoute>
-            <PaymentPrivateRoute>
-              <ManualOrder />
-            </PaymentPrivateRoute>
-          </PrivateRoute>
-        ),
-      },
-      {
-        path: "/手动订单",
-        element: (
-          // <PrivateRoute>
-          // <PaymentPrivateRoute>
-          <ManualOrder />
-          // </PaymentPrivateRoute>
-          // </PrivateRoute>
-        ),
-      },
-      {
-        path: "/contact",
+        path: "/onlineprint/contact",
         element: <Contact />,
       },
-      {
-        path: "/联系我们",
-        element: <Contact />,
-      },
-      {
-        path: "/displayorder",
-        element: <DisplayOrder />,
-      },
+      // {
+      //   path: "/联系我们",
+      //   element: <Contact />,
+      // },
+      // {
+      //   path: "/displayorder",
+      //   element: <DisplayOrder />,
+      // },
       {
         path: "/batchprintexpressdelivery",
         element: (
@@ -261,7 +261,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/tikTokPrintPrinting",
+        path: "/onlineprint/tikTokPrintPrinting",
         element: (
           <PrivateRoute>
             <PaymentPrivateRoute>
@@ -271,7 +271,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/lazadaAWBPrinting",
+        path: "/onlineprint/lazadaAWBPrinting",
         element: (
           <PrivateRoute>
             <PaymentPrivateRoute>
@@ -281,7 +281,7 @@ export const routes = createBrowserRouter([
         ),
       },
       {
-        path: "/shopeeAWBPrinting",
+        path: "/onlineprint/shopeeAWBPrinting",
         element: (
           <PrivateRoute>
             <PaymentPrivateRoute>
@@ -293,47 +293,47 @@ export const routes = createBrowserRouter([
     ],
   },
   {
-    path: "/settings",
+    path: "/onlineprint/settings",
     element: <SettingLayout />,
     children: [
       {
-        path: "/settings/recipient information",
+        path: "recipient information",
         element: <Settings />,
       },
       {
-        path: "/settings/sender information",
+        path: "sender information",
         element: <SenderInfo />,
       },
       {
-        path: "/settings/display order",
+        path: "displayOrder",
         element: <DisplayOrder />,
       },
       {
-        path: "/settings/Order Print Filter",
+        path: "OrderPrintFilter",
         element: <OrderPrintFilter />,
       },
       {
-        path: "/settings/Automatic Shipping Settings",
+        path: "AutomaticShippingSettings",
         element: <AutomaticShippingSettings />,
       },
       {
-        path: "/settings/Logistic Machine Settings",
+        path: "LogisticMachineSettings",
         element: <LogisticMachineSettings />,
       },
       {
-        path: "/settings/deliveryType/shopee",
+        path: "deliveryType/shopee",
         element: <ShopeedeliveryType />,
       },
       {
-        path: "/settings/deliveryType/lazada",
+        path: "deliveryType/lazada",
         element: <LazadaDeliveryType />,
       },
       {
-        path: "/settings/deliveryType/tiktok",
+        path: "deliveryType/tiktok",
         element: <TiktokDeliveryType />,
       },
       {
-        path: "/settings/Express Unreachable Area",
+        path: "Express Unreachable Area",
         element: <ExpressUnreachableArea />,
       },
     ],
@@ -580,7 +580,7 @@ export const routes = createBrowserRouter([
     ],
   },
   {
-    path: "/pricing",
+    path: "/onlineprint/pricing",
     element: (
       // <PrivateRoute>
       <Pricing />
@@ -588,11 +588,11 @@ export const routes = createBrowserRouter([
     ),
   },
   {
-    path: "/payment",
+    path: "/onlineprint/payment",
     element: <PaymentSystem />,
   },
   {
-    path: "/success",
+    path: "/onlineprint/success",
     element: <SuccessPage />,
   },
 ]);

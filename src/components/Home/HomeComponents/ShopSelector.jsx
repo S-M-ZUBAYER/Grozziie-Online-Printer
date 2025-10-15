@@ -31,66 +31,65 @@ const ShopSelector = ({
   ];
 
   // Initialize with first TikTok shop if available
+  // useEffect(() => {
+  //   if (TikTokShopList?.length > 0) {
+  //     setSelectedPlatform(selectedPlatform);
+  //     setSelectedStore(TikTokShopList[0].name);
+  //     saveShopToLocalStorage("tiktok", [TikTokShopList[0]]);
+  //   }
+  // }, [TikTokShopList]);
+
   useEffect(() => {
-    if (TikTokShopList?.length > 0) {
-      setSelectedPlatform(selectedPlatform);
+    // No need disable Tiktok
+    const isTikTokDisabled = TikTokShopList?.length === 0; // TikTok disabled if no shops
+    const hasTikTokShops = TikTokShopList?.length > 0;
+
+    // Need TikTok Disable
+    // const isTikTokDisabled = true;
+    // const hasTikTokShops = false;
+
+    if (hasTikTokShops && !isTikTokDisabled) {
+      // TikTok enabled → select first TikTok shop
+      setSelectedPlatform("tiktok");
       setSelectedStore(TikTokShopList[0].name);
       saveShopToLocalStorage("tiktok", [TikTokShopList[0]]);
+      localStorage.setItem("SelectedPlatform", "tiktok");
+      localStorage.setItem("tiktokAuthCountry", "MY");
+    } else {
+      // TikTok disabled or empty → fallback to first available shop from Shopee/Lazada
+      const fallbackPlatform = ["shopee", "lazada"].find((p) => {
+        if (p === "shopee" && ShopeeShopList?.length > 0) return true;
+        if (p === "lazada" && LazadaShopList?.length > 0) return true;
+        return false;
+      });
+
+      if (fallbackPlatform) {
+        const platformList =
+          fallbackPlatform === "shopee" ? ShopeeShopList : LazadaShopList;
+        const firstShop = platformList[0];
+
+        if (firstShop) {
+          setSelectedPlatform(fallbackPlatform);
+          setSelectedStore(firstShop.name);
+          saveShopToLocalStorage(fallbackPlatform, [firstShop]);
+          localStorage.setItem("SelectedPlatform", fallbackPlatform);
+
+          // Save auth country if needed
+          if (fallbackPlatform === "shopee") {
+            localStorage.setItem("shopeeAuthCountry", "MY");
+          } else if (fallbackPlatform === "lazada") {
+            localStorage.setItem("lazadaAuthCountry", "MY");
+          }
+        }
+      }
     }
-  }, [TikTokShopList]);
+  }, [TikTokShopList, ShopeeShopList, LazadaShopList]);
 
   // Save full shop array with only one selected shop object for each platform
   const saveShopToLocalStorage = (platformId, shopArray) => {
     const key = `${platformId}ShopInfo`;
     localStorage.setItem(key, JSON.stringify(shopArray));
   };
-
-  // // When selecting platform, automatically select the first store of that platform
-  // const handlePlatformSelect = (platformId) => {
-  //   setSelectedPlatform(platformId);
-  //   localStorage.setItem("SelectedPlatform", platformId);
-  //   // Find the platform and get its first store
-  //   const platformObj = shops.find((shop) => shop.id === platformId);
-  //   if (platformObj && platformObj.stores.length > 0) {
-  //     const firstStore = platformObj.stores[0];
-  //     setSelectedStore(firstStore.name);
-  //     saveShopToLocalStorage(platformId, [firstStore]);
-  //   } else {
-  //     setSelectedStore(null);
-  //   }
-  // };
-
-  // When selecting platform, automatically select the first store of that platform
-  // const handlePlatformSelect = (platformId) => {
-  //   setSelectedPlatform(platformId);
-  //   localStorage.setItem("SelectedPlatform", platformId);
-
-  //   const platformObj = shops.find((shop) => shop.id === platformId);
-
-  //   if (!platformObj) return;
-
-  //   // 🟦 Special handling for Lazada
-  //   if (platformId === "lazada") {
-  //     const savedLazada = JSON.parse(localStorage.getItem("lazadaShopInfo"));
-  //     if (savedLazada && savedLazada.length > 0) {
-  //       // ✅ If Lazada previously selected → restore it
-  //       setSelectedStore(savedLazada[0].name);
-  //       saveShopToLocalStorage("lazada", savedLazada);
-  //       saveShopToLocalStorage("lazadaAppKey", Number(savedLazada[0].cipher));
-  //       return;
-  //     }
-  //   }
-
-  //   // 🟩 Default: select first store if available
-  //   if (platformObj.stores.length > 0) {
-  //     const firstStore = platformObj.stores[0];
-  //     setSelectedStore(firstStore.name);
-  //     saveShopToLocalStorage(platformId, [firstStore]);
-  //     saveShopToLocalStorage("lazadaAppKey", Number(firstStore.cipher));
-  //   } else {
-  //     setSelectedStore(null);
-  //   }
-  // };
 
   const handlePlatformSelect = (platformId) => {
     setSelectedPlatform(platformId);
@@ -110,8 +109,20 @@ const ShopSelector = ({
       }
     }
 
+    // 🟦 Lazada special handling
+    else if (platformId === "shopee") {
+      const savedShopee = JSON.parse(localStorage.getItem("shopeeShopInfo"));
+      if (savedShopee && savedShopee.length > 0) {
+        localStorage.setItem("shopeeAuthCountry", "MY");
+        setSelectedStore(savedShopee[0].name);
+        saveShopToLocalStorage("shopee", savedShopee);
+        saveShopToLocalStorage("shopeeAppKey", Number(savedShopee[0].cipher));
+        return;
+      }
+    }
+
     // 🟪 TikTok special handling
-    if (platformId === "tiktok") {
+    else if (platformId === "tiktok") {
       const savedTikTok =
         JSON.parse(localStorage.getItem("tiktokShopInfo")) || [];
       const prevSelected = JSON.parse(
@@ -137,10 +148,16 @@ const ShopSelector = ({
           JSON.stringify(selectedStoreObj.name)
         );
         saveShopToLocalStorage("tiktok", [selectedStoreObj]);
-        localStorage.setItem(
-          "tiktokAppKey",
-          JSON.stringify(selectedStoreObj.appKey)
-        );
+        const appKeyValue = selectedStoreObj.appKey;
+
+        // Remove accidental quotes if any
+        const cleanedAppKey =
+          typeof appKeyValue === "string"
+            ? appKeyValue.replace(/^"|"$/g, "")
+            : String(appKeyValue);
+
+        localStorage.setItem("tiktokAppKey", cleanedAppKey);
+        localStorage.setItem("tiktokAuthCountry", "MY");
       }
       return;
     }
@@ -181,91 +198,207 @@ const ShopSelector = ({
       }
       // ✅ Fix typo: tiktok
       else if (platformId === "tiktok") {
-        console.log("tiktok", fullShopObj?.appKey);
-        localStorage.setItem(
-          "tiktokAppKey",
-          JSON.stringify(fullShopObj?.appKey)
-        );
+        const appKeyValue = fullShopObj?.appKey;
+
+        // Remove accidental quotes if any
+        const cleanedAppKey =
+          typeof appKeyValue === "string"
+            ? appKeyValue.replace(/^"|"$/g, "")
+            : String(appKeyValue);
+
+        localStorage.setItem("tiktokAppKey", cleanedAppKey);
+        localStorage.setItem("tiktokAuthCountry", "MY");
+      }
+      // ✅ Fix typo: Shopee
+      else if (platformId === "shopee") {
+        console.log("shopee", fullShopObj?.appKey);
+        const appKeyValue = fullShopObj?.appKey;
+
+        // Remove accidental quotes if any
+        const cleanedAppKey =
+          typeof appKeyValue === "string"
+            ? appKeyValue.replace(/^"|"$/g, "")
+            : String(appKeyValue);
+
+        localStorage.setItem("shopeeAppKey", cleanedAppKey);
+        localStorage.setItem("shopeeAuthCountry", "MY");
       }
     }
   };
 
-  const renderShopItem = ({ id, label, stores }) => (
-    <NavigationMenu.Item className="relative" key={id}>
-      <NavigationMenu.Trigger
-        className="group flex items-center justify-between gap-2 px-3 py-2 rounded text-[15px] font-medium hover:bg-violet3 outline-none"
-        onClick={() => handlePlatformSelect(id)}
-        onMouseEnter={() => setOpenShop(id)}
-      >
-        <Checkbox.Root
-          className="flex size-[25px] appearance-none items-center justify-center rounded bg-white outline-none hover:bg-violet3"
-          checked={selectedPlatform === id}
-          onCheckedChange={() => handlePlatformSelect(id)}
-          id={id}
+  // Without Disable the shop button this renderShopItem code need to use ............................
+  // const renderShopItem = ({ id, label, stores }) => (
+  //   <NavigationMenu.Item className="relative" key={id}>
+  //     <NavigationMenu.Trigger
+  //       className="group flex items-center justify-between gap-2 px-3 py-2 rounded text-[15px] font-medium hover:bg-violet3 outline-none"
+  //       onClick={() => handlePlatformSelect(id)}
+  //       onMouseEnter={() => setOpenShop(id)}
+  //     >
+  //       <Checkbox.Root
+  //         className="flex size-[25px] appearance-none items-center justify-center rounded bg-white outline-none hover:bg-violet3"
+  //         checked={selectedPlatform === id}
+  //         onCheckedChange={() => handlePlatformSelect(id)}
+  //         id={id}
+  //       >
+  //         <Checkbox.Indicator className="text-violet11">
+  //           <CheckIcon />
+  //         </Checkbox.Indicator>
+  //       </Checkbox.Root>
+
+  //       <label
+  //         className={`pl-[15px] text-[15px] leading-none ${
+  //           selectedPlatform === id ? "text-[#004368]" : "text-[#00436866]"
+  //         }`}
+  //         htmlFor={id}
+  //       >
+  //         {t(`${label}`)}
+  //       </label>
+
+  //       <CaretDownIcon
+  //         className="text-violet10 transition-transform duration-[250ms] ease-in group-data-[state=open]:-rotate-180"
+  //         aria-hidden
+  //       />
+  //     </NavigationMenu.Trigger>
+
+  //     <NavigationMenu.Content>
+  //       <AnimatePresence>
+  //         {openShop === id && (
+  //           <motion.div
+  //             className="absolute top-full mt-2 left-0 w-[300px] bg-white rounded-md shadow-lg z-50 p-4"
+  //             onMouseEnter={() => setOpenShop(id)}
+  //             onMouseLeave={() => setOpenShop(null)}
+  //             initial={{ opacity: 0, y: -10 }}
+  //             animate={{ opacity: 1, y: 0 }}
+  //             exit={{ opacity: 0, y: -10 }}
+  //             transition={{ duration: 0.2 }}
+  //           >
+  //             <ul className="flex flex-col gap-2 max-h-[300px] overflow-auto">
+  //               {stores.map((store, idx) => (
+  //                 <li key={idx} className="flex items-center gap-2">
+  //                   <Checkbox.Root
+  //                     className="flex size-[20px] appearance-none items-center justify-center rounded border border-[#004368] hover:bg-violet3"
+  //                     checked={
+  //                       selectedPlatform === id && selectedStore === store.name
+  //                     }
+  //                     onCheckedChange={() => handleStoreSelect(id, store.name)}
+  //                     id={`${id}-${idx}`}
+  //                   >
+  //                     <Checkbox.Indicator className="text-violet11">
+  //                       <CheckIcon />
+  //                     </Checkbox.Indicator>
+  //                   </Checkbox.Root>
+  //                   <label
+  //                     className="text-[14px] text-[#004368] leading-none"
+  //                     htmlFor={`${id}-${idx}`}
+  //                     title={JSON.stringify(store)}
+  //                   >
+  //                     {store.name}
+  //                   </label>
+  //                 </li>
+  //               ))}
+  //             </ul>
+  //           </motion.div>
+  //         )}
+  //       </AnimatePresence>
+  //     </NavigationMenu.Content>
+  //   </NavigationMenu.Item>
+  // );
+
+  // With Disable the shop button this renderShopItem code need to use ............................
+  const renderShopItem = ({ id, label, stores }) => {
+    // const isDisabled = id === "tiktok" || id === "lazada";
+    const isDisabled = id === "lazada";
+
+    return (
+      <NavigationMenu.Item className="relative" key={id}>
+        <NavigationMenu.Trigger
+          className={`group flex items-center justify-between gap-2 px-3 py-2 rounded text-[15px] font-medium outline-none
+          ${
+            isDisabled
+              ? "opacity-40 cursor-not-allowed pointer-events-none"
+              : "hover:bg-violet3"
+          }
+        `}
+          onClick={() => !isDisabled && handlePlatformSelect(id)}
+          onMouseEnter={() => !isDisabled && setOpenShop(id)}
         >
-          <Checkbox.Indicator className="text-violet11">
-            <CheckIcon />
-          </Checkbox.Indicator>
-        </Checkbox.Root>
+          <Checkbox.Root
+            className="flex size-[25px] appearance-none items-center justify-center rounded bg-white outline-none hover:bg-violet3"
+            checked={selectedPlatform === id}
+            onCheckedChange={() => !isDisabled && handlePlatformSelect(id)}
+            id={id}
+            disabled={isDisabled}
+          >
+            <Checkbox.Indicator className="text-violet11">
+              <CheckIcon />
+            </Checkbox.Indicator>
+          </Checkbox.Root>
 
-        <label
-          className={`pl-[15px] text-[15px] leading-none ${
-            selectedPlatform === id ? "text-[#004368]" : "text-[#00436866]"
-          }`}
-          htmlFor={id}
-        >
-          {t(`${label}`)}
-        </label>
+          <label
+            className={`pl-[15px] text-[15px] leading-none ${
+              selectedPlatform === id ? "text-[#004368]" : "text-[#00436866]"
+            }`}
+            htmlFor={id}
+          >
+            {t(`${label}`)}
+          </label>
 
-        <CaretDownIcon
-          className="text-violet10 transition-transform duration-[250ms] ease-in group-data-[state=open]:-rotate-180"
-          aria-hidden
-        />
-      </NavigationMenu.Trigger>
-
-      <NavigationMenu.Content>
-        <AnimatePresence>
-          {openShop === id && (
-            <motion.div
-              className="absolute top-full mt-2 left-0 w-[300px] bg-white rounded-md shadow-lg z-50 p-4"
-              onMouseEnter={() => setOpenShop(id)}
-              onMouseLeave={() => setOpenShop(null)}
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2 }}
-            >
-              <ul className="flex flex-col gap-2 max-h-[300px] overflow-auto">
-                {stores.map((store, idx) => (
-                  <li key={idx} className="flex items-center gap-2">
-                    <Checkbox.Root
-                      className="flex size-[20px] appearance-none items-center justify-center rounded border border-[#004368] hover:bg-violet3"
-                      checked={
-                        selectedPlatform === id && selectedStore === store.name
-                      }
-                      onCheckedChange={() => handleStoreSelect(id, store.name)}
-                      id={`${id}-${idx}`}
-                    >
-                      <Checkbox.Indicator className="text-violet11">
-                        <CheckIcon />
-                      </Checkbox.Indicator>
-                    </Checkbox.Root>
-                    <label
-                      className="text-[14px] text-[#004368] leading-none"
-                      htmlFor={`${id}-${idx}`}
-                      title={JSON.stringify(store)}
-                    >
-                      {store.name}
-                    </label>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
+          {!isDisabled && (
+            <CaretDownIcon
+              className="text-violet10 transition-transform duration-[250ms] ease-in group-data-[state=open]:-rotate-180"
+              aria-hidden
+            />
           )}
-        </AnimatePresence>
-      </NavigationMenu.Content>
-    </NavigationMenu.Item>
-  );
+        </NavigationMenu.Trigger>
+
+        {!isDisabled && (
+          <NavigationMenu.Content>
+            <AnimatePresence>
+              {openShop === id && (
+                <motion.div
+                  className="absolute top-full mt-2 left-0 w-[300px] bg-white rounded-md shadow-lg z-50 p-4"
+                  onMouseEnter={() => setOpenShop(id)}
+                  onMouseLeave={() => setOpenShop(null)}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ul className="flex flex-col gap-2 max-h-[300px] overflow-auto">
+                    {stores.map((store, idx) => (
+                      <li key={idx} className="flex items-center gap-2">
+                        <Checkbox.Root
+                          className="flex size-[20px] appearance-none items-center justify-center rounded border border-[#004368] hover:bg-violet3"
+                          checked={
+                            selectedPlatform === id &&
+                            selectedStore === store.name
+                          }
+                          onCheckedChange={() =>
+                            handleStoreSelect(id, store.name)
+                          }
+                          id={`${id}-${idx}`}
+                        >
+                          <Checkbox.Indicator className="text-violet11">
+                            <CheckIcon />
+                          </Checkbox.Indicator>
+                        </Checkbox.Root>
+                        <label
+                          className="text-[14px] text-[#004368] leading-none"
+                          htmlFor={`${id}-${idx}`}
+                        >
+                          {store.name}
+                        </label>
+                      </li>
+                    ))}
+                  </ul>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </NavigationMenu.Content>
+        )}
+      </NavigationMenu.Item>
+    );
+  };
 
   return (
     <div className="mb-16">

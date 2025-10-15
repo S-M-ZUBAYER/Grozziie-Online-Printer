@@ -75,7 +75,7 @@ const ResetPassword = () => {
           );
         }
       } else {
-        navigate("/login");
+        navigate("/onlineprint/login");
       }
     } catch (error) {
       console.error("Error occurred:", error);
@@ -186,7 +186,7 @@ const ResetPassword = () => {
 
           <div className="flex items-center justify-center mb-6">
             <Link
-              to="/"
+              to="/onlineprint/"
               className="bg-[#004368] bg-opacity-30 hover:bg-[#004368] text-black hover:text-white w-[150px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mr-3 mt-6"
             >
               {t("back")}

@@ -15,14 +15,28 @@ const PrivateRoute = ({ children }) => {
         if (userDetails) {
           return children; // Assume 'sub' represents the user object or identifier
         } else {
-          return <Navigate to="/login" state={{ from: location }} replace />;
+          return (
+            <Navigate
+              to="/onlineprint/login"
+              state={{ from: location }}
+              replace
+            />
+          );
         }
       } catch (error) {
         console.error("Invalid token:", error);
-        return <Navigate to="/login" state={{ from: location }} replace />;
+        return (
+          <Navigate
+            to="/onlineprint/login"
+            state={{ from: location }}
+            replace
+          />
+        );
       }
     } else {
-      return <Navigate to="/login" state={{ from: location }} replace />;
+      return (
+        <Navigate to="/onlineprint/login" state={{ from: location }} replace />
+      );
     }
   }
   return children;

@@ -19,6 +19,7 @@ const BatchPrintTable = ({
   const [error, setError] = useState("");
   const { t } = useTranslation();
   const tiktokAppKey = localStorage.getItem("tiktokAppKey");
+  const tiktokAuthCountry = localStorage.getItem("tiktokAuthCountry");
   console.log(tikTokOrderStatusCheck, "orderchacek");
 
   const formatText = (text) => {
@@ -35,11 +36,11 @@ const BatchPrintTable = ({
       //   cipher[0]?.cipher
       // )}&orderId=${encodeURIComponent(order?.id)}`;
 
-      const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner-debug/api/dev/package/tracking?cipher=${encodeURIComponent(
+      const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/tracking?cipher=${encodeURIComponent(
         cipher[0]?.cipher
-      )}&orderId=${encodeURIComponent(order?.id)}&appKey=${encodeURIComponent(
-        tiktokAppKey
-      )}`;
+      )}&orderId=${encodeURIComponent(
+        order?.id
+      )}&countryCode=${encodeURIComponent(tiktokAuthCountry)}`;
 
       const res = await fetch(url);
       const json = await res.json();
@@ -82,11 +83,11 @@ const BatchPrintTable = ({
           <thead className="">
             <tr className="h-11 text-black text-opacity-80 capitalize text-center text-sm font-normal leading-4">
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-l-md">
-                <span className="mr-[10px]">{t("AccountName")}</span>
+                <span className="mr-[10px]">{t("orderId")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
-                <span className="mr-[10px]">{t("orderId")}</span>
+                <span className="mr-[10px]">{t("AccountName")}</span>
                 <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
               </th>
               <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">

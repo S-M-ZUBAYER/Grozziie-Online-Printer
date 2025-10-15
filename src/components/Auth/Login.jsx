@@ -70,7 +70,8 @@ const Login = () => {
         localStorage.setItem("printerUser", JSON.stringify(res));
         dispatch(accountUserChange(formData.email));
         dispatch(paymentUserChange(res));
-        navigate("/");
+        navigate("/onlineprint/");
+        window.location.reload();
       } else if (response.status === 400) {
         res.message === "User Email Not Found" &&
           setEmailError("Incorrect email. Please try again");
@@ -113,11 +114,10 @@ const Login = () => {
       );
 
       const res = await response.json();
-      // console.log(res);
 
       if (response.status === 200) {
         setLoading(false);
-        navigate("/forgotpassword");
+        navigate("/onlineprint/forgotpassword");
       } else {
         setForgotPasswordError("This email is not valid. Please try another");
         setLoading(false);
@@ -292,7 +292,10 @@ const Login = () => {
           </div>
           <p className="mt-24 text-black text-opacity-60">
             {t("no_account")}{" "}
-            <Link to="/register" className="font-semibold text-[#004368]">
+            <Link
+              to="/onlineprint/register"
+              className="font-semibold text-[#004368]"
+            >
               {t("create_account")}
             </Link>
           </p>

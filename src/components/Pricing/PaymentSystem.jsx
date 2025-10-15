@@ -69,7 +69,7 @@ const PaymentForm = ({ email, setEmail, duration, amount, currency }) => {
               email: currentUser,
             },
           },
-          return_url: `${window.location.origin}/success?email=${currentUser}&duration=${duration}`,
+          return_url: `${window.location.origin}/onlineprint/success?email=${currentUser}&duration=${duration}`,
         },
       });
 

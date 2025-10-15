@@ -56,7 +56,7 @@ const ForgotPassword = () => {
 
       if (response.status === 200) {
         setLoading(false);
-        navigate("/login");
+        navigate("/onlineprint/login");
       } else {
         res.message === "Error: Can not process your request!"
           ? setCodeError("Code error")
