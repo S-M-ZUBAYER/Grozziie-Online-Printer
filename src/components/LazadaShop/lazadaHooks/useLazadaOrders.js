@@ -13,6 +13,7 @@ export const useLazadaOrders = ({ lazadaOrderStatusCheck, setLazadaOrderStatusCh
     const [cardStatus, setCardStatus] = useState(false);
     const [loading, setLoading] = useState(false);
     const lazadaAppKey = localStorage.getItem("lazadaAppKey");
+    const lazadaAuthCountry = localStorage.getItem("lazadaAuthCountry");
 
     const previousStatusRef = useRef(null);
 
@@ -108,7 +109,7 @@ export const useLazadaOrders = ({ lazadaOrderStatusCheck, setLazadaOrderStatusCh
                         try {
                             const itemRes = await fetch(
                                 // `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${order.order_id}`,
-                                `https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/api/dev/orders/items?orderId=${order.order_id}&appKey=${lazadaAppKey}`,
+                                `https://grozziie.zjweiting.com:3091/lazada-open-shop-country/api/dev/orders/items?orderId=${order.order_id}&countryCode=${lazadaAuthCountry}`,
                                 { method: "GET", headers: { accept: "*/*" } }
                             );
 

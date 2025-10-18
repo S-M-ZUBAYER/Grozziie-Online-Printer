@@ -40,23 +40,37 @@ const ShopSelector = ({
   // }, [TikTokShopList]);
 
   useEffect(() => {
-    // No need disable Tiktok
-    const isTikTokDisabled = TikTokShopList?.length === 0; // TikTok disabled if no shops
+    // 🔹 Step 1: Check if a platform is already selected in localStorage
+    const storedPlatform = localStorage.getItem("SelectedPlatform");
+    const storedShopName = localStorage.getItem("SelectedStore");
+
+    if (storedPlatform && storedShopName) {
+      // ✅ Restore previously selected platform and store
+      setSelectedPlatform(storedPlatform);
+      setSelectedStore(storedShopName);
+      console.log(
+        "🔁 Restored selection from localStorage:",
+        storedPlatform,
+        storedShopName
+      );
+      return; // 🛑 Stop further logic
+    }
+
+    // 🔹 Step 2: Define disable/enable logic
+    const isTikTokDisabled = TikTokShopList?.length === 0; // true if no TikTok shops
     const hasTikTokShops = TikTokShopList?.length > 0;
 
-    // Need TikTok Disable
-    // const isTikTokDisabled = true;
-    // const hasTikTokShops = false;
-
+    // 🔹 Step 3: Prefer TikTok if available and not disabled
     if (hasTikTokShops && !isTikTokDisabled) {
-      // TikTok enabled → select first TikTok shop
       setSelectedPlatform("tiktok");
       setSelectedStore(TikTokShopList[0].name);
       saveShopToLocalStorage("tiktok", [TikTokShopList[0]]);
       localStorage.setItem("SelectedPlatform", "tiktok");
+      localStorage.setItem("SelectedStore", TikTokShopList[0].name);
       localStorage.setItem("tiktokAuthCountry", "MY");
+      console.log("✅ Defaulted to TikTok");
     } else {
-      // TikTok disabled or empty → fallback to first available shop from Shopee/Lazada
+      // 🔹 Step 4: Fallback to Shopee → Lazada
       const fallbackPlatform = ["shopee", "lazada"].find((p) => {
         if (p === "shopee" && ShopeeShopList?.length > 0) return true;
         if (p === "lazada" && LazadaShopList?.length > 0) return true;
@@ -73,13 +87,15 @@ const ShopSelector = ({
           setSelectedStore(firstShop.name);
           saveShopToLocalStorage(fallbackPlatform, [firstShop]);
           localStorage.setItem("SelectedPlatform", fallbackPlatform);
+          localStorage.setItem("SelectedStore", firstShop.name);
 
-          // Save auth country if needed
           if (fallbackPlatform === "shopee") {
             localStorage.setItem("shopeeAuthCountry", "MY");
           } else if (fallbackPlatform === "lazada") {
-            localStorage.setItem("lazadaAuthCountry", "MY");
+            localStorage.setItem("lazadaAuthCountry", "my");
           }
+
+          console.log("🟡 Defaulted to fallback:", fallbackPlatform);
         }
       }
     }
@@ -103,8 +119,10 @@ const ShopSelector = ({
       const savedLazada = JSON.parse(localStorage.getItem("lazadaShopInfo"));
       if (savedLazada && savedLazada.length > 0) {
         setSelectedStore(savedLazada[0].name);
+        localStorage.setItem("SelectedStore", savedLazada[0].name);
         saveShopToLocalStorage("lazada", savedLazada);
         saveShopToLocalStorage("lazadaAppKey", Number(savedLazada[0].cipher));
+        localStorage.setItem("lazadaAuthCountry", "my");
         return;
       }
     }
@@ -115,6 +133,7 @@ const ShopSelector = ({
       if (savedShopee && savedShopee.length > 0) {
         localStorage.setItem("shopeeAuthCountry", "MY");
         setSelectedStore(savedShopee[0].name);
+        localStorage.setItem("SelectedStore", savedShopee[0].name);
         saveShopToLocalStorage("shopee", savedShopee);
         saveShopToLocalStorage("shopeeAppKey", Number(savedShopee[0].cipher));
         return;
@@ -147,6 +166,10 @@ const ShopSelector = ({
           "SelectedTikTokStore",
           JSON.stringify(selectedStoreObj.name)
         );
+        localStorage.setItem(
+          "SelectedStore",
+          JSON.stringify(selectedStoreObj.name)
+        );
         saveShopToLocalStorage("tiktok", [selectedStoreObj]);
         const appKeyValue = selectedStoreObj.appKey;
 
@@ -166,8 +189,10 @@ const ShopSelector = ({
     if (platformObj.stores.length > 0) {
       const firstStore = platformObj.stores[0];
       setSelectedStore(firstStore.name);
+      localStorage.setItem("SelectedStore", firstStore.name);
       saveShopToLocalStorage(platformId, [firstStore]);
       saveShopToLocalStorage("lazadaAppKey", Number(firstStore.cipher));
+      saveShopToLocalStorage("lazadaAuthCountry", "my");
     } else {
       setSelectedStore(null);
     }
@@ -178,6 +203,7 @@ const ShopSelector = ({
     setSelectedPlatform(platformId);
     localStorage.setItem("SelectedPlatform", platformId);
     setSelectedStore(storeName);
+    localStorage.setItem("SelectedStore", storeName);
 
     const platformObj = shops.find((shop) => shop.id === platformId);
     if (!platformObj) return;
@@ -195,6 +221,7 @@ const ShopSelector = ({
           "lazadaAppKey",
           JSON.stringify(Number(fullShopObj.cipher))
         );
+        localStorage.setItem("lazadaAuthCountry", "my");
       }
       // ✅ Fix typo: tiktok
       else if (platformId === "tiktok") {
@@ -307,7 +334,7 @@ const ShopSelector = ({
   // With Disable the shop button this renderShopItem code need to use ............................
   const renderShopItem = ({ id, label, stores }) => {
     // const isDisabled = id === "tiktok" || id === "lazada";
-    const isDisabled = id === "lazada";
+    const isDisabled = id === "None";
 
     return (
       <NavigationMenu.Item className="relative" key={id}>

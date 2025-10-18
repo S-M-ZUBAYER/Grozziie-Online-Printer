@@ -110,7 +110,7 @@ const shopeeApi = baseApi.injectEndpoints({
                     details.map(async (order) => {
                         try {
                             const trackingRes = await fetchWithBQ(
-                                `/shopee-open-shop/api/dev/logistics/get-tracking-number?orderSn=${order?.order_sn}&packageNumber=-&responseOptionalFields=first_mile_tracking_number`
+                                `/shopee-open-shop-country/api/dev/logistics/get-tracking-number?countryCode=${shopeeAuthCountry}&orderSn=${order?.order_sn}&packageNumber=-&responseOptionalFields=first_mile_tracking_number`
                             );
 
                             let trackingNumber = "";

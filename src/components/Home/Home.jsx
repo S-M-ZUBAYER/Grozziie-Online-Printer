@@ -220,6 +220,7 @@ const Home = () => {
         .then((res) => res.json())
         .then((data) => {
           // console.log("Lazada activation success:", data);
+          localStorage.setItem("lazadaAuthCountry", lgdState);
         })
         .catch((err) => console.error("Activation error:", err));
 
