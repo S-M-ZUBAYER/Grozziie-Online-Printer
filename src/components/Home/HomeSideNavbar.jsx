@@ -30,11 +30,10 @@ const HomeSideNavbar = () => {
                 {t("TikTok")}
               </Link>
             </li>
-            <li className="my-2 ml-4 opacity-40 cursor-not-allowed">
+            <li className="my-2 ml-4">
               <Link
-                className="text-black text-[15px] font-medium capitalize transition text-gray-400 pointer-events-none"
-                to="#"
-                onClick={(e) => e.preventDefault()}
+                className="text-black text-[15px] font-medium capitalize transition"
+                to="/onlineprint/LazadaOrderManagement"
               >
                 {t("Lazada")}
               </Link>

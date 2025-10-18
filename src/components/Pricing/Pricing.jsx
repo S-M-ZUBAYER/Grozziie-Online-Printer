@@ -117,11 +117,10 @@ const Pricing = () => {
           );
           setPlans(newStoredShopPlans);
           setActivePlan(storedShopPlans[0] || null);
+        } else {
+          setPlans(storedShopPlans);
+          setActivePlan(storedShopPlans[0] || null);
         }
-        // else {
-        //   setPlans(storedShopPlans.slice(0, -1));
-        //   setActivePlan(storedShopPlans[0] || null);
-        // }
       } catch (err) {
         console.error(err);
         setError("Error fetching plans. Please try again later.");

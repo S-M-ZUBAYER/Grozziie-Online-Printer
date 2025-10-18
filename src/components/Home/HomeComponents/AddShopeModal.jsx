@@ -111,7 +111,7 @@ const shope = [
 ];
 
 const lazadaCountries = [
-  { code: "MY", name: "Malaysia", baseUrl: "https://api.lazada.com.my/rest" },
+  { code: "my", name: "Malaysia", baseUrl: "https://api.lazada.com.my/rest" },
 ];
 
 const tiktokCountries = [
@@ -157,37 +157,113 @@ function AddShopeModal() {
   const [shopeeAppSecret, setShopeeAppSecret] = useState("");
   const [isShopeeLoading, setIsShopeeLoading] = useState(false);
 
+  const handleLazadaSubmit = async () => {
+    if (selectedShop === 2) {
+      if (!lazadaCountry) {
+        alert("Please select a country.");
+        return;
+      }
+
+      try {
+        // Store Lazada shop in DB before redirect
+        const response = await fetch(
+          // "http://localhost:2000/tht/grozziiePrinter/lazada/shop/add",
+          "https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/add",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              LazadaUserEmail: userEmail, // from redux
+              ShopCountry: lazadaCountry,
+              LazadaAPPKey: "my",
+              active: false, // default inactive until OAuth success
+            }),
+          }
+        );
+
+        const result = await response.json();
+        if (result.code !== 201) {
+          alert("Failed to save Lazada shop. Please try again.");
+          return;
+        }
+
+        // ✅ Only redirect if save success
+        const redirectUrl = `https://auth.lazada.com/oauth/authorize?response_type=code&force_auth=true&redirect_uri=https://grozziie.zjweiting.com:3091/lazada-open-shop-country/dynamic&client_id=134155&state=my`;
+
+        localStorage.setItem("SelectedPlatform", "lazada");
+        localStorage.setItem("lazadaAuthCountry", lazadaCountry);
+        window.location.href = redirectUrl;
+      } catch (err) {
+        console.error("Error saving Lazada shop:", err);
+        alert("Something went wrong while saving Lazada shop.");
+      }
+    }
+  };
+
   // const handleLazadaSubmit = async () => {
   //   if (selectedShop === 2) {
-  //     if (!lazadaCountry || !appKey) {
-  //       alert("Please select a country and enter an APP key.");
+  //     if (!lazadaCountry || !appKey || !appSecret) {
+  //       alert("Please select a country and enter both APP Key and APP Secret.");
   //       return;
   //     }
 
+  //     setIsLoading(true); // 🟩 Start loading
+
+  //     const selectedCountry = lazadaCountries.find(
+  //       (c) => c.code === lazadaCountry
+  //     );
+  //     const baseUrl = selectedCountry?.baseUrl || "https://api.lazada.com/rest";
+
   //     try {
-  //       // Store Lazada shop in DB before redirect
-  //       const response = await fetch(
-  //         // "http://localhost:2000/tht/grozziiePrinter/lazada/shop/add",
+  //       // 🟦 Step 1: Call dynamic/add-new API
+  //       const dynamicResponse = await fetch(
+  //         "https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/api/dev/dynamic/add-new",
+  //         {
+  //           method: "POST",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //             accept: "*/*",
+  //           },
+  //           body: JSON.stringify({
+  //             appKey: appKey,
+  //             appSecret: appSecret,
+  //             baseUrl: baseUrl,
+  //           }),
+  //         }
+  //       );
+
+  //       const dynamicResult = await dynamicResponse.json();
+  //       console.log("Dynamic API result:", dynamicResult);
+
+  //       if (dynamicResponse.status !== 200 || dynamicResult !== true) {
+  //         alert("Failed to register app with dynamic config API.");
+  //         setIsLoading(false);
+  //         return;
+  //       }
+
+  //       // 🟩 Step 2: Save Lazada shop
+  //       const saveResponse = await fetch(
   //         "https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/add",
   //         {
   //           method: "POST",
   //           headers: { "Content-Type": "application/json" },
   //           body: JSON.stringify({
-  //             LazadaUserEmail: userEmail, // from redux
+  //             LazadaUserEmail: userEmail,
   //             ShopCountry: lazadaCountry,
   //             LazadaAPPKey: appKey,
-  //             active: false, // default inactive until OAuth success
+  //             active: false,
   //           }),
   //         }
   //       );
 
-  //       const result = await response.json();
-  //       if (result.code !== 201) {
+  //       const saveResult = await saveResponse.json();
+  //       if (saveResult.code !== 201) {
   //         alert("Failed to save Lazada shop. Please try again.");
+  //         setIsLoading(false);
   //         return;
   //       }
 
-  //       // ✅ Only redirect if save success
+  //       // 🟦 Step 3: Redirect to Lazada OAuth
   //       const redirectUrl = `https://auth.lazada.com/oauth/authorize?response_type=code&force_auth=true&redirect_uri=https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/dynamic&client_id=${encodeURIComponent(
   //         appKey
   //       )}&state=${encodeURIComponent(appKey)}`;
@@ -195,90 +271,13 @@ function AddShopeModal() {
   //       localStorage.setItem("SelectedPlatform", "lazada");
   //       window.location.href = redirectUrl;
   //     } catch (err) {
-  //       console.error("Error saving Lazada shop:", err);
-  //       alert("Something went wrong while saving Lazada shop.");
+  //       console.error("Error during Lazada shop setup:", err);
+  //       alert("Something went wrong while setting up Lazada shop.");
+  //     } finally {
+  //       setIsLoading(false); // 🟥 Stop loading after all operations
   //     }
   //   }
   // };
-
-  const handleLazadaSubmit = async () => {
-    if (selectedShop === 2) {
-      if (!lazadaCountry || !appKey || !appSecret) {
-        alert("Please select a country and enter both APP Key and APP Secret.");
-        return;
-      }
-
-      setIsLoading(true); // 🟩 Start loading
-
-      const selectedCountry = lazadaCountries.find(
-        (c) => c.code === lazadaCountry
-      );
-      const baseUrl = selectedCountry?.baseUrl || "https://api.lazada.com/rest";
-
-      try {
-        // 🟦 Step 1: Call dynamic/add-new API
-        const dynamicResponse = await fetch(
-          "https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/api/dev/dynamic/add-new",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              accept: "*/*",
-            },
-            body: JSON.stringify({
-              appKey: appKey,
-              appSecret: appSecret,
-              baseUrl: baseUrl,
-            }),
-          }
-        );
-
-        const dynamicResult = await dynamicResponse.json();
-        console.log("Dynamic API result:", dynamicResult);
-
-        if (dynamicResponse.status !== 200 || dynamicResult !== true) {
-          alert("Failed to register app with dynamic config API.");
-          setIsLoading(false);
-          return;
-        }
-
-        // 🟩 Step 2: Save Lazada shop
-        const saveResponse = await fetch(
-          "https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/add",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              LazadaUserEmail: userEmail,
-              ShopCountry: lazadaCountry,
-              LazadaAPPKey: appKey,
-              active: false,
-            }),
-          }
-        );
-
-        const saveResult = await saveResponse.json();
-        if (saveResult.code !== 201) {
-          alert("Failed to save Lazada shop. Please try again.");
-          setIsLoading(false);
-          return;
-        }
-
-        // 🟦 Step 3: Redirect to Lazada OAuth
-        const redirectUrl = `https://auth.lazada.com/oauth/authorize?response_type=code&force_auth=true&redirect_uri=https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/dynamic&client_id=${encodeURIComponent(
-          appKey
-        )}&state=${encodeURIComponent(appKey)}`;
-
-        localStorage.setItem("SelectedPlatform", "lazada");
-        window.location.href = redirectUrl;
-      } catch (err) {
-        console.error("Error during Lazada shop setup:", err);
-        alert("Something went wrong while setting up Lazada shop.");
-      } finally {
-        setIsLoading(false); // 🟥 Stop loading after all operations
-      }
-    }
-  };
 
   const handleTikTokSubmit = async () => {
     // if (!tiktokCountry || !tiktokAppKey || !tiktokAppSecret) {
@@ -422,7 +421,7 @@ function AddShopeModal() {
               {/* Shop selection with disable shopee and lazada */}
               <div className="flex gap-8 pb-6 pt-4">
                 {shope.map((shop) => {
-                  const isDisabled = shop.name === "Lazada";
+                  const isDisabled = shop.name === "None";
 
                   return (
                     <div
@@ -486,7 +485,7 @@ function AddShopeModal() {
                   </div>
 
                   {/* APP Key */}
-                  <div>
+                  {/* <div>
                     <label className="block text-sm font-medium text-[#004368] mb-1">
                       {t("APP Key")}
                     </label>
@@ -498,10 +497,10 @@ function AddShopeModal() {
                       placeholder="Enter APP Key"
                       required
                     />
-                  </div>
+                  </div> */}
 
                   {/* APP Secret */}
-                  <div>
+                  {/* <div>
                     <label className="block text-sm font-medium text-[#004368] mb-1">
                       {t("APP Secret")}
                     </label>
@@ -513,7 +512,7 @@ function AddShopeModal() {
                       placeholder="Enter APP Secret"
                       required
                     />
-                  </div>
+                  </div> */}
 
                   {/* Submit button */}
                   <button

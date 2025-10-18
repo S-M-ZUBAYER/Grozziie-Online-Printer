@@ -113,7 +113,7 @@ const TopNavbar = () => {
           {/* This code with disable lazada and shopee */}
           {navItems.map((item, index) => {
             // const isDisabled = item.key === "lazada" || item.key === "shopee";
-            const isDisabled = item.key === "lazada";
+            const isDisabled = item.key === "None";
 
             return (
               <li

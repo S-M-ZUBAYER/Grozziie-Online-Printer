@@ -33,6 +33,7 @@ const LazadaAWBPrinting = () => {
     return stored ? JSON.parse(stored) : [];
   });
   const lazadaAppKey = localStorage.getItem("lazadaAppKey");
+  const lazadaAuthCountry = localStorage.getItem("lazadaAuthCountry");
 
   const currentItem = checkedItems?.items?.[0]; // Show first item for warehouse/delivery
 
@@ -104,7 +105,7 @@ const LazadaAWBPrinting = () => {
           // 🟠 Step 1: Print AWB
           const response = await fetch(
             // "https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/print-awb",
-            `https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/fulfillment/print-awb?appKey=${lazadaAppKey}`,
+            `https://grozziie.zjweiting.com:3091/lazada-open-shop-country/fulfillment/print-awb?countryCode=${lazadaAuthCountry}`,
             {
               method: "POST",
               headers: {
@@ -141,7 +142,7 @@ const LazadaAWBPrinting = () => {
                 try {
                   const deliveryRes = await fetch(
                     // "https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/order/package/sof/delivered",
-                    `https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/fulfillment/order/package/sof/delivered?appKey=${lazadaAppKey}`,
+                    `https://grozziie.zjweiting.com:3091/lazada-open-shop-country/fulfillment/order/package/sof/delivered?countryCode=${lazadaAuthCountry}`,
 
                     {
                       method: "POST",

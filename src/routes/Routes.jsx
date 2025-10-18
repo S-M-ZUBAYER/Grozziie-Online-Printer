@@ -66,6 +66,7 @@ import ShopeeAWBPrinting from "../components/ShopeeShop/ShopeeAWBPrinting";
 import ShopeedeliveryType from "../components/Settings/DeliveryType/ShopeedeliveryType";
 import LazadaDeliveryType from "../components/Settings/DeliveryType/LazadaDeliveryType";
 import TiktokDeliveryType from "../components/Settings/DeliveryType/TiktokDeliveryType";
+import TikTokBatchPrint from "../components/TikTokShop/TikTokBatchPrint";
 
 export const routes = createBrowserRouter([
   {
@@ -133,7 +134,8 @@ export const routes = createBrowserRouter([
         element: (
           <PrivateRoute>
             <PaymentPrivateRoute>
-              <BatchPrint />
+              {/* <BatchPrint /> */}
+              <TikTokBatchPrint />
             </PaymentPrivateRoute>
           </PrivateRoute>
         ),
@@ -143,7 +145,8 @@ export const routes = createBrowserRouter([
         element: (
           <PrivateRoute>
             <PaymentPrivateRoute>
-              <BatchPrint />
+              {/* <BatchPrint /> */}
+              <TikTokBatchPrint />
             </PaymentPrivateRoute>
           </PrivateRoute>
         ),
