@@ -345,5 +345,7 @@
   "financialInformation": "ข้อมูลทางการเงิน",
   "taxCode": "รหัสภาษี",
   "timeline": "ไทม์ไลน์",
-  "shipmentProvider": "ผู้ให้บริการจัดส่ง"
+  "shipmentProvider": "ผู้ให้บริการจัดส่ง",
+  "AuthorizationExpiredTitle": "การอนุญาตของ {{platform}} หมดอายุ",
+  "AccessTokenExpiredMessage": "โทเค็นการเข้าถึงของร้าน (Shop ID: {{shopId}}) หมดอายุแล้ว กรุณาอนุญาตใหม่เพื่อดำเนินการซิงค์คำสั่งซื้อ"
 }

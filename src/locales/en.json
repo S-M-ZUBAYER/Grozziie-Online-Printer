@@ -344,5 +344,7 @@
   "financialInformation": "Financial Information",
   "taxCode": "Tax Code",
   "timeline": "Timeline",
-  "shipmentProvider": "Shipment Provider"
+  "shipmentProvider": "Shipment Provider",
+  "AuthorizationExpiredTitle": "{{platform}} Authorization Expired",
+  "AccessTokenExpiredMessage": "The access token for (Shop ID: {{shopId}}) has expired. Please reauthorize to continue syncing orders."
 }

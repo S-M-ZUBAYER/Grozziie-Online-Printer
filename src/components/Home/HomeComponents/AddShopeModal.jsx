@@ -156,6 +156,7 @@ function AddShopeModal() {
   const [shopeeAppKey, setShopeeAppKey] = useState("");
   const [shopeeAppSecret, setShopeeAppSecret] = useState("");
   const [isShopeeLoading, setIsShopeeLoading] = useState(false);
+  const currentUser = useSelector((state) => state.user.accountUser);
 
   const handleLazadaSubmit = async () => {
     if (selectedShop === 2) {
@@ -165,30 +166,8 @@ function AddShopeModal() {
       }
 
       try {
-        // Store Lazada shop in DB before redirect
-        const response = await fetch(
-          // "http://localhost:2000/tht/grozziiePrinter/lazada/shop/add",
-          "https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/add",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              LazadaUserEmail: userEmail, // from redux
-              ShopCountry: lazadaCountry,
-              LazadaAPPKey: "my",
-              active: false, // default inactive until OAuth success
-            }),
-          }
-        );
-
-        const result = await response.json();
-        if (result.code !== 201) {
-          alert("Failed to save Lazada shop. Please try again.");
-          return;
-        }
-
         // ✅ Only redirect if save success
-        const redirectUrl = `https://auth.lazada.com/oauth/authorize?response_type=code&force_auth=true&redirect_uri=https://grozziie.zjweiting.com:3091/lazada-open-shop-country/dynamic&client_id=134155&state=my`;
+        const redirectUrl = `https://auth.lazada.com/oauth/authorize?response_type=code&force_auth=true&redirect_uri=https://grozziie.zjweiting.com:3091/lazada-open-shop/dynamic&client_id=134155&state=${currentUser}`;
 
         localStorage.setItem("SelectedPlatform", "lazada");
         localStorage.setItem("lazadaAuthCountry", lazadaCountry);
@@ -242,26 +221,26 @@ function AddShopeModal() {
   //       }
 
   //       // 🟩 Step 2: Save Lazada shop
-  //       const saveResponse = await fetch(
-  //         "https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/add",
-  //         {
-  //           method: "POST",
-  //           headers: { "Content-Type": "application/json" },
-  //           body: JSON.stringify({
-  //             LazadaUserEmail: userEmail,
-  //             ShopCountry: lazadaCountry,
-  //             LazadaAPPKey: appKey,
-  //             active: false,
-  //           }),
-  //         }
-  //       );
+  // const saveResponse = await fetch(
+  //   "https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/add",
+  //   {
+  //     method: "POST",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify({
+  //       LazadaUserEmail: userEmail,
+  //       ShopCountry: lazadaCountry,
+  //       LazadaAPPKey: appKey,
+  //       active: false,
+  //     }),
+  //   }
+  // );
 
-  //       const saveResult = await saveResponse.json();
-  //       if (saveResult.code !== 201) {
-  //         alert("Failed to save Lazada shop. Please try again.");
-  //         setIsLoading(false);
-  //         return;
-  //       }
+  // const saveResult = await saveResponse.json();
+  // if (saveResult.code !== 201) {
+  //   alert("Failed to save Lazada shop. Please try again.");
+  //   setIsLoading(false);
+  //   return;
+  // }
 
   //       // 🟦 Step 3: Redirect to Lazada OAuth
   //       const redirectUrl = `https://auth.lazada.com/oauth/authorize?response_type=code&force_auth=true&redirect_uri=https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/dynamic&client_id=${encodeURIComponent(
@@ -324,7 +303,7 @@ function AddShopeModal() {
       // localStorage.setItem("tiktokAppKey", JSON.stringify(tiktokAppKey));
 
       // 🟢 Step 4: Redirect to TikTok Partner Config
-      window.location.href = `https://services.tiktokshops.us/open/authorize?service_id=7525737223036126981`;
+      window.location.href = `https://services.tiktokshop.com/open/authorize?service_id=7525737223036126981&state=${currentUser}`;
     } catch (error) {
       console.error("Error during TikTok setup:", error);
       alert("Something went wrong while setting up TikTok app.");
@@ -343,7 +322,7 @@ function AddShopeModal() {
 
     try {
       // 🟢 Step 4: Redirect to Shopee Partner Config
-      window.location.href = `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/auth/url-generate/dynamic?countryCode=${shopeeCountry}`;
+      window.location.href = `https://grozziie.zjweiting.com:3091/shopee-open-shop/auth/url-generate/by-state?state=${currentUser}`;
     } catch (error) {
       console.error("Error during Shopee setup:", error);
       alert("Something went wrong while setting up Shopee app.");

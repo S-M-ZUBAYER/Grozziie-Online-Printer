@@ -22,7 +22,6 @@ import TableHeader from "./tiktokComponents/TableHeader";
 import ActionButtons from "./tiktokComponents/ActionButtons";
 import OrderDetailsModal from "./tiktokComponents/OrderDetailsModal";
 import BatchPrintTable from "../BatchPrint/BatchPrintTable";
-// import BatchPrintTable from "./BatchPrintTable";
 
 const TikTokBatchPrint = () => {
   const { t } = useTranslation();
@@ -49,11 +48,9 @@ const TikTokBatchPrint = () => {
   } = useCheckboxSelection();
 
   const tiktokAuthCountry = localStorage.getItem("tiktokAuthCountry");
+  const tiktokOpenId = localStorage.getItem("tiktokOpenId");
+  const cipher = localStorage.getItem("tiktokAuthCipher");
   const { customersData, setCustomersData } = useOrderData();
-  const [cipher, setCipher] = useState(() => {
-    const stored = localStorage.getItem("tiktokShopInfo");
-    return stored ? JSON.parse(stored) : [];
-  });
   const { filteredData, setFilteredData, tiktokLoading } = useTikTokOrders({
     tikTokOrderStatusCheck,
     setTikTokOrderStatusCheck,
@@ -160,9 +157,7 @@ const TikTokBatchPrint = () => {
   };
 
   const handleConfirmPackage = async () => {
-    const cipherValue = cipher[0]?.cipher;
-
-    if (!cipherValue || checkedItems.length === 0) {
+    if (!cipher || checkedItems.length === 0) {
       console.warn("Missing cipher or no checked items");
       return;
     }
@@ -171,7 +166,7 @@ const TikTokBatchPrint = () => {
       const responses = await Promise.all(
         checkedItems.map(async (item) => {
           const packageId = item?.lineItems?.[0]?.packageId;
-          console.log(cipherValue, packageId);
+          console.log(cipher, packageId);
 
           if (!packageId) {
             console.warn(`Missing packageId for item with id ${item?.id}`);
@@ -182,12 +177,12 @@ const TikTokBatchPrint = () => {
           let body = null;
 
           // Use new API
-          // url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
+          // url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
           //   cipherValue
           // )}`;
           url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
-            cipherValue
-          )}&countryCode=${encodeURIComponent(tiktokAuthCountry)}`;
+            cipher
+          )}&openId=${encodeURIComponent(tiktokOpenId)}`;
 
           body = {
             packageId,

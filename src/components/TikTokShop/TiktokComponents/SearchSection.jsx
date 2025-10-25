@@ -5,10 +5,19 @@ import { filterDataBySearchFieldsBatchPrint } from "../../../Share/SearchCompone
 const SearchSection = ({
   tikTokOrderStatusCheck,
   setTikTokOrderStatusCheck,
-  setSelectedStatus, // ✅ Receive setSelectedStatus
+  setSelectedStatus,
   customersData,
   setFilteredData,
 }) => {
+  // 🔹 Active button states (missing earlier)
+  const [isActiveBtnRecipientAddress, setIsActiveBtnRecipientAddress] =
+    useState(false);
+  const [isActiveBtnOrderId, setIsActiveBtnOrderId] = useState(false);
+  const [isActiveBtnAccountName, setIsActiveBtnAccountName] = useState(false);
+  const [isActiveBtnProduct, setIsActiveBtnProduct] = useState(false);
+  const [isActiveBtnAmount, setIsActiveBtnAmount] = useState(false);
+
+  // 🔹 Search fields
   const [searchFields, setSearchFields] = useState({
     RecipientAddress: "",
     isActiveRecipientAddress: "",
@@ -24,6 +33,7 @@ const SearchSection = ({
     endDate: new Date(),
   });
 
+  // 🔹 Handle Search
   const handleToSearch = () => {
     const searchInput = document.getElementById("searchInput");
     if (searchInput) searchInput.value = "";
@@ -35,6 +45,7 @@ const SearchSection = ({
     setFilteredData(filteredMultipleSearchingData);
   };
 
+  // 🔹 Handle Reset
   const handleToReset = () => {
     const searchInput = document.getElementById("searchInput");
     if (searchInput) searchInput.value = "";
@@ -54,6 +65,12 @@ const SearchSection = ({
       endDate: new Date(),
     });
 
+    setIsActiveBtnRecipientAddress(false);
+    setIsActiveBtnOrderId(false);
+    setIsActiveBtnAccountName(false);
+    setIsActiveBtnProduct(false);
+    setIsActiveBtnAmount(false);
+
     setFilteredData(customersData);
   };
 
@@ -69,13 +86,24 @@ const SearchSection = ({
       }
       tikTokOrderStatusCheck={tikTokOrderStatusCheck}
       setTikTokOrderStatusCheck={setTikTokOrderStatusCheck}
-      setSelectedStatus={setSelectedStatus} // ✅ Pass to NewSearchComponent
+      setSelectedStatus={setSelectedStatus}
       handleToSearch={handleToSearch}
       handleToReset={handleToReset}
       searchFields={searchFields}
       setSearchFields={setSearchFields}
       customersData={customersData}
       setFilteredData={setFilteredData}
+      // ✅ Active button states now defined and passed
+      isActiveBtnRecipientAddress={isActiveBtnRecipientAddress}
+      setIsActiveBtnRecipientAddress={setIsActiveBtnRecipientAddress}
+      isActiveBtnOrderId={isActiveBtnOrderId}
+      setIsActiveBtnOrderId={setIsActiveBtnOrderId}
+      isActiveBtnAccountName={isActiveBtnAccountName}
+      setIsActiveBtnAccountName={setIsActiveBtnAccountName}
+      isActiveBtnProduct={isActiveBtnProduct}
+      setIsActiveBtnProduct={setIsActiveBtnProduct}
+      isActiveBtnAmount={isActiveBtnAmount}
+      setIsActiveBtnAmount={setIsActiveBtnAmount}
       currentShop="TikTok"
     />
   );

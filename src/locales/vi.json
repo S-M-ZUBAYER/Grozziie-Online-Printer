@@ -344,5 +344,7 @@
   "financialInformation": "Thông tin tài chính",
   "taxCode": "Mã số thuế",
   "timeline": "Dòng thời gian",
-  "shipmentProvider": "Nhà cung cấp vận chuyển"
+  "shipmentProvider": "Nhà cung cấp vận chuyển",
+  "AuthorizationExpiredTitle": "Ủy quyền {{platform}} đã hết hạn",
+  "AccessTokenExpiredMessage": "Mã truy cập cho (Shop ID: {{shopId}}) đã hết hạn. Vui lòng ủy quyền lại để tiếp tục đồng bộ đơn hàng."
 }

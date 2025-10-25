@@ -75,11 +75,14 @@ const BatchPrintExpressDelivery = () => {
   const [packageId, setPackageId] = useState(
     checkedItemsChecking?.items[0]?.packages[0]?.id
   );
-  const [cipher, setCipher] = useState(localStorage.getItem("tiktokShopInfo"));
+
+  const cipher = localStorage.getItem("tiktokAuthCipher");
+
   const [packageDetails, setPackageDetails] = useState(null);
   const [waybillUrl, setWaybillUrl] = useState(null); // If there's any
   const tiktokAppKey = localStorage.getItem("tiktokAppKey");
   const tiktokAuthCountry = localStorage.getItem("tiktokAuthCountry");
+  const tiktokOpenId = localStorage.getItem("tiktokOpenId");
 
   useEffect(() => {
     if (!cipher || !packageId) return;
@@ -88,14 +91,14 @@ const BatchPrintExpressDelivery = () => {
       try {
         setLoading(true);
         // const res = await fetch(
-        //   `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/details?cipher=${cipher[0].cipher}&packageId=${packageId}`
+        //   `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/details?cipher=${cipher[0].cipher}&packageId=${packageId}`
         // );
         const res = await fetch(
           `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/details?cipher=${encodeURIComponent(
-            cipher[0].cipher
+            cipher
           )}&packageId=${encodeURIComponent(
             packageId
-          )}&countryCode=${encodeURIComponent(tiktokAuthCountry)}`
+          )}&openId=${encodeURIComponent(tiktokOpenId)}`
         );
 
         const json = await res.json();

@@ -26,24 +26,22 @@ const BatchPrintPrinting = () => {
   const [isLoading, setIsLoading] = useState(false);
   const tiktokAppKey = localStorage.getItem("tiktokAppKey");
   const tiktokAuthCountry = localStorage.getItem("tiktokAuthCountry");
+  const tiktokOpenId = localStorage.getItem("tiktokOpenId");
   const { t } = useTranslation();
 
-  const [cipher] = useState(() => {
-    const stored = localStorage.getItem("tiktokShopInfo");
-    return stored ? JSON.parse(stored) : [];
-  });
+  const cipher = localStorage.getItem("tiktokAuthCipher");
 
   const currentItem = checkedItems?.items?.[0]; // Show first item for warehouse/delivery
 
   const fetchWarehouses = async () => {
     try {
       // const res = await fetch(
-      //   `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/logistics/warehouse-list?cipher=${cipher[0].cipher}`
+      //   `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/logistics/warehouse-list?cipher=${cipher[0].cipher}`
       // );
       const res = await fetch(
         `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/logistics/warehouse-list?cipher=${encodeURIComponent(
-          cipher[0].cipher
-        )}&countryCode=${encodeURIComponent(tiktokAuthCountry)}`
+          cipher
+        )}&openId=${encodeURIComponent(tiktokOpenId)}`
       );
       const json = await res.json();
       if (json.code === 0) setWarehouses(json.data.warehouses || []);
@@ -55,14 +53,14 @@ const BatchPrintPrinting = () => {
   const fetchShipmentProviders = async () => {
     try {
       // const res = await fetch(
-      //   `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/logistics/warehouse/delivery-option?warehouseId=${currentItem?.warehouseId}&cipher=${cipher[0].cipher}`
+      //   `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/logistics/warehouse/delivery-option?warehouseId=${currentItem?.warehouseId}&cipher=${cipher[0].cipher}`
       // );
       const res = await fetch(
         `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/logistics/warehouse/delivery-option?warehouseId=${encodeURIComponent(
           currentItem?.warehouseId
-        )}&cipher=${encodeURIComponent(
-          cipher[0].cipher
-        )}&countryCode=${encodeURIComponent(tiktokAuthCountry)}`
+        )}&cipher=${encodeURIComponent(cipher)}&openId=${encodeURIComponent(
+          tiktokOpenId
+        )}`
       );
       const json = await res.json();
       if (json.code === 0)
@@ -86,7 +84,7 @@ const BatchPrintPrinting = () => {
   //       checkedItems.items.map(async (item) => {
   //         const packageId = item.lineItems?.[0]?.packageId;
   //         const res = await fetch(
-  //           `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-doc?cipher=${encodeURIComponent(
+  //           `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/ship-doc?cipher=${encodeURIComponent(
   //             cipher[0].cipher
   //           )}&packageId=${encodeURIComponent(packageId)}`
   //         );
@@ -140,7 +138,7 @@ const BatchPrintPrinting = () => {
     try {
       setIsLoading(true);
 
-      if (!cipher?.[0]?.cipher || !checkedItems?.items?.length) {
+      if (!cipher || !checkedItems?.items?.length) {
         showErrorModal(t("NoItemsSelected"));
         setIsLoading(false);
         return;
@@ -153,16 +151,16 @@ const BatchPrintPrinting = () => {
 
           try {
             // const res = await fetch(
-            //   `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-doc?cipher=${encodeURIComponent(
+            //   `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/ship-doc?cipher=${encodeURIComponent(
             //     cipher[0].cipher
             //   )}&packageId=${encodeURIComponent(packageId)}`
             // );
             const res = await fetch(
               `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/ship-doc?cipher=${encodeURIComponent(
-                cipher[0].cipher
+                cipher
               )}&packageId=${encodeURIComponent(
                 packageId
-              )}&countryCode=${encodeURIComponent(tiktokAuthCountry)}`
+              )}&openId=${encodeURIComponent(tiktokOpenId)}`
             );
             const data = await res.json();
             const docUrl = data?.data?.docUrl;
@@ -230,7 +228,7 @@ const BatchPrintPrinting = () => {
   };
 
   useEffect(() => {
-    if (!cipher?.[0]?.cipher || !checkedItems?.items?.length) return;
+    if (!cipher || !checkedItems?.items?.length) return;
     fetchWarehouses();
     fetchShipmentProviders();
     handleMergeAndPrint();

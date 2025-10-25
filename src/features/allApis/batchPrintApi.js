@@ -16,7 +16,6 @@ const batchPrintApi = baseApi.injectEndpoints({
     loadOrderList: builder.mutation({
       query: ({
         pageSize = 100,
-        cipher,
         createTimeGe,
         createTimeLt,
         updateTimeGe,
@@ -32,10 +31,12 @@ const batchPrintApi = baseApi.injectEndpoints({
 
         const tiktokAppKey = localStorage.getItem("tiktokAppKey");
         const tiktokAuthCountry = localStorage.getItem("tiktokAuthCountry");
+        const tiktokOpenId = localStorage.getItem("tiktokOpenId");
+        const tiktokAuthCipher = localStorage.getItem("tiktokAuthCipher");
         const queryParams = new URLSearchParams({
           pageSize: pageSize.toString(),
-          cipher,
-          countryCode: tiktokAuthCountry?.toString() || "", // ✅ include appKey if available
+          cipher: tiktokAuthCipher,
+          openId: tiktokOpenId?.toString() || "", // ✅ include appKey if available
           createTimeGe: createTimeGe?.toString(),
           createTimeLt: createTimeLt?.toString(),
           updateTimeGe: updateTimeGe?.toString(),
@@ -46,9 +47,10 @@ const batchPrintApi = baseApi.injectEndpoints({
           sortField,
           sortOrder,
         });
+        console.log("tikttok....................................", queryParams);
 
         return {
-          // url: `/tiktokshop-partner/api/dev/order/list/filter?${queryParams.toString()}`,
+          // url: `/tiktokshop-partner-country/api/dev/order/list/filter?${queryParams.toString()}`,
           url: `/tiktokshop-partner-country/api/dev/order/list/filter?${queryParams.toString()}`,
           method: "POST",
           headers: {
