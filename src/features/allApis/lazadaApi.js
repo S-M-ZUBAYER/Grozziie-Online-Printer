@@ -16,9 +16,10 @@ const lazadaApi = baseApi.injectEndpoints({
             }) => {
                 const lazadaAppKey = localStorage.getItem("lazadaAppKey");
                 const lazadaAuthCountry = localStorage.getItem("lazadaAuthCountry");
+                const lazadaAccountId = localStorage.getItem("lazadaAccountId");
 
                 const params = new URLSearchParams({
-                    countryCode: lazadaAuthCountry?.toString() || "",
+                    account: lazadaAccountId?.toString() || "",
                     sortBy,
                     createdBefore,
                     createdAfter,
@@ -35,7 +36,7 @@ const lazadaApi = baseApi.injectEndpoints({
                 }
 
                 return {
-                    url: `/lazada-open-shop-country/api/dev/orders?${params.toString()}`,
+                    url: `/lazada-open-shop/api/dev/orders?${params.toString()}`,
                     // url: `/lazada-open-shop-debug/api/dev/orders?${params.toString()}`,
                     method: "GET",
                 };

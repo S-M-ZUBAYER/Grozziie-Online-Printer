@@ -34,13 +34,14 @@ const LazadaAWBPrinting = () => {
   });
   const lazadaAppKey = localStorage.getItem("lazadaAppKey");
   const lazadaAuthCountry = localStorage.getItem("lazadaAuthCountry");
+  const lazadaAccountId = localStorage.getItem("lazadaAccountId");
 
   const currentItem = checkedItems?.items?.[0]; // Show first item for warehouse/delivery
 
   const fetchWarehouses = async () => {
     try {
       const res = await fetch(
-        `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/logistics/warehouse-list?cipher=${cipher[0].cipher}`
+        `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/logistics/warehouse-list?cipher=${cipher[0].cipher}`
       );
       const json = await res.json();
       if (json.code === 0) setWarehouses(json.data.warehouses || []);
@@ -52,7 +53,7 @@ const LazadaAWBPrinting = () => {
   const fetchShipmentProviders = async () => {
     try {
       const res = await fetch(
-        `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/logistics/warehouse/delivery-option?warehouseId=${currentItem?.warehouseId}&cipher=${cipher[0].cipher}`
+        `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/logistics/warehouse/delivery-option?warehouseId=${currentItem?.warehouseId}&cipher=${cipher[0].cipher}`
       );
       const json = await res.json();
       if (json.code === 0)
@@ -105,7 +106,7 @@ const LazadaAWBPrinting = () => {
           // 🟠 Step 1: Print AWB
           const response = await fetch(
             // "https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/print-awb",
-            `https://grozziie.zjweiting.com:3091/lazada-open-shop-country/fulfillment/print-awb?countryCode=${lazadaAuthCountry}`,
+            `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/print-awb?account=${lazadaAccountId}`,
             {
               method: "POST",
               headers: {
@@ -142,7 +143,7 @@ const LazadaAWBPrinting = () => {
                 try {
                   const deliveryRes = await fetch(
                     // "https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/order/package/sof/delivered",
-                    `https://grozziie.zjweiting.com:3091/lazada-open-shop-country/fulfillment/order/package/sof/delivered?countryCode=${lazadaAuthCountry}`,
+                    `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/order/package/sof/delivered?account=${lazadaAccountId}`,
 
                     {
                       method: "POST",

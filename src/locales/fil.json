@@ -346,5 +346,7 @@
   "financialInformation": "Impormasyon Pinansyal",
   "taxCode": "Code sa Buwis",
   "timeline": "Timeline",
-  "shipmentProvider": "Tagapaghatid ng Padala"
+  "shipmentProvider": "Tagapaghatid ng Padala",
+  "AuthorizationExpiredTitle": "Nag-expire ang {{platform}} Authorization",
+  "AccessTokenExpiredMessage": "Ang access token para sa (Shop ID: {{shopId}}) ay nag-expire na. Mangyaring muling pahintulutan upang magpatuloy sa pag-sync ng mga order."
 }

@@ -345,5 +345,7 @@
   "financialInformation": "Informasi Keuangan",
   "taxCode": "Kode Pajak",
   "timeline": "Linimasa",
-  "shipmentProvider": "Penyedia Pengiriman"
+  "shipmentProvider": "Penyedia Pengiriman",
+  "AuthorizationExpiredTitle": "Otorisasi {{platform}} Kedaluwarsa",
+  "AccessTokenExpiredMessage": "Token akses untuk (Shop ID: {{shopId}}) telah kedaluwarsa. Harap otorisasi ulang untuk melanjutkan sinkronisasi pesanan."
 }

@@ -496,7 +496,7 @@
 //     const cipherValue = cipher[0]?.cipher;
 
 //     try {
-//       const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package?cipher=${encodeURIComponent(
+//       const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/ship-package?cipher=${encodeURIComponent(
 //         cipherValue
 //       )}&packageId=${encodeURIComponent(packageId)}`;
 
@@ -1335,6 +1335,7 @@ const LazadaBatchPrint = () => {
   const location = useLocation();
   const lazadaAppKey = localStorage.getItem("lazadaAppKey");
   const lazadaAuthCountry = localStorage.getItem("lazadaAuthCountry");
+  const lazadaAccountId = localStorage.getItem("lazadaAccountId");
 
   // Custom hooks
   const { lazadaOrderStatusCheck, setLazadaOrderStatusCheck, selectedStatus } =
@@ -1438,11 +1439,11 @@ const LazadaBatchPrint = () => {
 
         try {
           const response = await axios.get(
-            `https://grozziie.zjweiting.com:3091/lazada-open-shop-country/api/dev/orders/items`,
+            `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items`,
             {
               params: {
                 orderId: order_id,
-                countryCode: lazadaAuthCountry, // add appKey here
+                account: lazadaAccountId, // add appKey here
               },
               headers: {
                 Accept: "*/*",
@@ -1507,7 +1508,7 @@ const LazadaBatchPrint = () => {
         const itemRes = await fetch(
           // `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}`
           // `https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/api/dev/orders/items?orderId=${orderId}&appKey=${lazadaAppKey}`
-          `https://grozziie.zjweiting.com:3091/lazada-open-shop-country/api/dev/orders/items?orderId=${orderId}&countryCode=${lazadaAuthCountry}`
+          `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}&account=${lazadaAccountId}`
         );
         const itemData = await itemRes.json();
 
@@ -1533,8 +1534,8 @@ const LazadaBatchPrint = () => {
         // Step 2: Get shipment provider
         const shipmentRes = await fetch(
           // `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/order/shipment-provider`,
-          `https://grozziie.zjweiting.com:3091/lazada-open-shop-country/fulfillment/order/shipment-provider?countryCode=${encodeURIComponent(
-            lazadaAuthCountry
+          `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/order/shipment-provider?account=${encodeURIComponent(
+            lazadaAccountId
           )}`,
           {
             method: "POST",
@@ -1554,6 +1555,8 @@ const LazadaBatchPrint = () => {
         );
 
         const shipmentData = await shipmentRes.json();
+        console.log(shipmentData?.result?.data, "provider info");
+
         const providerInfo = shipmentData?.result?.data;
 
         if (!providerInfo?.shipment_providers?.length) {
@@ -1577,8 +1580,8 @@ const LazadaBatchPrint = () => {
 
         // Step 3: Pack the order
         const packRes = await fetch(
-          `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/pack2?countryCode=${encodeURIComponent(
-            lazadaAuthCountry
+          `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/pack2?account=${encodeURIComponent(
+            lazadaAccountId
           )}`,
           {
             method: "POST",

@@ -40,20 +40,22 @@ const ShopSelector = ({
   // }, [TikTokShopList]);
 
   useEffect(() => {
-    // 🔹 Step 1: Check if a platform is already selected in localStorage
+    const listsReady =
+      TikTokShopList?.length > 0 ||
+      ShopeeShopList?.length > 0 ||
+      LazadaShopList?.length > 0;
+
+    if (!listsReady) return; // 🛑 Wait until shop lists are ready
+
     const storedPlatform = localStorage.getItem("SelectedPlatform");
     const storedShopName = localStorage.getItem("SelectedStore");
+    const shopeeAuthShopId = localStorage.getItem("shopeeAuthShopId");
 
     if (storedPlatform && storedShopName) {
-      // ✅ Restore previously selected platform and store
       setSelectedPlatform(storedPlatform);
       setSelectedStore(storedShopName);
-      console.log(
-        "🔁 Restored selection from localStorage:",
-        storedPlatform,
-        storedShopName
-      );
-      return; // 🛑 Stop further logic
+      console.log("🔁 Restored selection:", storedPlatform, storedShopName);
+      return;
     }
 
     // 🔹 Step 2: Define disable/enable logic
@@ -99,7 +101,7 @@ const ShopSelector = ({
         }
       }
     }
-  }, [TikTokShopList, ShopeeShopList, LazadaShopList]);
+  }, [TikTokShopList, ShopeeShopList, LazadaShopList, selectedPlatform]);
 
   // Save full shop array with only one selected shop object for each platform
   const saveShopToLocalStorage = (platformId, shopArray) => {
@@ -128,14 +130,32 @@ const ShopSelector = ({
     }
 
     // 🟦 Lazada special handling
+    // 🟦 Shopee special handling
     else if (platformId === "shopee") {
       const savedShopee = JSON.parse(localStorage.getItem("shopeeShopInfo"));
+      const shopeeAuthShopId = localStorage.getItem("shopeeAuthShopId");
+
+      console.log(savedShopee, "savedShopee shopeeShopInfo");
+
       if (savedShopee && savedShopee.length > 0) {
         localStorage.setItem("shopeeAuthCountry", "MY");
-        setSelectedStore(savedShopee[0].name);
-        localStorage.setItem("SelectedStore", savedShopee[0].name);
+
+        let selectedShop = savedShopee[0]; // default to first shop
+
+        if (shopeeAuthShopId) {
+          const matchedShop = savedShopee.find(
+            (shop) => String(shop.cipher) === String(shopeeAuthShopId)
+          );
+          if (matchedShop) selectedShop = matchedShop;
+        }
+
+        // Save selected shop info
+        setSelectedStore(selectedShop.name);
+        localStorage.setItem("SelectedStore", selectedShop.name);
         saveShopToLocalStorage("shopee", savedShopee);
-        saveShopToLocalStorage("shopeeAppKey", Number(savedShopee[0].cipher));
+        saveShopToLocalStorage("shopeeAppKey", Number(selectedShop.cipher));
+        saveShopToLocalStorage("shopeeAuthShopId", Number(selectedShop.cipher));
+
         return;
       }
     }
@@ -171,7 +191,8 @@ const ShopSelector = ({
           JSON.stringify(selectedStoreObj.name)
         );
         saveShopToLocalStorage("tiktok", [selectedStoreObj]);
-        const appKeyValue = selectedStoreObj.appKey;
+        const appKeyValue = selectedStoreObj.tiktokOpenId;
+        const appCipherValue = selectedStoreObj.cipher;
 
         // Remove accidental quotes if any
         const cleanedAppKey =
@@ -179,7 +200,8 @@ const ShopSelector = ({
             ? appKeyValue.replace(/^"|"$/g, "")
             : String(appKeyValue);
 
-        localStorage.setItem("tiktokAppKey", cleanedAppKey);
+        localStorage.setItem("tiktokOpenId", cleanedAppKey);
+        localStorage.setItem("tiktokAuthCipher", appCipherValue);
         localStorage.setItem("tiktokAuthCountry", "MY");
       }
       return;
@@ -225,7 +247,8 @@ const ShopSelector = ({
       }
       // ✅ Fix typo: tiktok
       else if (platformId === "tiktok") {
-        const appKeyValue = fullShopObj?.appKey;
+        const appKeyValue = fullShopObj?.tiktokOpenId;
+        const appCipherValue = fullShopObj?.cipher;
 
         // Remove accidental quotes if any
         const cleanedAppKey =
@@ -233,13 +256,14 @@ const ShopSelector = ({
             ? appKeyValue.replace(/^"|"$/g, "")
             : String(appKeyValue);
 
-        localStorage.setItem("tiktokAppKey", cleanedAppKey);
+        localStorage.setItem("tiktokOpenId", cleanedAppKey);
+        localStorage.setItem("tiktokAuthCipher", appCipherValue);
         localStorage.setItem("tiktokAuthCountry", "MY");
       }
       // ✅ Fix typo: Shopee
       else if (platformId === "shopee") {
-        console.log("shopee", fullShopObj?.appKey);
-        const appKeyValue = fullShopObj?.appKey;
+        console.log("shopee", fullShopObj);
+        const appKeyValue = fullShopObj?.cipher;
 
         // Remove accidental quotes if any
         const cleanedAppKey =
@@ -249,6 +273,7 @@ const ShopSelector = ({
 
         localStorage.setItem("shopeeAppKey", cleanedAppKey);
         localStorage.setItem("shopeeAuthCountry", "MY");
+        localStorage.setItem("shopeeAuthShopId", fullShopObj?.cipher);
       }
     }
   };

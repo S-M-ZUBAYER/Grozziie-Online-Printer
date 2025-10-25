@@ -519,7 +519,7 @@
 //     const cipherValue = cipher[0]?.cipher;
 
 //     try {
-//       const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package?cipher=${encodeURIComponent(
+//       const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/ship-package?cipher=${encodeURIComponent(
 //         cipherValue
 //       )}&packageId=${encodeURIComponent(packageId)}`;
 
@@ -1328,6 +1328,7 @@ const ShopeeBatchPrint = () => {
   const [packageLoading, setPackageLoading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const shopeeAuthCountry = localStorage.getItem("shopeeAuthCountry");
+  const shopeeAuthShopId = localStorage.getItem("shopeeAuthShopId");
 
   const {
     selectedCustomer,
@@ -1553,7 +1554,7 @@ const ShopeeBatchPrint = () => {
       startDate: new Date(),
       endDate: new Date(),
     });
-    setShopeeOrderStatusCheck("");
+    // setShopeeOrderStatusCheck("");
     setIsActiveBtnRecipientAddress(false);
     setIsActiveBtnOrderId(false);
     setIsActiveBtnAccountName(false);
@@ -1648,7 +1649,7 @@ const ShopeeBatchPrint = () => {
         try {
           // 1️⃣ Get shipping parameters
           const shippingParamRes = await fetch(
-            `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/get-shipping-parameter?countryCode=${shopeeAuthCountry}&orderSn=${orderSn}`
+            `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-shipping-parameter?shopId=${shopeeAuthShopId}&orderSn=${orderSn}`
           );
           const shippingParamData = await shippingParamRes.json();
 
@@ -1662,11 +1663,33 @@ const ShopeeBatchPrint = () => {
             continue;
           }
 
-          const addressId =
-            shippingParamData?.body?.response?.pickup?.address_list?.[0]
-              ?.address_id || null;
+          const pickupList =
+            shippingParamData?.body?.response?.pickup?.address_list || [];
+
+          // 🟢 Find address with recommended pickup time slot
+          let addressId = null;
+          let pickupTimeId = null;
+
+          for (const address of pickupList) {
+            const recommendedSlot = address?.time_slot_list?.find((slot) =>
+              slot?.flags?.includes("recommended")
+            );
+            if (recommendedSlot) {
+              addressId = address.address_id;
+              pickupTimeId = recommendedSlot.pickup_time_id;
+              break;
+            }
+          }
+
+          // If no recommended slot found, fallback to first address/time slot
+          if (!addressId && pickupList.length > 0) {
+            addressId = pickupList[0]?.address_id || null;
+            pickupTimeId =
+              pickupList[0]?.time_slot_list?.[0]?.pickup_time_id || null;
+          }
+
           const dropoff = shippingParamData?.body?.response?.dropoff;
-          console.log(addressId, "adddress iddd");
+          console.log(addressId, pickupTimeId, "✅ Selected pickup info");
 
           // 2️⃣ Build request body dynamically
           let requestBody = {
@@ -1675,10 +1698,10 @@ const ShopeeBatchPrint = () => {
           };
 
           if (selectedShopeeDeliveryType === "pickup") {
-            if (!addressId) {
+            if (!addressId || !pickupTimeId) {
               failedOrders.push({
                 orderId: orderSn,
-                reason: "Missing address_id",
+                reason: "Missing address_id or pickup_time_id",
               });
               continue;
             }
@@ -1687,7 +1710,7 @@ const ShopeeBatchPrint = () => {
               package_number: "",
               pickup: {
                 address_id: addressId,
-                pickup_time_id: "",
+                pickup_time_id: pickupTimeId,
                 tracking_number: "",
               },
             };
@@ -1698,10 +1721,11 @@ const ShopeeBatchPrint = () => {
               dropoff: dropoff,
             };
           } else {
-            if (!addressId) {
+            // Default fallback same as pickup
+            if (!addressId || !pickupTimeId) {
               failedOrders.push({
                 orderId: orderSn,
-                reason: "Missing address_id",
+                reason: "Missing address_id or pickup_time_id",
               });
               continue;
             }
@@ -1710,7 +1734,7 @@ const ShopeeBatchPrint = () => {
               package_number: "",
               pickup: {
                 address_id: addressId,
-                pickup_time_id: "",
+                pickup_time_id: pickupTimeId,
                 tracking_number: "",
               },
             };
@@ -1718,7 +1742,7 @@ const ShopeeBatchPrint = () => {
 
           // 3️⃣ Call ship-order API
           const shipRes = await fetch(
-            `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/ship-order?countryCode=${shopeeAuthCountry}`,
+            `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/ship-order?shopId=${shopeeAuthShopId}`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },

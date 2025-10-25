@@ -137,6 +137,8 @@ export const useTikTokOrders = (printedIds, selectedStore) => {
                     }).unwrap();
 
                     const orderList = res?.data?.order_list || [];
+                    console.log(res?.data, "tiktok data..................");
+
 
                     // mark printed/unprinted if needed
                     if (value === "AWAITING_COLLECTION") {

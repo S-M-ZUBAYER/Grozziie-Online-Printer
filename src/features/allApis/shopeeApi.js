@@ -15,9 +15,10 @@ const shopeeApi = baseApi.injectEndpoints({
                 response_optional_fields = "order_status",
             }) => {
                 const shopeeAuthCountry = localStorage.getItem("shopeeAuthCountry");
+                const shopeeAuthShopId = localStorage.getItem("shopeeAuthShopId");
 
                 const params = new URLSearchParams({
-                    countryCode: shopeeAuthCountry?.toString() || "",
+                    shopId: shopeeAuthShopId?.toString() || "",
                     timeFrom: timeFrom.toString(),
                     timeTo: timeTo.toString(),
                     pageSize: pageSize.toString(),
@@ -27,8 +28,9 @@ const shopeeApi = baseApi.injectEndpoints({
                 if (orderStatus) {
                     params.append("orderStatus", orderStatus);
                 }
+                console.log(params, "getOrderList");
 
-                const url = `/shopee-open-shop-country/api/dev/order/get-order-list?${params}`;
+                const url = `/shopee-open-shop/api/dev/order/get-order-list?${params}`;
 
                 return {
                     url,
@@ -90,15 +92,16 @@ const shopeeApi = baseApi.injectEndpoints({
 
                 // 1️⃣ Call Shopee order details API
                 const shopeeAuthCountry = localStorage.getItem("shopeeAuthCountry");
+                const shopeeAuthShopId = localStorage.getItem("shopeeAuthShopId");
                 const params = new URLSearchParams({
-                    countryCode: shopeeAuthCountry?.toString() || "",
+                    shopId: shopeeAuthShopId?.toString() || "",
                     orderSnList: orderSnList.join(","),
                     request_order_status_pending: request_order_status_pending.toString(),
                     response_optional_fields,
                 });
-
+                console.log(params, "getOrderDetails");
                 const orderDetailsRes = await fetchWithBQ(
-                    `/shopee-open-shop-country/api/dev/order/get-order-details?${params.toString()}`
+                    `/shopee-open-shop/api/dev/order/get-order-details?${params.toString()}`
                 );
 
                 if (orderDetailsRes.error) return { error: orderDetailsRes.error };
@@ -110,7 +113,7 @@ const shopeeApi = baseApi.injectEndpoints({
                     details.map(async (order) => {
                         try {
                             const trackingRes = await fetchWithBQ(
-                                `/shopee-open-shop-country/api/dev/logistics/get-tracking-number?countryCode=${shopeeAuthCountry}&orderSn=${order?.order_sn}&packageNumber=-&responseOptionalFields=first_mile_tracking_number`
+                                `/shopee-open-shop/api/dev/logistics/get-tracking-number?shopId=${shopeeAuthShopId}&orderSn=${order?.order_sn}&packageNumber=-&responseOptionalFields=first_mile_tracking_number`
                             );
 
                             let trackingNumber = "";

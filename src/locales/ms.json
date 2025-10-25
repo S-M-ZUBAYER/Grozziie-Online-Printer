@@ -345,5 +345,7 @@
   "financialInformation": "Maklumat Kewangan",
   "taxCode": "Kod Cukai",
   "timeline": "Garis Masa",
-  "shipmentProvider": "Penyedia Penghantaran"
+  "shipmentProvider": "Penyedia Penghantaran",
+  "AuthorizationExpiredTitle": "Kebenaran {{platform}} Tamat Tempoh",
+  "AccessTokenExpiredMessage": "Token akses untuk (Shop ID: {{shopId}}) telah tamat tempoh. Sila sahkan semula untuk meneruskan penyegerakan pesanan."
 }
