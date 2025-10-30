@@ -24,6 +24,8 @@ const LazadaBatchPrintTable = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const lazadaAppKey = localStorage.getItem("lazadaAppKey");
+  const lazadaAuthCountry = localStorage.getItem("lazadaAuthCountry");
+  const lazadaAccountId = localStorage.getItem("lazadaAccountId");
 
   const formatText = (text) => {
     if (!text) return t("No Data");
@@ -45,7 +47,7 @@ const LazadaBatchPrintTable = ({
       // Step 1: Get item data to extract package_id(s)
       const itemRes = await fetch(
         // `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}`
-        `https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/api/dev/orders/items?orderId=${orderId}&appKey=${lazadaAppKey}`
+        `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}&account=${lazadaAccountId}`
       );
       const itemJson = await itemRes.json();
       const parsedItemData = JSON.parse(itemJson?.body || "{}");
@@ -70,9 +72,10 @@ const LazadaBatchPrintTable = ({
       // const trackingUrl = `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/logistic/order/trace?${queryParams.toString()}`;
 
       // Append appKey
-      queryParams.append("appKey", lazadaAppKey);
+      // queryParams.append("appKey", lazadaAppKey);
+      queryParams.append("account", lazadaAccountId);
 
-      const trackingUrl = `https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/api/dev/logistic/order/trace?${queryParams.toString()}`;
+      const trackingUrl = `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/logistic/order/trace?${queryParams.toString()}`;
 
       // Step 4: Call tracking API
       const traceRes = await fetch(trackingUrl);

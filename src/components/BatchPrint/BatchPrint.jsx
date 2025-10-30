@@ -80,10 +80,9 @@ const BatchPrint = () => {
   const [tiktokLoading, setTiktokLoading] = useState(false); // Local loading state
   const [printedData, setPrintedData] = useState([]);
   const [cardStatus, setCardStatus] = useState(false);
-  const [cipher, setCipher] = useState(() => {
-    const stored = localStorage.getItem("tiktokShopInfo");
-    return stored ? JSON.parse(stored) : [];
-  });
+
+  const cipher = localStorage.getItem("tiktokAuthCipher");
+
   const [selectedTikTokDeliveryType, setSelectedTikTokDeliveryType] =
     useState("");
 
@@ -206,7 +205,7 @@ const BatchPrint = () => {
         }
 
         // 2️⃣ Only proceed if we have cipher & status
-        if (!cipher?.[0]?.cipher || !tikTokOrderStatusCheck) return;
+        if (!cipher || !tikTokOrderStatusCheck) return;
 
         const now = Math.floor(Date.now() / 1000);
         const sevenDaysAgo = now - 7 * 24 * 60 * 60;
@@ -218,7 +217,7 @@ const BatchPrint = () => {
         setSelectAll(false);
 
         const response = await loadOrderList({
-          cipher: cipher[0]?.cipher,
+          cipher,
           shippingType: "TIKTOK",
           createTimeGe: sevenDaysAgo,
           createTimeLt: now,
@@ -450,6 +449,7 @@ const BatchPrint = () => {
   const [showConfirmButton, setShowConfirmButton] = useState(false);
   const tiktokAppKey = localStorage.getItem("tiktokAppKey");
   const tiktokAuthCountry = localStorage.getItem("tiktokAuthCountry");
+  const tiktokOpenId = localStorage.getItem("tiktokOpenId");
 
   // modal show function
   const handleToCheckItemsPackageUpdate = () => {
@@ -511,9 +511,7 @@ const BatchPrint = () => {
   };
 
   const handleConfirmPackage = async () => {
-    const cipherValue = cipher[0]?.cipher;
-
-    if (!cipherValue || checkedItems.length === 0) {
+    if (!cipher || checkedItems.length === 0) {
       console.warn("Missing cipher or no checked items");
       return;
     }
@@ -529,7 +527,7 @@ const BatchPrint = () => {
         //     return null;
         //   }
 
-        //   const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package?cipher=${encodeURIComponent(
+        //   const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/ship-package?cipher=${encodeURIComponent(
         //     cipherValue
         //   )}&packageId=${encodeURIComponent(packageId)}`;
 
@@ -552,7 +550,7 @@ const BatchPrint = () => {
 
         checkedItems.map(async (item) => {
           const packageId = item?.lineItems?.[0]?.packageId;
-          console.log(cipherValue, packageId);
+          console.log(cipher, packageId);
 
           if (!packageId) {
             console.warn(`Missing packageId for item with id ${item?.id}`);
@@ -563,12 +561,12 @@ const BatchPrint = () => {
           let body = null;
 
           // Use new API
-          // url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
+          // url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
           //   cipherValue
           // )}`;
           url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
-            cipherValue
-          )}&countryCode=${encodeURIComponent(tiktokAuthCountry)}`;
+            cipher
+          )}&openId=${encodeURIComponent(tiktokOpenId)}`;
 
           body = {
             packageId,

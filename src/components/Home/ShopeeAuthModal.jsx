@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useSelector } from "react-redux";
 
 // --- Confirmation Modal ---
 const AuthConfirmModal = ({ show, onCancel, onConfirm, t }) => {
@@ -37,9 +38,10 @@ const AuthConfirmModal = ({ show, onCancel, onConfirm, t }) => {
 // --- Main Shopee Auth Modal ---
 function ShopeeAuthModal({ show, onClose }) {
   const shopeeAuthCountry = localStorage.getItem("shopeeAuthCountry");
+  const currentUser = useSelector((state) => state.user.accountUser);
   const { t } = useTranslation();
   const [iframeUrl, setIframeUrl] = useState(
-    `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/auth/url-generate/dynamic?countryCode=${shopeeAuthCountry}`
+    `https://grozziie.zjweiting.com:3091/shopee-open-shop/auth/url-generate/by-state?state=${currentUser}`
   );
   const [loading, setLoading] = useState(true);
   const [showConfirmModal, setShowConfirmModal] = useState(false);

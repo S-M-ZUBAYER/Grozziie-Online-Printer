@@ -252,9 +252,7 @@ const SettingLayout = () => {
                                 active?.id === child.id;
 
                               // Disable Shopee and Lazada
-                              const isDisabled =
-                                child.name === "Shopee Shop" ||
-                                child.name === "Lazada Shop";
+                              const isDisabled = child.name === "Lazada Shop";
 
                               return (
                                 <li

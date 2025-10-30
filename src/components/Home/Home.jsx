@@ -94,6 +94,8 @@ const Home = () => {
   const [shopeeCompletedOrders, setShopeeCompletedOrders] = useState([]);
   const [shopeeCancelledOrders, setShopeeCancelledOrders] = useState([]);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showAccessTokenModal, setShowAccessTokenModal] = useState(false);
+  const [expiredShopInfo, setExpiredShopInfo] = useState(null); // holds shop info
 
   // ✅ Parse the user from localStorage properly
   const storedUser = localStorage.getItem("printerUser");
@@ -197,51 +199,68 @@ const Home = () => {
   //Lazada Shope Confirmation
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const lgdState = urlParams.get("lgd-state"); // e.g. 135059
+    const handleLazadaAuth = async () => {
+      try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const stateEmail = urlParams.get("lgd-state"); // e.g., 135059
+        const accountId = urlParams.get("account"); // e.g., account
 
-    if (lgdState) {
-      // 1. Store in localStorage
-      localStorage.setItem("lazadaAppKey", lgdState);
+        if (!stateEmail || !accountId) return;
 
-      // 2. Update backend Lazada shop → active = true
-      // fetch("http://localhost:2000/tht/grozziiePrinter/lazada/shop/activate", {
-      fetch(
-        "https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/activate",
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            LazadaAPPKey: lgdState,
-            active: true,
-          }),
+        // 1️⃣ Store in localStorage
+        localStorage.setItem("lazadaAppKey", accountId);
+        localStorage.setItem("lazadaAccountId", accountId);
+
+        // 2️⃣ Send to backend to add / activate Lazada shop
+        const saveResponse = await fetch(
+          "https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/add",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              LazadaUserEmail: stateEmail || user?.email,
+              ShopCountry: "MY",
+              LazadaAPPKey: accountId,
+              active: true,
+            }),
+          }
+        );
+
+        const saveResult = await saveResponse.json();
+
+        if (saveResult.code !== 201) {
+          alert(
+            "Failed to save Lazada shop. Please try again or contact support."
+          );
+          return;
         }
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          // console.log("Lazada activation success:", data);
-        })
-        .catch((err) => console.error("Activation error:", err));
 
-      // 3. Remove query params → redirect to homepage
-      navigate("/onlineprint/", { replace: true });
-    }
+        // 3️⃣ Remove query params → redirect to homepage
+        navigate("/onlineprint/", { replace: true });
+      } catch (error) {
+        console.error("Error saving Lazada shop:", error);
+        alert("An error occurred while saving Lazada shop. Please try again.");
+      }
+    };
+
+    handleLazadaAuth();
   }, [navigate]);
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const tiktokState = urlParams.get("tiktok-state"); // e.g. 6grr1iku02uoh
+    const tiktokEmail = urlParams.get("tiktok-state"); // e.g. 6grr1iku02uoh
+    const tiktokOpenId = urlParams.get("openId"); // e.g. 6grr1iku02uoh
 
-    if (tiktokState && user) {
+    if (tiktokOpenId && user) {
       // 1️⃣ Save TikTok APP key (state) locally
-      localStorage.setItem("tiktokAppKey", tiktokState);
+      localStorage.setItem("tiktokOpenId", tiktokOpenId);
       localStorage.setItem("tiktokAuthCountry", "MY");
       // 2️⃣ Prepare data
       const ShopCountry = localStorage.getItem("tiktokAuthCountry") || "MY"; // default if missing
       const payload = {
-        TikTokUserEmail: user.email,
+        TikTokUserEmail: tiktokEmail || user.email,
         ShopCountry,
-        TikTokAPPKey: tiktokState,
+        TikTokAPPKey: tiktokOpenId,
         active: true,
       };
 
@@ -310,8 +329,7 @@ const Home = () => {
   // TikTok Fetch Orders according to the Status
   useEffect(() => {
     const fetchStatusOrders = async () => {
-      if (!cipher[0]?.cipher) return;
-
+      if (selectedPlatform?.toLowerCase().trim() !== "tiktok") return;
       const statuses = [
         "AWAITING_SHIPMENT",
         "AWAITING_COLLECTION",
@@ -404,6 +422,7 @@ const Home = () => {
 
   // Lazada Fetch Orders according to the Status
   useEffect(() => {
+    if (selectedPlatform?.toLowerCase().trim() !== "lazada") return;
     const fetchLazadaStatusOrders = async () => {
       setLazadaOnShipping(true);
       const statuses = [
@@ -506,6 +525,7 @@ const Home = () => {
 
   // Shopee Fetch Orders according to the Status
   useEffect(() => {
+    if (selectedPlatform?.toLowerCase().trim() !== "shopee") return;
     const fetchShopeeStatusOrders = async () => {
       const statuses = [
         "READY_TO_SHIP",
@@ -524,45 +544,51 @@ const Home = () => {
 
       for (const status of statuses) {
         try {
-          // 1️⃣ Get base orders
+          // 1️⃣ Get base orders (now returns direct array instead of nested response)
           const orderListResponse = await getShopeeOrders({
             timeFrom: sevenDaysAgo,
             timeTo: now,
             orderStatus: status,
           }).unwrap();
 
+          // Check for invalid access token error (structure might be different now)
           if (
             orderListResponse?.error === "invalid_acceess_token" &&
             selectedPlatform === "shopee"
           ) {
-            console.warn(
-              "Shopee access token invalid, triggering OAuth flow..."
-            );
-            // Delay 2 seconds before redirecting
+            // Save shop info for modal
+            setExpiredShopInfo({
+              platform: "Shopee",
+              shopId: localStorage.getItem("shopeeAuthShopId"),
+            });
+
+            // Wait 1 second before showing modal
             setTimeout(() => {
-              // 🟢 Double-check platform before redirecting
               const currentPlatform = localStorage.getItem("SelectedPlatform");
               if (currentPlatform === "shopee") {
-                window.location.href = `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/auth/url-generate/dynamic?countryCode=${shopeeAuthCountry}`;
-                // setShowAuthModal(true);
-                console.log("Redirecting to Shopee auth page...");
+                setShowAccessTokenModal(true);
+                console.log("🟡 Showing Shopee authorization expired modal...");
               } else {
-                console.log("Skipped Shopee auth redirect — platform changed.");
+                console.log("⚪ Skipped modal — platform changed.");
               }
-            }, 2000);
+            }, 1000);
 
-            // Stop further processing until token is refreshed
             return;
           }
 
-          const orderList = orderListResponse?.response?.order_list || [];
+          // Now orderListResponse is the direct array (no more nested .response.order_list)
+          const orderList = Array.isArray(orderListResponse)
+            ? orderListResponse
+            : [];
 
           if (!orderList.length) continue;
 
           // 2️⃣ Extract order_sn
           const orderSnList = orderList.map((o) => o.order_sn);
 
-          // 3️⃣ Get order details
+          console.log(orderSnList, "from homee....");
+
+          // 3️⃣ Get order details (now returns direct array)
           const detailsResponse = await getShopeeOrderDetails({
             orderSnList,
             request_order_status_pending: true,
@@ -570,7 +596,10 @@ const Home = () => {
               "total_amount,recipient_address,item_list",
           }).unwrap();
 
-          const detailedOrders = detailsResponse?.response?.order_list || [];
+          // Now detailsResponse is the direct array (no more nested .response.order_list)
+          const detailedOrders = Array.isArray(detailsResponse)
+            ? detailsResponse
+            : [];
 
           // 4️⃣ Merge orders with details
           const mergedOrders = orderList.map((order) => {
@@ -595,15 +624,15 @@ const Home = () => {
             setShopeeProcessed(mergedOrders);
             setShopeeProcessedPrinted(printedOrders);
             setShopeeProcessedUnprinted(unprintedOrders);
+
             // Convert UNIX timestamp (seconds) → Date
             const fromUnix = (ts) => new Date(ts * 1000);
-
             const now = new Date();
 
-            // Filter printed today  (Here have the issue need to solve)
+            // Filter printed today (fixed logic)
             const todayPrinted = printedOrders.filter((order) => {
               const updateTime = fromUnix(
-                order.update_time || order.createdAtUnix
+                order.update_time || order.created_time || Date.now() / 1000
               );
               return (
                 updateTime.getDate() === now.getDate() &&
@@ -612,14 +641,23 @@ const Home = () => {
               );
             });
 
-            setShopeeTodayPrinted(printedOrders);
+            setShopeeTodayPrinted(todayPrinted); // Fixed: should be todayPrinted, not printedOrders
           } else if (status === "SHIPPED") {
-            setShopeeShippedOrders(mergedOrders);
+            // Filter to ensure only SHIPPED orders are included
 
-            const shippedToday = mergedOrders.filter((order) => {
-              // Use update_time (fallback to ship_by_date if missing)
+            const shippedOrders = mergedOrders.filter(
+              (order) => order.order_status === "SHIPPED"
+            );
+
+            setShopeeShippedOrders(shippedOrders);
+
+            const shippedToday = shippedOrders.filter((order) => {
+              // Use update_time (fallback to ship_by_date or created_time if missing)
               const updateTime = new Date(
-                (order.update_time || order.ship_by_date) * 1000
+                (order.update_time ||
+                  order.ship_by_date ||
+                  order.created_time ||
+                  Date.now() / 1000) * 1000
               );
 
               const today = new Date();
@@ -658,6 +696,15 @@ const Home = () => {
     const platformPath = platformPaths[selectedPlatform];
     if (platformPath) {
       navigate(`/onlineprint/${type}/${platformPath}`);
+    }
+  };
+
+  // Reauthorize for expire excess token
+  const handleReauthorize = () => {
+    const currentPlatform = localStorage.getItem("SelectedPlatform");
+    if (currentPlatform === "shopee") {
+      window.location.href = `https://grozziie.zjweiting.com:3091/shopee-open-shop/auth/url-generate/by-state?state=${user?.email}`;
+      console.log("🔁 Redirecting to Shopee reauthorization page...");
     }
   };
 
@@ -909,9 +956,8 @@ const Home = () => {
                             ?.toString()
                             .padStart(2, "0") || "00"
                         : selectedPlatform === "lazada"
-                        ? lazadaOnShipping?.length
-                            ?.toString()
-                            .padStart(2, "0") || "00"
+                        ? lazadaPacked?.length?.toString().padStart(2, "0") ||
+                          "00"
                         : selectedPlatform === "shopee"
                         ? shopeeProcessedUnprinted?.length
                             ?.toString()
@@ -929,6 +975,39 @@ const Home = () => {
         show={showAuthModal}
         onClose={() => setShowAuthModal(false)}
       />
+      {showAccessTokenModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[9999]">
+          <div className="bg-white rounded-xl shadow-lg p-6 w-[400px] text-center">
+            <h2 className="text-lg font-semibold text-[#004368] mb-3">
+              {t("AuthorizationExpiredTitle", {
+                platform: expiredShopInfo?.platform,
+              })}
+            </h2>
+
+            <p className="text-gray-700 mb-6">
+              {t("AccessTokenExpiredMessage", {
+                shopId: expiredShopInfo?.shopId,
+              })}
+            </p>
+
+            <div className="flex justify-center gap-3">
+              <button
+                onClick={handleReauthorize}
+                className="px-5 py-2 bg-[#004368] text-white rounded-md hover:bg-[#00324d]"
+              >
+                {t("Ok")}
+              </button>
+
+              <button
+                onClick={() => setShowAccessTokenModal(false)}
+                className="px-5 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
+              >
+                {t("Cancel")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

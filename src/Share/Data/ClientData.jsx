@@ -39,12 +39,12 @@ export const tikTokOrderStatusOptions = [
     value: "AWAITING_COLLECTION",
   },
   {
-    status: "On The Way",
-    value: "IN_TRANSIT",
-  },
-  {
     status: "Printed",
     value: "AWAITING_COLLECTION_PRINTED",
+  },
+  {
+    status: "On The Way",
+    value: "IN_TRANSIT",
   },
   {
     status: "Delivered",
@@ -71,12 +71,12 @@ export const lazadaOrderStatusOptions = [
     value: "Packed",
   },
   {
-    status: "On The Way",
-    value: "shipped",
-  },
-  {
     status: "Printed",
     value: "Packed_Printed",
+  },
+  {
+    status: "On The Way",
+    value: "shipped",
   },
   // {
   //   status: "Ready To Ship Pending",
@@ -120,6 +120,10 @@ export const ShopeeOrderStatusOptions = [
   {
     status: "On The Way",
     value: "SHIPPED",
+  },
+  {
+    status: "Delivered",
+    value: "SHIPPED_CONFIRM_RECEIVE",
   },
   {
     status: "Completed",

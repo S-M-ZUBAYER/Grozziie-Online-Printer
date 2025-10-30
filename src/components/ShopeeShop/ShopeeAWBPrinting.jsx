@@ -5,6 +5,7 @@ import { HiOutlinePrinter } from "react-icons/hi2";
 import { checkedItemsChange } from "../../features/slice/userSlice";
 import { useTranslation } from "react-i18next";
 import ConfirmationModal from "../../Share/ConfirmationModal";
+import { TiInfoOutline } from "react-icons/ti";
 
 const ShopeeAWBPrinting = () => {
   const checkedItems = useSelector((state) => state.user.checkedItemsFromRedux);
@@ -32,25 +33,26 @@ const ShopeeAWBPrinting = () => {
     return stored ? JSON.parse(stored) : [];
   });
   const shopeeAuthCountry = localStorage.getItem("shopeeAuthCountry");
+  const shopeeAuthShopId = localStorage.getItem("shopeeAuthShopId");
 
   const currentItem = checkedItems?.items?.[0]; // Show first item for warehouse/delivery
 
-  // const fetchWarehouses = async () => {
-  //   try {
-  //     const res = await fetch(
-  //       `https://grozziie.zjweiting.com:3091/tiktokshop-partner/api/dev/logistics/warehouse-list?cipher=${cipher[0].cipher}`
-  //     );
-  //     const json = await res.json();
-  //     if (json.code === 0) setWarehouses(json.data.warehouses || []);
-  //   } catch (err) {
-  //     console.error("Failed to fetch warehouses:", err);
-  //   }
-  // };
+  const fetchWarehouses = async () => {
+    try {
+      const res = await fetch(
+        `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/logistics/warehouse-list?cipher=${cipher[0].cipher}`
+      );
+      const json = await res.json();
+      if (json.code === 0) setWarehouses(json.data.warehouses || []);
+    } catch (err) {
+      console.error("Failed to fetch warehouses:", err);
+    }
+  };
 
   const fetchShipmentProviders = async () => {
     try {
       const res = await fetch(
-        `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/get-channel-list?countryCode=${shopeeAuthCountry}`
+        `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-channel-list?shopId=${shopeeAuthShopId}`
       );
       const json = await res.json();
 
@@ -115,7 +117,7 @@ const ShopeeAWBPrinting = () => {
           );
 
           const docTypeRes = await fetch(
-            `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/get-shipping-document-parameter?countryCode=${shopeeAuthCountry}`,
+            `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-shipping-document-parameter?shopId=${shopeeAuthShopId}`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -134,7 +136,7 @@ const ShopeeAWBPrinting = () => {
 
           if (!skipStatuses.includes(checkedItems?.from)) {
             // 2️⃣ Get tracking number
-            const trackingUrl = `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/get-tracking-number?countryCode=${shopeeAuthCountry}&orderSn=${orderSn}&packageNumber=-&responseOptionalFields=first_mile_tracking_number`;
+            const trackingUrl = `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-tracking-number?shopId=${shopeeAuthShopId}&orderSn=${orderSn}&packageNumber=-&responseOptionalFields=first_mile_tracking_number`;
             console.log("📤 Calling get-tracking-number:", trackingUrl);
 
             const trackingRes = await fetch(trackingUrl);
@@ -160,7 +162,7 @@ const ShopeeAWBPrinting = () => {
             );
 
             const createRes = await fetch(
-              `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/create-shipping-document?countryCode=${shopeeAuthCountry}`,
+              `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/create-shipping-document?shopId=${shopeeAuthShopId}`,
               {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -172,7 +174,7 @@ const ShopeeAWBPrinting = () => {
             await delay(1000);
           }
           const pdfRes = await fetch(
-            `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/download-shipping-document?countryCode=${shopeeAuthCountry}`,
+            `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/download-shipping-document?shopId=${shopeeAuthShopId}`,
             {
               method: "POST",
               headers: {
@@ -214,51 +216,110 @@ const ShopeeAWBPrinting = () => {
 
       // 5️⃣ Single vs multiple
       if (pdfBase64Array.length === 1) {
-        const byteChars = atob(pdfBase64Array[0]);
-        const byteNumbers = new Array(byteChars.length);
-        for (let i = 0; i < byteChars.length; i++) {
-          byteNumbers[i] = byteChars.charCodeAt(i);
+        console.log("Processing single PDF...");
+
+        try {
+          // 1. First, decode the base64 to see what's inside
+          const decodedData = atob(pdfBase64Array[0]);
+          console.log("Decoded data structure:", decodedData.substring(0, 500));
+
+          // 2. Parse the JSON to extract the actual PDF data
+          const jsonData = JSON.parse(decodedData);
+          console.log("JSON keys:", Object.keys(jsonData));
+
+          // 3. Extract the PDF data from the JSON structure
+          // Based on your data, it looks like the PDF is in the "body" field
+          const actualPdfBase64 = jsonData.body;
+
+          if (!actualPdfBase64) {
+            throw new Error("No PDF data found in the response body");
+          }
+
+          console.log("Actual PDF base64 length:", actualPdfBase64.length);
+
+          // 4. Now process the actual PDF data
+          const byteChars = atob(actualPdfBase64);
+          const byteNumbers = new Array(byteChars.length);
+          for (let i = 0; i < byteChars.length; i++) {
+            byteNumbers[i] = byteChars.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+
+          // 5. Create the PDF blob
+          const pdfBlob = new Blob([byteArray], { type: "application/pdf" });
+          console.log("PDF Blob size:", pdfBlob.size, "bytes");
+
+          // 6. Create URL and set state
+          const pdfUrl = URL.createObjectURL(pdfBlob);
+          console.log("Generated PDF URL:", pdfUrl);
+
+          setLazadaPdf(pdfUrl);
+        } catch (error) {
+          console.error("Error processing PDF:", error);
+          showErrorModal(t("pdf_processing_failed"));
         }
-        const byteArray = new Uint8Array(byteNumbers);
-
-        const pdfBlob = new Blob([byteArray], { type: "application/pdf" });
-        const pdfUrl = window.URL.createObjectURL(pdfBlob);
-
-        setLazadaPdf(pdfUrl);
       } else if (pdfBase64Array.length > 1) {
         console.log(
           "📤 Calling backend merge-pdfs-base64 with array length:",
           pdfBase64Array.length
         );
 
-        const mergeRes = await fetch(
-          "https://grozziieget.zjweiting.com:8033/tht/merge-pdfs-base64",
-          // "http://localhost:2000/tht/merge-pdfs-base64",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ pdfs: pdfBase64Array }),
+        try {
+          // Extract actual PDF data from the JSON objects
+          const cleanPdfBase64Array = pdfBase64Array
+            .map((base64String) => {
+              try {
+                const decoded = atob(base64String);
+                const jsonData = JSON.parse(decoded);
+                return jsonData.body; // Extract the actual PDF base64
+              } catch (error) {
+                console.error("Error processing PDF data:", error);
+                return null;
+              }
+            })
+            .filter(Boolean); // Remove any null values
+
+          console.log("Cleaned PDFs for merging:", cleanPdfBase64Array.length);
+
+          if (cleanPdfBase64Array.length === 0) {
+            throw new Error("No valid PDF data found after processing");
           }
-        );
 
-        const mergeData = await mergeRes.json();
-        console.log("📥 Response merge-pdfs-base64:", mergeData);
+          const mergeRes = await fetch(
+            "https://grozziieget.zjweiting.com:8033/tht/merge-pdfs-base64",
+            // "http://localhost:2000/tht/merge-pdfs-base64",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ pdfs: cleanPdfBase64Array }),
+            }
+          );
 
-        if (!mergeRes.ok) throw new Error("Failed to merge PDFs");
+          // ✅ Check response status BEFORE using the data
+          if (!mergeRes.ok) {
+            const errorData = await mergeRes.json();
+            throw new Error(errorData.error || "Failed to merge PDFs");
+          }
 
-        const { pdfBase64 } = mergeData;
-        const byteChars = atob(pdfBase64);
-        const byteNumbers = new Array(byteChars.length);
-        for (let i = 0; i < byteChars.length; i++) {
-          byteNumbers[i] = byteChars.charCodeAt(i);
+          const mergeData = await mergeRes.json();
+          console.log("📥 Response merge-pdfs-base64:", mergeData);
+
+          const { pdfBase64 } = mergeData;
+          const byteChars = atob(pdfBase64);
+          const byteNumbers = new Array(byteChars.length);
+          for (let i = 0; i < byteChars.length; i++) {
+            byteNumbers[i] = byteChars.charCodeAt(i);
+          }
+          const byteArray = new Uint8Array(byteNumbers);
+          const pdfBlob = new Blob([byteArray], { type: "application/pdf" });
+
+          const pdfUrl = URL.createObjectURL(pdfBlob);
+          console.log("✅ Merged PDF URL created:", pdfUrl);
+          setLazadaPdf(pdfUrl);
+        } catch (error) {
+          console.error("❌ Error in PDF merging:", error);
+          showErrorModal(t("pdf_merge_failed"));
         }
-        const byteArray = new Uint8Array(byteNumbers);
-        const pdfBlob = new Blob([byteArray], { type: "application/pdf" });
-
-        const pdfUrl = URL.createObjectURL(pdfBlob);
-        setLazadaPdf(pdfUrl);
-      } else {
-        showErrorModal(t("no_valid_labels"));
       }
 
       // 6️⃣ Save printed order ids

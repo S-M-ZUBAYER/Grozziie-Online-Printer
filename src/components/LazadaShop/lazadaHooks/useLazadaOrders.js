@@ -1,30 +1,222 @@
-import { useState, useEffect, useRef } from "react";
+// import { useState, useEffect, useRef } from "react";
+// import { useDispatch } from "react-redux";
+// import { useLazyGetLazadaOrdersQuery } from "../../../features/allApis/lazadaApi";
+// import { orderListData } from "../../../features/slice/orderListSlice";
+// import { isSameDay, parseISO } from "date-fns";
+// import { checkedItemsChange } from "../../../features/slice/userSlice";
+
+// export const useLazadaOrders = ({ lazadaOrderStatusCheck, setLazadaOrderStatusCheck, setCustomersData, clearSelection, location }) => {
+//     const dispatch = useDispatch();
+//     const [getLazadaOrders] = useLazyGetLazadaOrdersQuery();
+//     const [allData, setAllData] = useState([]);
+//     const [lazadaPrintedIds, setLazadaPrintedIds] = useState([]);
+//     const [cardStatus, setCardStatus] = useState(false);
+//     const [loading, setLoading] = useState(false);
+//     const lazadaAppKey = localStorage.getItem("lazadaAppKey");
+//     const lazadaAuthCountry = localStorage.getItem("lazadaAuthCountry");
+
+//     const previousStatusRef = useRef(null);
+
+//     // Route-based status updates
+//     useEffect(() => {
+//         const parts = location.pathname.split("/");
+//         if (parts.length === 4) {
+//             const routeStatus = parts[2];
+//             const statusMap = {
+//                 'printed': "Packed_Printed",
+//                 'shipped': "shipped",
+//                 'needPrint': "Packed"
+//             };
+//             const mappedStatus = statusMap[routeStatus];
+//             if (mappedStatus && setLazadaOrderStatusCheck) {
+//                 setLazadaOrderStatusCheck(mappedStatus);
+//                 setCardStatus(true);
+//             }
+//         }
+//     }, [location, setLazadaOrderStatusCheck]);
+
+//     // Fetch printed IDs
+//     useEffect(() => {
+//         const fetchPrintedIds = async () => {
+//             try {
+//                 const res = await fetch(
+//                     "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds"
+//                 );
+//                 const data = await res.json();
+//                 if (Array.isArray(data)) {
+//                     setLazadaPrintedIds(data);
+//                 }
+//             } catch (error) {
+//                 console.error("❌ Error fetching printed IDs:", error);
+//             }
+//         };
+//         fetchPrintedIds();
+//     }, []);
+
+//     // ✅ SIMPLE & BULLETPROOF: Main data fetching
+//     useEffect(() => {
+//         if (!lazadaOrderStatusCheck || lazadaOrderStatusCheck === previousStatusRef.current) {
+//             return;
+//         }
+
+//         previousStatusRef.current = lazadaOrderStatusCheck;
+
+//         console.log("🚀 Starting data fetch for:", lazadaOrderStatusCheck);
+
+//         let isMounted = true;
+
+//         const fetchData = async () => {
+//             try {
+//                 setLoading(true);
+//                 console.log("⏳ Loading ON");
+
+//                 const now = new Date();
+//                 const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+//                 const toISOString = (date) => date.toISOString().split(".")[0] + "Z";
+
+//                 dispatch(checkedItemsChange({ items: [], from: lazadaOrderStatusCheck }));
+//                 clearSelection();
+
+//                 // Get main orders
+//                 const response = await getLazadaOrders({
+//                     sortBy: "updated_at",
+//                     createdAfter: toISOString(sevenDaysAgo),
+//                     createdBefore: toISOString(now),
+//                     updateAfter: toISOString(sevenDaysAgo),
+//                     updateBefore: toISOString(now),
+//                     status: lazadaOrderStatusCheck === "Packed_Printed" ? "Packed" : lazadaOrderStatusCheck,
+//                     sortDirection: "DESC",
+//                     offset: 0,
+//                     limit: 100,
+//                 }).unwrap();
+
+//                 const parsedBody = JSON.parse(response?.body || "{}");
+//                 let filteredOrderList = parsedBody?.data?.orders || [];
+
+//                 // Apply filters
+//                 const printedIdSet = new Set(lazadaPrintedIds.map((item) => item.lazadaPrintedId));
+
+//                 if (lazadaOrderStatusCheck === "Packed") {
+//                     filteredOrderList = filteredOrderList.filter(item => !printedIdSet.has(String(item.order_id)));
+//                 } else if (lazadaOrderStatusCheck === "Packed_Printed") {
+//                     filteredOrderList = filteredOrderList.filter(item => printedIdSet.has(String(item.order_id)));
+//                     if (cardStatus) setCardStatus(false);
+//                 }
+
+//                 // Fetch item details
+//                 const orderWithItems = await Promise.allSettled(
+//                     filteredOrderList.map(async (order) => {
+//                         try {
+//                             const itemRes = await fetch(
+//                                 // `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${order.order_id}`,
+//                                 `https://grozziie.zjweiting.com:3091/lazada-open-shop-country/api/dev/orders/items?orderId=${order.order_id}&countryCode=${lazadaAuthCountry}`,
+//                                 { method: "GET", headers: { accept: "*/*" } }
+//                             );
+
+//                             const itemData = await itemRes.json();
+//                             let parsedBody = typeof itemData?.body === "string" ? JSON.parse(itemData.body) : itemData?.body || {};
+
+//                             return {
+//                                 ...order,
+//                                 orderItemInfo: parsedBody?.data?.order_items || parsedBody?.data || [],
+//                             };
+//                         } catch (error) {
+//                             return {
+//                                 ...order,
+//                                 orderItemInfo: [],
+//                             };
+//                         }
+//                     })
+//                 ).then(results =>
+//                     results.map(result => result.status === 'fulfilled' ? result.value : result.reason)
+//                 );
+
+//                 // Update state
+//                 if (isMounted) {
+//                     dispatch(orderListData(orderWithItems));
+//                     setCustomersData(orderWithItems);
+//                     setAllData(orderWithItems);
+//                     console.log("✅ Data fetch COMPLETE");
+//                 }
+
+//             } catch (error) {
+//                 console.error("❌ Fetch error:", error);
+//             } finally {
+//                 // ✅ GUARANTEED: Always turn off loading
+//                 if (isMounted) {
+//                     setLoading(false);
+//                     setCardStatus(false);
+//                     console.log("🏁 Loading OFF - guaranteed");
+//                 }
+//             }
+//         };
+
+//         fetchData();
+
+//         return () => {
+//             isMounted = false;
+//             // ✅ EXTRA SAFETY: Always reset loading on cleanup
+//             setLoading(false);
+//             console.log("🧹 Cleanup: loading reset");
+//         };
+//     }, [lazadaOrderStatusCheck]);
+
+//     return {
+//         filteredData: allData,
+//         setFilteredData: setAllData,
+//         lazadaLoading: loading,
+//         lazadaPrintedIds,
+//         cardStatus,
+//         setCardStatus,
+//     };
+// };
+
+
+
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { useLazyGetLazadaOrdersQuery } from "../../../features/allApis/lazadaApi";
 import { orderListData } from "../../../features/slice/orderListSlice";
-import { isSameDay, parseISO } from "date-fns";
 import { checkedItemsChange } from "../../../features/slice/userSlice";
 
-export const useLazadaOrders = ({ lazadaOrderStatusCheck, setLazadaOrderStatusCheck, setCustomersData, clearSelection, location }) => {
+export const useLazadaOrders = ({
+    lazadaOrderStatusCheck,
+    setLazadaOrderStatusCheck,
+    setCustomersData,
+    clearSelection,
+    location,
+}) => {
     const dispatch = useDispatch();
     const [getLazadaOrders] = useLazyGetLazadaOrdersQuery();
+
     const [allData, setAllData] = useState([]);
     const [lazadaPrintedIds, setLazadaPrintedIds] = useState([]);
     const [cardStatus, setCardStatus] = useState(false);
     const [loading, setLoading] = useState(false);
-    const lazadaAppKey = localStorage.getItem("lazadaAppKey");
+    const [initialLoad, setInitialLoad] = useState(true); // ✅ Fix: manage first render flicker
 
+    const lazadaAccountId = localStorage.getItem("lazadaAccountId");
     const previousStatusRef = useRef(null);
+    const isFetchingRef = useRef(false);
+    const isMountedRef = useRef(true);
 
-    // Route-based status updates
+    useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
+
+    // ✅ Route-based status sync
     useEffect(() => {
         const parts = location.pathname.split("/");
         if (parts.length === 4) {
             const routeStatus = parts[2];
             const statusMap = {
-                'printed': "Packed_Printed",
-                'shipped': "shipped",
-                'needPrint': "Packed"
+                NewOrders: "pending",
+                printed: "Packed_Printed",
+                shipped: "shipped",
+                needPrint: "Packed",
+                Cancelled: "Canceled",
             };
             const mappedStatus = statusMap[routeStatus];
             if (mappedStatus && setLazadaOrderStatusCheck) {
@@ -34,7 +226,7 @@ export const useLazadaOrders = ({ lazadaOrderStatusCheck, setLazadaOrderStatusCh
         }
     }, [location, setLazadaOrderStatusCheck]);
 
-    // Fetch printed IDs
+    // ✅ Fetch printed IDs (once)
     useEffect(() => {
         const fetchPrintedIds = async () => {
             try {
@@ -42,9 +234,7 @@ export const useLazadaOrders = ({ lazadaOrderStatusCheck, setLazadaOrderStatusCh
                     "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds"
                 );
                 const data = await res.json();
-                if (Array.isArray(data)) {
-                    setLazadaPrintedIds(data);
-                }
+                if (Array.isArray(data)) setLazadaPrintedIds(data);
             } catch (error) {
                 console.error("❌ Error fetching printed IDs:", error);
             }
@@ -52,118 +242,137 @@ export const useLazadaOrders = ({ lazadaOrderStatusCheck, setLazadaOrderStatusCh
         fetchPrintedIds();
     }, []);
 
-    // ✅ SIMPLE & BULLETPROOF: Main data fetching
-    useEffect(() => {
-        if (!lazadaOrderStatusCheck || lazadaOrderStatusCheck === previousStatusRef.current) {
-            return;
-        }
+    // ✅ Main Data Fetcher
+    const fetchLazadaOrdersData = useCallback(async () => {
+        if (!lazadaOrderStatusCheck || isFetchingRef.current) return;
 
-        previousStatusRef.current = lazadaOrderStatusCheck;
+        isFetchingRef.current = true;
+        if (initialLoad) setInitialLoad(false); // first fetch done
 
-        console.log("🚀 Starting data fetch for:", lazadaOrderStatusCheck);
+        console.log("🚀 Fetch Lazada orders for:", lazadaOrderStatusCheck);
+        setLoading(true); // ✅ Set loading immediately (before clearing)
 
-        let isMounted = true;
+        try {
+            const now = new Date();
+            const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            const toISOString = (d) => d.toISOString().split(".")[0] + "Z";
 
-        const fetchData = async () => {
-            try {
-                setLoading(true);
-                console.log("⏳ Loading ON");
+            // ✅ Clear selection after loading ON (so no blank flash)
+            dispatch(checkedItemsChange({ items: [], from: lazadaOrderStatusCheck }));
+            clearSelection();
 
-                const now = new Date();
-                const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-                const toISOString = (date) => date.toISOString().split(".")[0] + "Z";
+            const response = await getLazadaOrders({
+                sortBy: "updated_at",
+                createdAfter: toISOString(sevenDaysAgo),
+                createdBefore: toISOString(now),
+                updateAfter: toISOString(sevenDaysAgo),
+                updateBefore: toISOString(now),
+                status:
+                    lazadaOrderStatusCheck === "Packed_Printed"
+                        ? "Packed"
+                        : lazadaOrderStatusCheck,
+                sortDirection: "DESC",
+                offset: 0,
+                limit: 100,
+            }).unwrap();
 
-                dispatch(checkedItemsChange({ items: [], from: lazadaOrderStatusCheck }));
-                clearSelection();
+            const parsedBody = JSON.parse(response?.body || "{}");
+            let filteredOrderList = parsedBody?.data?.orders || [];
 
-                // Get main orders
-                const response = await getLazadaOrders({
-                    sortBy: "updated_at",
-                    createdAfter: toISOString(sevenDaysAgo),
-                    createdBefore: toISOString(now),
-                    updateAfter: toISOString(sevenDaysAgo),
-                    updateBefore: toISOString(now),
-                    status: lazadaOrderStatusCheck === "Packed_Printed" ? "Packed" : lazadaOrderStatusCheck,
-                    sortDirection: "DESC",
-                    offset: 0,
-                    limit: 100,
-                }).unwrap();
-
-                const parsedBody = JSON.parse(response?.body || "{}");
-                let filteredOrderList = parsedBody?.data?.orders || [];
-
-                // Apply filters
-                const printedIdSet = new Set(lazadaPrintedIds.map((item) => item.lazadaPrintedId));
-
-                if (lazadaOrderStatusCheck === "Packed") {
-                    filteredOrderList = filteredOrderList.filter(item => !printedIdSet.has(String(item.order_id)));
-                } else if (lazadaOrderStatusCheck === "Packed_Printed") {
-                    filteredOrderList = filteredOrderList.filter(item => printedIdSet.has(String(item.order_id)));
-                    if (cardStatus) setCardStatus(false);
-                }
-
-                // Fetch item details
-                const orderWithItems = await Promise.allSettled(
-                    filteredOrderList.map(async (order) => {
-                        try {
-                            const itemRes = await fetch(
-                                // `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${order.order_id}`,
-                                `https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/api/dev/orders/items?orderId=${order.order_id}&appKey=${lazadaAppKey}`,
-                                { method: "GET", headers: { accept: "*/*" } }
-                            );
-
-                            const itemData = await itemRes.json();
-                            let parsedBody = typeof itemData?.body === "string" ? JSON.parse(itemData.body) : itemData?.body || {};
-
-                            return {
-                                ...order,
-                                orderItemInfo: parsedBody?.data?.order_items || parsedBody?.data || [],
-                            };
-                        } catch (error) {
-                            return {
-                                ...order,
-                                orderItemInfo: [],
-                            };
-                        }
-                    })
-                ).then(results =>
-                    results.map(result => result.status === 'fulfilled' ? result.value : result.reason)
+            // ✅ Filter printed/unprinted
+            const printedIdSet = new Set(
+                lazadaPrintedIds.map((item) => item.lazadaPrintedId)
+            );
+            if (lazadaOrderStatusCheck === "Packed") {
+                filteredOrderList = filteredOrderList.filter(
+                    (order) => !printedIdSet.has(String(order.order_id))
                 );
+            } else if (lazadaOrderStatusCheck === "Packed_Printed") {
+                console.log(filteredOrderList, "printer", printedIdSet);
 
-                // Update state
-                if (isMounted) {
-                    dispatch(orderListData(orderWithItems));
-                    setCustomersData(orderWithItems);
-                    setAllData(orderWithItems);
-                    console.log("✅ Data fetch COMPLETE");
-                }
+                filteredOrderList = filteredOrderList.filter((order) =>
+                    printedIdSet.has(String(order.order_id))
+                );
+                console.log(filteredOrderList, "Print today");
 
-            } catch (error) {
-                console.error("❌ Fetch error:", error);
-            } finally {
-                // ✅ GUARANTEED: Always turn off loading
-                if (isMounted) {
-                    setLoading(false);
-                    setCardStatus(false);
-                    console.log("🏁 Loading OFF - guaranteed");
-                }
+                if (cardStatus) setCardStatus(false);
             }
-        };
 
-        fetchData();
+            // ✅ Fetch order item details
+            const orderWithItems = await Promise.allSettled(
+                filteredOrderList.map(async (order) => {
+                    try {
+                        const itemRes = await fetch(
+                            `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${order.order_id}&account=${lazadaAccountId}`
+                        );
+                        const itemData = await itemRes.json();
+                        const parsedItemBody =
+                            typeof itemData?.body === "string"
+                                ? JSON.parse(itemData.body)
+                                : itemData?.body || {};
+                        return {
+                            ...order,
+                            orderItemInfo:
+                                parsedItemBody?.data?.order_items ||
+                                parsedItemBody?.data ||
+                                [],
+                        };
+                    } catch {
+                        return { ...order, orderItemInfo: [] };
+                    }
+                })
+            ).then((results) =>
+                results.map((r) => (r.status === "fulfilled" ? r.value : r.reason))
+            );
 
-        return () => {
-            isMounted = false;
-            // ✅ EXTRA SAFETY: Always reset loading on cleanup
-            setLoading(false);
-            console.log("🧹 Cleanup: loading reset");
-        };
-    }, [lazadaOrderStatusCheck]);
+            if (!isMountedRef.current) return;
 
+            // ✅ Only update data once
+            dispatch(orderListData(orderWithItems));
+            setCustomersData(orderWithItems);
+            setAllData(orderWithItems);
+
+            console.log("✅ Lazada data fetch complete:", orderWithItems.length);
+        } catch (error) {
+            console.error("❌ Lazada fetch error:", error);
+        } finally {
+            if (isMountedRef.current) {
+                setLoading(false);
+                setCardStatus(false);
+            }
+            isFetchingRef.current = false;
+        }
+    }, [
+        lazadaOrderStatusCheck,
+        lazadaPrintedIds,
+        lazadaAccountId,
+        cardStatus,
+        initialLoad,
+    ]);
+
+    // ✅ Effect: status change
+    useEffect(() => {
+        if (!lazadaOrderStatusCheck) return;
+        if (lazadaOrderStatusCheck === previousStatusRef.current) return;
+        previousStatusRef.current = lazadaOrderStatusCheck;
+        fetchLazadaOrdersData();
+    }, [lazadaOrderStatusCheck, fetchLazadaOrdersData]);
+
+    // ✅ Effect: printed ID updates (auto refresh)
+    useEffect(() => {
+        if (
+            lazadaOrderStatusCheck === "Packed" ||
+            lazadaOrderStatusCheck === "Packed_Printed"
+        ) {
+            fetchLazadaOrdersData();
+        }
+    }, [lazadaPrintedIds, lazadaOrderStatusCheck, fetchLazadaOrdersData]);
+
+    // ✅ Return consistent data
     return {
         filteredData: allData,
         setFilteredData: setAllData,
-        lazadaLoading: loading,
+        lazadaLoading: loading && !initialLoad, // Prevent flicker at mount
         lazadaPrintedIds,
         cardStatus,
         setCardStatus,

@@ -20,6 +20,7 @@ const ShopeeBatchPrintTable = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const shopeeAuthCountry = localStorage.getItem("shopeeAuthCountry");
+  const shopeeAuthShopId = localStorage.getItem("shopeeAuthShopId");
 
   const formatText = (text) => {
     if (!text) return t("NoData");
@@ -44,7 +45,7 @@ const ShopeeBatchPrintTable = ({
 
       // 🔹 Call your backend Shopee API
       const res = await fetch(
-        `https://grozziie.zjweiting.com:3091/shopee-open-shop-country/api/dev/logistics/get-tracking-info?countryCode=${shopeeAuthCountry}&orderSn=${orderSn}`
+        `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-tracking-info?shopId=${shopeeAuthShopId}&orderSn=${orderSn}`
       );
 
       if (!res.ok) {
@@ -107,6 +108,7 @@ const ShopeeBatchPrintTable = ({
               {(shopeeOrderStatusCheck === "PROCESSED" ||
                 shopeeOrderStatusCheck === "SHIPPED" ||
                 shopeeOrderStatusCheck === "PROCESSED_PRINTED" ||
+                shopeeOrderStatusCheck === "SHIPPED_CONFIRM_RECEIVE" ||
                 shopeeOrderStatusCheck === "COMPLETED") && (
                 <th className="sticky top-0 bg-[#0043681A]">{t("Tracking")}</th>
               )}
@@ -175,6 +177,7 @@ const ShopeeBatchPrintTable = ({
                   {(shopeeOrderStatusCheck === "PROCESSED" ||
                     shopeeOrderStatusCheck === "PROCESSED_PRINTED" ||
                     shopeeOrderStatusCheck === "SHIPPED" ||
+                    shopeeOrderStatusCheck === "SHIPPED_CONFIRM_RECEIVE" ||
                     shopeeOrderStatusCheck === "COMPLETED") && (
                     <td>
                       <button

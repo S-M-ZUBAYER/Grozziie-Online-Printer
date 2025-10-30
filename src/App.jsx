@@ -23,6 +23,7 @@ function App() {
   const [tikTokShopCipher, setTikTokShopCipher] = useState("");
   const [currentUser, setCurrentUser] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [freeTrailPlatform, setFreeTrailPlatform] = useState("");
 
   useEffect(() => {
     const storedUser = localStorage.getItem("printerUser");
@@ -37,7 +38,11 @@ function App() {
     }
   }, [dispatch]);
 
+  // TikTokkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk...............
+
   useEffect(() => {
+    if (!currentUser) return; // ✅ Skip if no user
+
     const fetchTikTokShops = async () => {
       try {
         // 1️⃣ Fetch TikTok shop data from backend
@@ -57,21 +62,23 @@ function App() {
 
         // 2️⃣ Loop through all TikTok shops and fetch authorized shops
         for (const shop of backendData.data) {
-          const appKey = shop.TikTokAPPKey;
+          const tiktokOpenId = shop.TikTokAPPKey;
           const tiktokAuthCountry = shop.ShopCountry;
 
           const partnerRes = await fetch(
-            `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/shops/authorizedShops?countryCode=${tiktokAuthCountry}`
+            `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/shops/authorizedShops?openId=${tiktokOpenId}`
           );
 
           if (!partnerRes.ok) {
             console.warn(
-              `Failed to fetch authorized shops for appKey: ${appKey}`
+              `Failed to fetch authorized shops for appKey: ${tiktokOpenId}`
             );
             continue;
           }
 
           const partnerData = await partnerRes.json();
+
+          console.log(partnerData, "partner data ...............");
 
           // ✅ Fetch payment info only once per loop
           let paidShopNames = [];
@@ -87,7 +94,7 @@ function App() {
           }
 
           // ✅ partnerData.shops (not partnerData.data.shops)
-          const shops = partnerData?.shops || partnerData?.data?.shops || [];
+          const shops = partnerData?.data?.shops || [];
           if (shops.length === 0) continue;
 
           const firstShop = shops[0];
@@ -111,6 +118,7 @@ function App() {
               );
               localStorage.setItem("paymentInfo", JSON.stringify(data));
               // ✅ Show success modal
+              setFreeTrailPlatform("TikTok");
               setShowSuccessModal(true);
             } catch (err) {
               console.error("❌ Failed to create payment info:", err);
@@ -120,7 +128,7 @@ function App() {
           // 4️⃣ Attach appKey and push shops
           const shopsWithAppKey = shops.map((s) => ({
             ...s,
-            appKey,
+            tiktokOpenId,
             tiktokAuthCountry,
           }));
 
@@ -133,12 +141,18 @@ function App() {
           return;
         }
 
+        console.log(allAuthorizedShops, "all shopsssssssssssssssssss");
+
         setTikTokShopCipher(allAuthorizedShops[0].cipher);
-        localStorage.setItem("tiktokAppKey", allAuthorizedShops[0].appKey);
+        localStorage.setItem(
+          "tiktokOpenId",
+          allAuthorizedShops[0].tiktokOpenId
+        );
         localStorage.setItem(
           "tiktokAuthCountry",
           allAuthorizedShops[0].tiktokAuthCountry
         );
+        localStorage.setItem("tiktokAuthCipher", allAuthorizedShops[0].cipher);
         localStorage.setItem(
           "tiktokShopInfo",
           JSON.stringify(allAuthorizedShops)
@@ -154,44 +168,119 @@ function App() {
     }
   }, [currentUser]);
 
+  // Lazadaaaaaaaaaaaaaaaaaaaaaa .............
+
   useEffect(() => {
-    if (!currentUser) return; // ✅ Skip if no user
+    if (!currentUser) return; // ✅ Skip if not logged in
 
     const fetchActiveLazadaShops = async () => {
       try {
-        const res = await fetch(
+        if (!currentUser) {
+          console.warn("⚠️ No current user found.");
+          return;
+        }
+
+        // 1️⃣ Fetch active Lazada shops from backend
+        const shopRes = await fetch(
           `https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/${currentUser}/active`
         );
+        if (!shopRes.ok) throw new Error("Failed to fetch active Lazada shops");
 
-        if (!res.ok) throw new Error("Network response was not ok");
-
-        const { data } = await res.json();
-
-        if (!Array.isArray(data) || data.length === 0) {
+        const shopData = await shopRes.json();
+        const activeShops = shopData?.data || [];
+        if (!activeShops.length) {
           console.warn("⚠️ No active Lazada shops found for this user.");
           return;
         }
 
-        // ✅ Create lazadaInitData directly from API response
-        const lazadaInitData = data.map((shop, index) => {
-          const appKey = shop.LazadaAPPKey?.toString() || "";
-          const lastTwo = appKey.slice(-2); // ✅ get last 2 digits safely
+        // 2️⃣ Fetch dynamic Lazada data (tokens, country, etc.)
+        const dynamicRes = await fetch(
+          "https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/dynamic/all"
+        );
+        if (!dynamicRes.ok)
+          throw new Error("Failed to fetch Lazada dynamic data");
 
-          return {
-            cipher: appKey,
-            code: appKey,
-            id: appKey,
-            name: `${shop.ShopCountry}-(***${lastTwo})`, // ✅ example: MY-1(59)
-            region: shop.ShopCountry,
-            sellerType: "LOCAL",
-          };
-        });
+        const dynamicData = await dynamicRes.json();
 
-        // ✅ Store new data into localStorage
-        localStorage.setItem("lazadaShopInfo", JSON.stringify(lazadaInitData));
+        // 3️⃣ Match shops with dynamic token data
+        const matchedShops = activeShops
+          .map((shop) => {
+            const appKey = shop.LazadaAPPKey;
+            const dynamic = dynamicData?.[appKey];
+            if (!dynamic) return null;
 
-        // ✅ Dispatch to Redux store
-        dispatch(setAllLazadaShopList(lazadaInitData));
+            const userInfo = dynamic.country_user_info?.[0] || {};
+            const accessToken = dynamic.account_id || "";
+            const region = (dynamic.country || "my").toUpperCase();
+            const shopCode = userInfo.short_code || "NA";
+            const sellerId = userInfo.seller_id?.toString() || "unknown";
+
+            return {
+              cipher: accessToken,
+              code: accessToken,
+              id: sellerId,
+              name: `${region}-(***${shopCode.slice(-2)})`,
+              region,
+              sellerType: "LOCAL",
+            };
+          })
+          .filter(Boolean);
+
+        if (!matchedShops.length) {
+          console.warn(
+            "⚠️ No Lazada shops matched between DB and dynamic data."
+          );
+          return;
+        }
+
+        // 4️⃣ Store in localStorage
+        localStorage.setItem("lazadaShopInfo", JSON.stringify(matchedShops));
+        localStorage.setItem("lazadaAuthCountry", "my");
+        localStorage.setItem("lazadaAccountId", matchedShops[0]?.cipher);
+        localStorage.setItem(
+          "lazadaAccessToken",
+          matchedShops[0]?.cipher || ""
+        );
+
+        // 5️⃣ Dispatch to Redux
+        dispatch(setAllLazadaShopList(matchedShops));
+
+        // 6️⃣ Lazada Payment Info Check / Add Free Trial if missing
+        try {
+          const paymentRes = await fetch(
+            `https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/${currentUser}`
+          );
+          const paymentData = await paymentRes.json();
+
+          const paidShopNames =
+            paymentData?.result?.["lazada"]?.map((p) => p.shopName) || [];
+
+          for (const shop of matchedShops) {
+            if (!paidShopNames.includes(shop.id)) {
+              const paymentInfo = {
+                email: currentUser,
+                shopPlatform: "lazada",
+                shopName: shop.id,
+                paymentTime: new Date().toISOString().split(".")[0] + "Z",
+                paymentExpireTime: calculatePaymentExpireTime("01 Month"),
+                amount: 0,
+                currency: "USD",
+              };
+
+              const { data } = await axios.post(
+                "https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/add",
+                paymentInfo
+              );
+
+              localStorage.setItem("paymentInfo", JSON.stringify(data));
+              setFreeTrailPlatform("Lazada");
+              setShowSuccessModal(true);
+              console.log(`✅ Free trial added for Lazada shop: ${shop.name}`);
+            }
+          }
+        } catch (err) {
+          console.error("❌ Lazada payment info check failed:", err);
+        }
       } catch (error) {
         console.error("❌ Error fetching Lazada shops:", error);
       }
@@ -201,41 +290,121 @@ function App() {
   }, [currentUser, dispatch]);
 
   useEffect(() => {
-    fetch(
-      "https://grozziie.zjweiting.com:3091/shopee-open-shop-country/auth/get_shops_by_partner?pageNo=1&pageSize=1"
-    )
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        return response.json();
-      })
-      .then((data) => {
-        const shopeeInItData = [
-          {
-            cipher: data?.authed_shop_list[0]?.shop_id,
-            code: data?.authed_shop_list[0]?.shop_id,
-            id: data?.authed_shop_list[0]?.shop_id,
-            name: data?.authed_shop_list[0]?.shop_id,
-            region: data?.authed_shop_list[0]?.region,
-            sellerType: "LOCAL",
-          },
-        ];
+    if (!currentUser) return; // ✅ Skip if no user
 
-        if (data?.authed_shop_list[0]) {
-          localStorage.setItem(
-            "shopeeShopInfo",
-            JSON.stringify(shopeeInItData)
-          );
-          dispatch(setAllShopeeShopList(shopeeInItData));
-        } else {
-          console.warn("No shops found in API response.");
+    const fetchShopeeShops = async () => {
+      try {
+        // 1️⃣ Fetch user’s saved shops from local backend
+        const localShopRes = await fetch(
+          `https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/shopee/shop/${currentUser}`
+        );
+        if (!localShopRes.ok)
+          throw new Error("Failed to fetch local Shopee shops");
+        const localShopData = await localShopRes.json();
+        const savedShops = localShopData?.data || [];
+
+        if (savedShops.length === 0) {
+          console.warn("⚠️ No saved Shopee shops found for this user.");
         }
-      })
-      .catch((error) => {
-        console.error("There was a problem with the fetch operation:", error);
-      });
-  }, []);
+
+        // 2️⃣ Fetch all authorized Shopee shops from main Shopee API
+        const partnerRes = await fetch(
+          "https://grozziie.zjweiting.com:3091/shopee-open-shop/auth/get_shops_by_partner?pageNo=1&pageSize=50"
+        );
+        if (!partnerRes.ok)
+          throw new Error("Shopee partner API response was not ok");
+
+        const partnerData = await partnerRes.json();
+        const apiShops = partnerData?.authed_shop_list || [];
+
+        if (apiShops.length === 0) {
+          console.warn("⚠️ No authorized shops returned from Shopee API.");
+          return;
+        }
+
+        // 3️⃣ Match shops: local ShopeeAPPKey === shop_id from Shopee API
+        const matchedShops = apiShops.filter((apiShop) =>
+          savedShops.some(
+            (local) =>
+              local.ShopeeAPPKey?.toString() === apiShop.shop_id?.toString()
+          )
+        );
+
+        if (matchedShops.length === 0) {
+          console.warn(
+            "⚠️ No matching Shopee shops found between local DB and Shopee API."
+          );
+          return;
+        }
+
+        // 4️⃣ Prepare the data structure for Redux/localStorage
+        const shopeeInItData = matchedShops.map((shop) => ({
+          cipher: shop.shop_id,
+          code: shop.shop_id,
+          id: shop.shop_id,
+          name: shop.shop_name || shop.shop_id,
+          region: shop.region,
+          sellerType: "LOCAL",
+        }));
+
+        // ✅ Store shop info locally & in Redux
+        localStorage.setItem("shopeeShopInfo", JSON.stringify(shopeeInItData));
+        localStorage.setItem(
+          "shopeeAuthShopId",
+          JSON.stringify(shopeeInItData[0]?.cipher)
+        );
+        dispatch(setAllShopeeShopList(shopeeInItData));
+
+        console.log("✅ Shopee matched shops initialized:", shopeeInItData);
+
+        // 5️⃣ Payment check + free trial add logic (same as before)
+        try {
+          const paymentRes = await fetch(
+            `https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/${currentUser}`
+          );
+          const paymentData = await paymentRes.json();
+          const paidShopNames =
+            paymentData?.result?.["shopee"]?.map((p) => p.shopName) || [];
+
+          for (const shop of matchedShops) {
+            const shopId = shop.shop_id?.toString();
+
+            if (!paidShopNames.includes(shopId)) {
+              const paymentInfo = {
+                email: currentUser,
+                shopPlatform: "shopee",
+                shopName: shopId,
+                paymentTime: new Date().toISOString().split(".")[0] + "Z",
+                paymentExpireTime: calculatePaymentExpireTime("01 Month"),
+                amount: 0,
+                currency: "USD",
+              };
+
+              try {
+                const { data } = await axios.post(
+                  "https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/add",
+                  paymentInfo
+                );
+                console.log(`✅ Free trial added for Shopee shop ${shopId}`);
+                localStorage.setItem("paymentInfo", JSON.stringify(data));
+              } catch (err) {
+                console.error(
+                  `❌ Failed to add payment for shop ${shopId}:`,
+                  err
+                );
+              }
+            }
+          }
+        } catch (err) {
+          console.error("❌ Failed to check Shopee payment info:", err);
+        }
+      } catch (error) {
+        console.error("❌ Shopee shop initialization failed:", error);
+      }
+    };
+
+    fetchShopeeShops();
+  }, [currentUser, dispatch]);
 
   return (
     <div className="bg-white app">
@@ -268,7 +437,8 @@ function App() {
             </h2>
             <p className="text-gray-700 mb-6 leading-relaxed">
               You’ve successfully activated your{" "}
-              <strong>1-Month Free Trial</strong>. Enjoy access to all TikTok
+              <strong>1-Month Free Trial</strong>. Enjoy access to all{" "}
+              <strong>{freeTrailPlatform} </strong>
               order printing, packaging, and shipping features.
             </p>
             <button
