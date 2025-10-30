@@ -122,6 +122,10 @@ export const ShopeeOrderStatusOptions = [
     value: "SHIPPED",
   },
   {
+    status: "Delivered",
+    value: "SHIPPED_CONFIRM_RECEIVE",
+  },
+  {
     status: "Completed",
     value: "COMPLETED",
   },

@@ -1443,23 +1443,127 @@ const ShopeeBatchPrint = () => {
     }
   }, [shopeeOrderStatusCheck, isInitialLoad, dispatch, clearSelection]);
 
+  // const fetchShopeeOrdersWithDetails = async () => {
+  //   try {
+  //     setShopeeLoading(true);
+  //     const now = Math.floor(Date.now() / 1000);
+  //     const sevenDaysAgo = now - 7 * 24 * 60 * 60;
+
+  //     const orderListResponse = await getShopeeOrders({
+  //       timeFrom: sevenDaysAgo,
+  //       timeTo: now,
+  //       orderStatus:
+  //         shopeeOrderStatusCheck === "PROCESSED_PRINTED"
+  //           ? "PROCESSED"
+  //           : shopeeOrderStatusCheck || "READY_TO_SHIP",
+  //     }).unwrap();
+  //     console.log(orderListResponse, "shopeee.................. responese");
+
+  //     const orderList = orderListResponse?.response?.order_list || [];
+  //     if (orderList.length === 0) {
+  //       dispatch(orderListData([]));
+  //       setCustomersData([]);
+  //       return;
+  //     }
+
+  //     const orderSnList = orderList.map((order) => order.order_sn);
+  //     const detailsResponse = await getShopeeOrderDetails({
+  //       orderSnList,
+  //       request_order_status_pending: true,
+  //       response_optional_fields: "total_amount,recipient_address,item_list",
+  //     }).unwrap();
+
+  //     const detailedOrders = detailsResponse || [];
+  //     let mergedOrders = orderList.map((order) => {
+  //       const details = detailedOrders.find(
+  //         (d) => d.order_sn === order.order_sn
+  //       );
+  //       return { ...order, ...details };
+  //     });
+
+  //     // Filter logic
+  //     let printedIds = [];
+  //     try {
+  //       const res = await fetch(
+  //         "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/shopee/printedIds"
+  //       );
+  //       printedIds = await res.json();
+  //     } catch (err) {
+  //       console.error("Error fetching printedIds:", err);
+  //     }
+
+  //     const shopeePrintedIds = printedIds.map((p) => p.shopeePrintedId);
+
+  //     if (shopeeOrderStatusCheck === "PROCESSED_PRINTED") {
+  //       mergedOrders = mergedOrders.filter((order) =>
+  //         shopeePrintedIds.includes(order.order_sn)
+  //       );
+  //     } else if (shopeeOrderStatusCheck === "PROCESSED") {
+  //       const stored =
+  //         JSON.parse(localStorage.getItem("ShopeePackaging")) || [];
+  //       mergedOrders = mergedOrders.filter((order) => {
+  //         const isPrinted = shopeePrintedIds.includes(order.order_sn);
+  //         const inStorage = stored.includes(order.order_sn);
+
+  //         if (inStorage) {
+  //           const updatedStorage = stored.filter((id) => id !== order.order_sn);
+  //           localStorage.setItem(
+  //             "ShopeePackaging",
+  //             JSON.stringify(updatedStorage)
+  //           );
+  //         }
+
+  //         return !isPrinted;
+  //       });
+  //     } else if (shopeeOrderStatusCheck === "READY_TO_SHIP") {
+  //       const storeOrderId = localStorage.getItem("ShopeePackaging") || "[]";
+  //       mergedOrders = mergedOrders.filter(
+  //         (order) => !storeOrderId.includes(order.order_sn)
+  //       );
+  //     }
+
+  //     dispatch(orderListData(mergedOrders));
+  //     setCustomersData(mergedOrders);
+  //   } catch (error) {
+  //     console.error("Shopee Order Fetch Error:", error);
+  //     // toast.error("Failed to fetch orders");
+  //   } finally {
+  //     setShopeeLoading(false);
+  //   }
+  // };
+
   const fetchShopeeOrdersWithDetails = async () => {
     try {
       setShopeeLoading(true);
       const now = Math.floor(Date.now() / 1000);
       const sevenDaysAgo = now - 7 * 24 * 60 * 60;
 
+      // This will now automatically handle pagination
       const orderListResponse = await getShopeeOrders({
         timeFrom: sevenDaysAgo,
         timeTo: now,
         orderStatus:
           shopeeOrderStatusCheck === "PROCESSED_PRINTED"
             ? "PROCESSED"
+            : shopeeOrderStatusCheck === "SHIPPED_CONFIRM_RECEIVE"
+            ? "SHIPPED"
             : shopeeOrderStatusCheck || "READY_TO_SHIP",
+        pageSize: 50, // Maximum allowed by Shopee
       }).unwrap();
-      console.log(orderListResponse, "shopeee.................. responese");
 
-      const orderList = orderListResponse?.response?.order_list || [];
+      let orderList = orderListResponse || [];
+
+      // Apply status filtering based on selectedStatus BEFORE fetching details
+      if (selectedStatus === "On The Way") {
+        orderList = orderList.filter(
+          (order) => order.order_status === "SHIPPED"
+        );
+      } else if (selectedStatus === "Delivered") {
+        orderList = orderList.filter(
+          (order) => order.order_status === "TO_CONFIRM_RECEIVE"
+        );
+      }
+
       if (orderList.length === 0) {
         dispatch(orderListData([]));
         setCustomersData([]);
@@ -1467,6 +1571,8 @@ const ShopeeBatchPrint = () => {
       }
 
       const orderSnList = orderList.map((order) => order.order_sn);
+
+      // This will now process in batches of 30
       const detailsResponse = await getShopeeOrderDetails({
         orderSnList,
         request_order_status_pending: true,
@@ -1474,14 +1580,17 @@ const ShopeeBatchPrint = () => {
       }).unwrap();
 
       const detailedOrders = detailsResponse || [];
+
+      // Merge orders with their details
       let mergedOrders = orderList.map((order) => {
         const details = detailedOrders.find(
           (d) => d.order_sn === order.order_sn
         );
         return { ...order, ...details };
       });
+      console.log(mergedOrders, "marge Ordes form shopee");
 
-      // Filter logic
+      // Your existing filter logic for printed orders
       let printedIds = [];
       try {
         const res = await fetch(
@@ -1532,7 +1641,6 @@ const ShopeeBatchPrint = () => {
     }
   };
 
-  // Handlers
   const handleToReset = useCallback(() => {
     // Clear the search input
     const searchInput = document.getElementById("searchInput");
@@ -1819,7 +1927,6 @@ const ShopeeBatchPrint = () => {
           </div>
         );
       } else {
-        console.log("✅ All selected orders shipped successfully!");
         toast.success("✅ All selected orders shipped successfully!");
       }
     } catch (error) {
