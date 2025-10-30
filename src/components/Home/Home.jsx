@@ -544,14 +544,14 @@ const Home = () => {
 
       for (const status of statuses) {
         try {
-          // 1️⃣ Get base orders
+          // 1️⃣ Get base orders (now returns direct array instead of nested response)
           const orderListResponse = await getShopeeOrders({
             timeFrom: sevenDaysAgo,
             timeTo: now,
             orderStatus: status,
           }).unwrap();
-          console.log(orderListResponse, "orderListResponse");
 
+          // Check for invalid access token error (structure might be different now)
           if (
             orderListResponse?.error === "invalid_acceess_token" &&
             selectedPlatform === "shopee"
@@ -576,14 +576,19 @@ const Home = () => {
             return;
           }
 
-          const orderList = orderListResponse?.response?.order_list || [];
+          // Now orderListResponse is the direct array (no more nested .response.order_list)
+          const orderList = Array.isArray(orderListResponse)
+            ? orderListResponse
+            : [];
 
           if (!orderList.length) continue;
 
           // 2️⃣ Extract order_sn
           const orderSnList = orderList.map((o) => o.order_sn);
 
-          // 3️⃣ Get order details
+          console.log(orderSnList, "from homee....");
+
+          // 3️⃣ Get order details (now returns direct array)
           const detailsResponse = await getShopeeOrderDetails({
             orderSnList,
             request_order_status_pending: true,
@@ -591,7 +596,10 @@ const Home = () => {
               "total_amount,recipient_address,item_list",
           }).unwrap();
 
-          const detailedOrders = detailsResponse?.response?.order_list || [];
+          // Now detailsResponse is the direct array (no more nested .response.order_list)
+          const detailedOrders = Array.isArray(detailsResponse)
+            ? detailsResponse
+            : [];
 
           // 4️⃣ Merge orders with details
           const mergedOrders = orderList.map((order) => {
@@ -616,15 +624,15 @@ const Home = () => {
             setShopeeProcessed(mergedOrders);
             setShopeeProcessedPrinted(printedOrders);
             setShopeeProcessedUnprinted(unprintedOrders);
+
             // Convert UNIX timestamp (seconds) → Date
             const fromUnix = (ts) => new Date(ts * 1000);
-
             const now = new Date();
 
-            // Filter printed today  (Here have the issue need to solve)
+            // Filter printed today (fixed logic)
             const todayPrinted = printedOrders.filter((order) => {
               const updateTime = fromUnix(
-                order.update_time || order.createdAtUnix
+                order.update_time || order.created_time || Date.now() / 1000
               );
               return (
                 updateTime.getDate() === now.getDate() &&
@@ -633,14 +641,23 @@ const Home = () => {
               );
             });
 
-            setShopeeTodayPrinted(printedOrders);
+            setShopeeTodayPrinted(todayPrinted); // Fixed: should be todayPrinted, not printedOrders
           } else if (status === "SHIPPED") {
-            setShopeeShippedOrders(mergedOrders);
+            // Filter to ensure only SHIPPED orders are included
 
-            const shippedToday = mergedOrders.filter((order) => {
-              // Use update_time (fallback to ship_by_date if missing)
+            const shippedOrders = mergedOrders.filter(
+              (order) => order.order_status === "SHIPPED"
+            );
+
+            setShopeeShippedOrders(shippedOrders);
+
+            const shippedToday = shippedOrders.filter((order) => {
+              // Use update_time (fallback to ship_by_date or created_time if missing)
               const updateTime = new Date(
-                (order.update_time || order.ship_by_date) * 1000
+                (order.update_time ||
+                  order.ship_by_date ||
+                  order.created_time ||
+                  Date.now() / 1000) * 1000
               );
 
               const today = new Date();

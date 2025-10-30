@@ -120,7 +120,7 @@ export const useTikTokOrders = ({
                     updateTimeGe: sevenDaysAgo,
                     updateTimeLt: now,
                     orderStatus: tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED" ? "AWAITING_COLLECTION" : tikTokOrderStatusCheck,
-                    pageSize: 50,
+                    pageSize: 100,
                     sortOrder: "DESC",
                 }).unwrap();
 
