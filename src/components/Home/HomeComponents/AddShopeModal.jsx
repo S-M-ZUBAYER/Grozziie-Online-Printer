@@ -111,7 +111,16 @@ const shope = [
 ];
 
 const lazadaCountries = [
+  { code: "sg", name: "Singapore", baseUrl: "https://api.lazada.sg/rest" },
   { code: "my", name: "Malaysia", baseUrl: "https://api.lazada.com.my/rest" },
+  { code: "th", name: "Thailand", baseUrl: "https://api.lazada.co.th/rest" },
+  { code: "vn", name: "Vietnam", baseUrl: "https://api.lazada.vn/rest" },
+  {
+    code: "ph",
+    name: "Philippines",
+    baseUrl: "https://api.lazada.com.ph/rest",
+  },
+  { code: "id", name: "Indonesia", baseUrl: "https://api.lazada.co.id/rest" },
 ];
 
 const tiktokCountries = [
@@ -120,19 +129,38 @@ const tiktokCountries = [
     name: "Malaysia",
     baseUrl: "https://open-api.tiktokglobalshop.com",
   },
-  // { code: "TH", name: "Thailand" },
-  // { code: "SG", name: "Singapore" },
-  // { code: "VN", name: "Vietnam" },
-  // { code: "ID", name: "Indonesia" },
-  // { code: "PH", name: "Philippines" },
-  // { code: "CN", name: "China" },
 ];
 
 const shopeeCountries = [
   {
+    code: "SG",
+    name: "Singapore",
+    baseUrl: "https://partner.shopeemobile.com/api/v2",
+  },
+  {
     code: "MY",
     name: "Malaysia",
-    baseUrl: "https://open-api.tiktokglobalshop.com",
+    baseUrl: "https://partner.shopeemobile.com/api/v2",
+  },
+  {
+    code: "TH",
+    name: "Thailand",
+    baseUrl: "https://partner.shopeemobile.com/api/v2",
+  },
+  {
+    code: "VN",
+    name: "Vietnam",
+    baseUrl: "https://partner.shopeemobile.com/api/v2",
+  },
+  {
+    code: "PH",
+    name: "Philippines",
+    baseUrl: "https://partner.shopeemobile.com/api/v2",
+  },
+  {
+    code: "ID",
+    name: "Indonesia",
+    baseUrl: "https://partner.shopeemobile.com/api/v2",
   },
 ];
 

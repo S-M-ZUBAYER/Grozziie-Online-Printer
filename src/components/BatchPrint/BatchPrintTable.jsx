@@ -21,7 +21,6 @@ const BatchPrintTable = ({
   const tiktokAppKey = localStorage.getItem("tiktokAppKey");
   const tiktokAuthCountry = localStorage.getItem("tiktokAuthCountry");
   const tiktokOpenId = localStorage.getItem("tiktokOpenId");
-  console.log(tikTokOrderStatusCheck, filteredData, "orderchacek");
 
   const formatText = (text) => {
     if (!text) return "No Data";
@@ -32,6 +31,7 @@ const BatchPrintTable = ({
     setLoading(true);
     setError("");
     setTrackingInfo(null);
+
     try {
       // const url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/tracking?cipher=${encodeURIComponent(
       //   cipher[0]?.cipher
@@ -59,8 +59,6 @@ const BatchPrintTable = ({
       setLoading(false);
     }
   };
-
-  console.log(filteredData, "tiktok");
 
   return (
     <div className="mt-6">
