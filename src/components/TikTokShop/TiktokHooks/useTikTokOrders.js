@@ -25,7 +25,7 @@ export const useTikTokOrders = ({
         const stored = localStorage.getItem("tiktokShopInfo");
         return stored ? JSON.parse(stored) : [];
     });
-    console.log("status.........................dsfkjmgalsjdflj");
+
 
     // ✅ FIXED: Route-based status updates with BOTH status updates
     useEffect(() => {
@@ -120,7 +120,7 @@ export const useTikTokOrders = ({
                     updateTimeGe: sevenDaysAgo,
                     updateTimeLt: now,
                     orderStatus: tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED" ? "AWAITING_COLLECTION" : tikTokOrderStatusCheck,
-                    pageSize: 100,
+                    pageSize: 70,
                     sortOrder: "DESC",
                 }).unwrap();
 
