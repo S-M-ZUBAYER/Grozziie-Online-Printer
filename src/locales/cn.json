@@ -346,5 +346,6 @@
   "timeline": "时间线",
   "shipmentProvider": "运输服务商",
   "AuthorizationExpiredTitle": "{{platform}} 授权已过期",
-  "AccessTokenExpiredMessage": "店铺 ID: {{shopId}} 的访问令牌已过期。请重新授权以继续同步订单。"
+  "AccessTokenExpiredMessage": "店铺 ID: {{shopId}} 的访问令牌已过期。请重新授权以继续同步订单。",
+  "BackToHomePage": "返回首页"
 }

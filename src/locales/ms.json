@@ -347,5 +347,6 @@
   "timeline": "Garis Masa",
   "shipmentProvider": "Penyedia Penghantaran",
   "AuthorizationExpiredTitle": "Kebenaran {{platform}} Tamat Tempoh",
-  "AccessTokenExpiredMessage": "Token akses untuk (Shop ID: {{shopId}}) telah tamat tempoh. Sila sahkan semula untuk meneruskan penyegerakan pesanan."
+  "AccessTokenExpiredMessage": "Token akses untuk (Shop ID: {{shopId}}) telah tamat tempoh. Sila sahkan semula untuk meneruskan penyegerakan pesanan.",
+  "BackToHomePage": "Kembali ke Halaman Utama"
 }

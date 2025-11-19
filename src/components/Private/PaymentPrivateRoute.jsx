@@ -235,20 +235,26 @@ const PaymentPrivateRoute = ({ children }) => {
           <div className="fixed inset-0 bg-black bg-opacity-50 z-50"></div>{" "}
           <div className="fixed inset-0 flex items-center justify-center z-50">
             {" "}
-            <div className="bg-white p-8 rounded-lg shadow-lg max-[400px] h-52 mx-auto text-center space-y-6">
+            <div className="bg-white p-8 rounded-lg shadow-lg max-[400px] h-64 mx-auto text-center ">
               {" "}
               <h2 className="text-2xl font-bold mb-4 text-[#004368]">
                 {t("CompletePayment")}{" "}
               </h2>{" "}
-              <p className="mb-4 text-[#004368]">
+              <p className="mb-4 text-gray-500">
                 {t("CompletePaymentMessage")}
               </p>{" "}
               <button
-                className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[205px] h-10 px-8 py-2 rounded-md cursor-pointer"
+                className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[205px] h-10 px-8 py-2 mt-8 rounded-md cursor-pointer"
                 onClick={closeModal}
               >
                 {t("GoToPayment")}{" "}
               </button>{" "}
+              <p
+                className="text-[#004368] underline cursor-pointer bg-transparent border-0 p-0 mt-5"
+                onClick={() => navigate("/onlineprint/home")}
+              >
+                {t("BackToHomePage")}
+              </p>
             </div>{" "}
           </div>
         </>
