@@ -210,6 +210,7 @@ const Home = () => {
         // 1️⃣ Store in localStorage
         localStorage.setItem("lazadaAppKey", accountId);
         localStorage.setItem("lazadaAccountId", accountId);
+        localStorage.setItem("lazadaAppKeyShopInfo", accountId);
 
         // 2️⃣ Send to backend to add / activate Lazada shop
         const saveResponse = await fetch(
@@ -408,7 +409,7 @@ const Home = () => {
           const todayPrinted = data.filter((item) =>
             isSameDay(parseISO(item.createdAt), now)
           );
-          setLazadaPrintedToday(todayPrinted);
+          // setLazadaPrintedToday(todayPrinted);
         }
       } catch (err) {
         console.error("❌ Failed to fetch printed IDs:", err);
@@ -472,6 +473,8 @@ const Home = () => {
           } else if (status === "Packed") {
             setLazadaPacked(orderList);
             setLazadaPackedPrinted(printedOrders);
+            setLazadaPrintedToday(printedOrders);
+
             setLazadaPackedUnprinted(unprintedOrders);
           } else if (status === "ready_to_ship") {
           } else if (status === "shipped") {

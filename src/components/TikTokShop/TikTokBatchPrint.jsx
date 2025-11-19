@@ -166,7 +166,6 @@ const TikTokBatchPrint = () => {
       const responses = await Promise.all(
         checkedItems.map(async (item) => {
           const packageId = item?.lineItems?.[0]?.packageId;
-          console.log(cipher, packageId);
 
           if (!packageId) {
             console.warn(`Missing packageId for item with id ${item?.id}`);
@@ -228,11 +227,6 @@ const TikTokBatchPrint = () => {
     }
     closeConfirmModal();
   };
-  console.log(
-    selectedStatus,
-
-    "Statusss...................."
-  );
 
   return (
     <div className="bg-[#004368] bg-opacity-5 w-full h-screen">
@@ -280,6 +274,7 @@ const TikTokBatchPrint = () => {
               handleCheckboxChange(order, pagination.currentData)
             }
             tikTokOrderStatusCheck={tikTokOrderStatusCheck}
+            cipher={cipher}
           />
         </div>
       </div>

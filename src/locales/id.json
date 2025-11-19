@@ -347,5 +347,6 @@
   "timeline": "Linimasa",
   "shipmentProvider": "Penyedia Pengiriman",
   "AuthorizationExpiredTitle": "Otorisasi {{platform}} Kedaluwarsa",
-  "AccessTokenExpiredMessage": "Token akses untuk (Shop ID: {{shopId}}) telah kedaluwarsa. Harap otorisasi ulang untuk melanjutkan sinkronisasi pesanan."
+  "AccessTokenExpiredMessage": "Token akses untuk (Shop ID: {{shopId}}) telah kedaluwarsa. Harap otorisasi ulang untuk melanjutkan sinkronisasi pesanan.",
+  "BackToHomePage": "Kembali ke Beranda"
 }

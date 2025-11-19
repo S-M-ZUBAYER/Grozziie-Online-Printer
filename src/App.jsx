@@ -78,8 +78,6 @@ function App() {
 
           const partnerData = await partnerRes.json();
 
-          console.log(partnerData, "partner data ...............");
-
           // ✅ Fetch payment info only once per loop
           let paidShopNames = [];
           try {
@@ -140,8 +138,6 @@ function App() {
           console.warn("No authorized TikTok shops found for any appKey.");
           return;
         }
-
-        console.log(allAuthorizedShops, "all shopsssssssssssssssssss");
 
         setTikTokShopCipher(allAuthorizedShops[0].cipher);
         localStorage.setItem(
@@ -210,7 +206,7 @@ function App() {
             if (!dynamic) return null;
 
             const userInfo = dynamic.country_user_info?.[0] || {};
-            const accessToken = dynamic.account_id || "";
+            const accessToken = dynamic.account || "";
             const region = (dynamic.country || "my").toUpperCase();
             const shopCode = userInfo.short_code || "NA";
             const sellerId = userInfo.seller_id?.toString() || "unknown";
@@ -235,7 +231,7 @@ function App() {
 
         // 4️⃣ Store in localStorage
         localStorage.setItem("lazadaShopInfo", JSON.stringify(matchedShops));
-        localStorage.setItem("lazadaAuthCountry", "my");
+        localStorage.setItem("lazadaAuthCountry", matchedShops[0]?.region);
         localStorage.setItem("lazadaAccountId", matchedShops[0]?.cipher);
         localStorage.setItem(
           "lazadaAccessToken",
