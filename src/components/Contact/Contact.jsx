@@ -17,8 +17,6 @@ const Contact = () => {
   const emailTemplateId = import.meta.env.VITE_EMAIL_JS_TEMPLATE_ID;
   const emailPublicKey = import.meta.env.VITE_EMAIL_JS_PUBLIC_KEY;
 
-  console.log(emailServiceId, emailTemplateId, emailPublicKey);
-
   const handleChange = (e) => {
     setFormData({
       ...formData,

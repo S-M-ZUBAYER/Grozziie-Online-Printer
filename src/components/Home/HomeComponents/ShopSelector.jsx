@@ -119,12 +119,18 @@ const ShopSelector = ({
     // 🟦 Lazada special handling
     if (platformId === "lazada") {
       const savedLazada = JSON.parse(localStorage.getItem("lazadaShopInfo"));
+      console.log(savedLazada, "saveLazada");
+
       if (savedLazada && savedLazada.length > 0) {
         setSelectedStore(savedLazada[0].name);
         localStorage.setItem("SelectedStore", savedLazada[0].name);
         saveShopToLocalStorage("lazada", savedLazada);
-        saveShopToLocalStorage("lazadaAppKey", Number(savedLazada[0].cipher));
-        localStorage.setItem("lazadaAuthCountry", "my");
+        console.log(savedLazada[0].cipher, "testinnnnn");
+
+        localStorage.setItem("lazadaAppKey", savedLazada[0].cipher);
+        localStorage.setItem("lazadaAccountId", savedLazada[0].cipher);
+        localStorage.setItem("lazadaAppKeyShopInfo", savedLazada[0].cipher);
+        localStorage.setItem("lazadaAuthCountry", savedLazada[0].region);
         return;
       }
     }
@@ -213,8 +219,10 @@ const ShopSelector = ({
       setSelectedStore(firstStore.name);
       localStorage.setItem("SelectedStore", firstStore.name);
       saveShopToLocalStorage(platformId, [firstStore]);
-      saveShopToLocalStorage("lazadaAppKey", Number(firstStore.cipher));
-      saveShopToLocalStorage("lazadaAuthCountry", "my");
+      localStorage.setItem("lazadaAppKey", firstStore.cipher);
+      localStorage.setItem("lazadaAccountId", firstStore.cipher);
+      localStorage.setItem("lazadaAppKeyShopInfo", firstStore.cipher);
+      localStorage.setItem("lazadaAuthCountry", firstStore.region);
     } else {
       setSelectedStore(null);
     }
@@ -241,9 +249,11 @@ const ShopSelector = ({
       if (platformId === "lazada") {
         localStorage.setItem(
           "lazadaAppKey",
-          JSON.stringify(Number(fullShopObj.cipher))
+          JSON.stringify(fullShopObj.cipher)
         );
-        localStorage.setItem("lazadaAuthCountry", "my");
+        localStorage.setItem("lazadaAuthCountry", fullShopObj.region);
+        localStorage.setItem("lazadaAccountId", fullShopObj.cipher);
+        localStorage.setItem("lazadaAppKeyShopInfo", fullShopObj.cipher);
       }
       // ✅ Fix typo: tiktok
       else if (platformId === "tiktok") {
