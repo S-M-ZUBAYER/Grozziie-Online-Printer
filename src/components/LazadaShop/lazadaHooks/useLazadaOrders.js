@@ -192,7 +192,7 @@ export const useLazadaOrders = ({
     const [allData, setAllData] = useState([]);
     const [lazadaPrintedIds, setLazadaPrintedIds] = useState([]);
     const [cardStatus, setCardStatus] = useState(false);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [initialLoad, setInitialLoad] = useState(true); // ✅ Fix: manage first render flicker
 
     const lazadaAccountId = localStorage.getItem("lazadaAccountId");
@@ -209,6 +209,8 @@ export const useLazadaOrders = ({
     // ✅ Route-based status sync
     useEffect(() => {
         const parts = location.pathname.split("/");
+
+
         if (parts.length === 4) {
             const routeStatus = parts[2];
             const statusMap = {
@@ -226,6 +228,7 @@ export const useLazadaOrders = ({
         }
     }, [location, setLazadaOrderStatusCheck]);
 
+
     // ✅ Fetch printed IDs (once)
     useEffect(() => {
         const fetchPrintedIds = async () => {
@@ -234,7 +237,11 @@ export const useLazadaOrders = ({
                     "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds"
                 );
                 const data = await res.json();
-                if (Array.isArray(data)) setLazadaPrintedIds(data);
+
+
+                if (Array.isArray(data)) {
+                    setLazadaPrintedIds(data);
+                }
             } catch (error) {
                 console.error("❌ Error fetching printed IDs:", error);
             }
@@ -250,7 +257,10 @@ export const useLazadaOrders = ({
         if (initialLoad) setInitialLoad(false); // first fetch done
 
         console.log("🚀 Fetch Lazada orders for:", lazadaOrderStatusCheck);
-        setLoading(true); // ✅ Set loading immediately (before clearing)
+        if (cardStatus === false) {
+            setLoading(true); // ✅ Set loading immediately (before clearing)
+        }
+
 
         try {
             const now = new Date();
@@ -269,7 +279,7 @@ export const useLazadaOrders = ({
                 updateBefore: toISOString(now),
                 status:
                     lazadaOrderStatusCheck === "Packed_Printed"
-                        ? "Packed"
+                        ? "ready_to_ship"
                         : lazadaOrderStatusCheck,
                 sortDirection: "DESC",
                 offset: 0,
@@ -288,12 +298,10 @@ export const useLazadaOrders = ({
                     (order) => !printedIdSet.has(String(order.order_id))
                 );
             } else if (lazadaOrderStatusCheck === "Packed_Printed") {
-                console.log(filteredOrderList, "printer", printedIdSet);
 
                 filteredOrderList = filteredOrderList.filter((order) =>
-                    printedIdSet.has(String(order.order_id))
+                    printedIdSet.has(String(order?.order_id))
                 );
-                console.log(filteredOrderList, "Print today");
 
                 if (cardStatus) setCardStatus(false);
             }
@@ -331,8 +339,6 @@ export const useLazadaOrders = ({
             dispatch(orderListData(orderWithItems));
             setCustomersData(orderWithItems);
             setAllData(orderWithItems);
-
-            console.log("✅ Lazada data fetch complete:", orderWithItems.length);
         } catch (error) {
             console.error("❌ Lazada fetch error:", error);
         } finally {
@@ -366,7 +372,7 @@ export const useLazadaOrders = ({
         ) {
             fetchLazadaOrdersData();
         }
-    }, [lazadaPrintedIds, lazadaOrderStatusCheck, fetchLazadaOrdersData]);
+    }, [lazadaPrintedIds, lazadaOrderStatusCheck]);
 
     // ✅ Return consistent data
     return {

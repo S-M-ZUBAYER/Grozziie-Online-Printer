@@ -6,7 +6,7 @@
   "verify_email": "Please verify your email!",
   "invalid_email": "This email is not valid. Please try another",
   "email_already_in_use": "This email already in use Please try another or login",
-  "register_to_explore": "Register to explore our site",
+  "login_to_explore": "Log in to explore our site",
   "email": "Email",
   "enter_email": "Enter your email",
   "password": "Password",

@@ -164,7 +164,55 @@ const PaymentForm = ({ email, setEmail, duration, amount, currency }) => {
             </button>
           </form>
         )}
-        {error && <p className="text-red-500 text-center mt-3">{error}</p>}
+        {error && (
+          <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+            <div className="bg-white w-96 rounded-2xl shadow-lg p-6 relative animate-fadeIn">
+              {/* Close Button */}
+              <button
+                onClick={() => setError(null)}
+                className="absolute top-3 right-3 text-gray-500 hover:text-gray-700"
+              >
+                ✖
+              </button>
+
+              {/* Error Icon */}
+              <div className="flex justify-center">
+                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="red"
+                    className="w-10 h-10"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M12 9v3m0 4h.01m-.01-14a9 9 0 110 18 9 9 0 010-18z"
+                    />
+                  </svg>
+                </div>
+              </div>
+
+              {/* Title */}
+              <h2 className="text-xl font-semibold text-center mt-4 text-red-600">
+                Something went wrong
+              </h2>
+
+              {/* Error Text */}
+              <p className="text-center text-gray-600 mt-2">{error}</p>
+
+              {/* OK Button */}
+              <button
+                onClick={() => setError(null)}
+                className="mt-5 w-full bg-red-600 text-white py-2 rounded-lg hover:bg-red-700 transition"
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Optional illustration */}
