@@ -1506,19 +1506,22 @@ const LazadaBatchPrint = () => {
 
         // Step 1: Get order item ID
         const itemRes = await fetch(
-          // `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}`
-          // `https://grozziie.zjweiting.com:3091/lazada-open-shop-debug/api/dev/orders/items?orderId=${orderId}&appKey=${lazadaAppKey}`
           `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}&account=${lazadaAccountId}`
         );
         const itemData = await itemRes.json();
 
-        // Lazada already returns object → don't double parse
         const parsedBody = JSON.parse(itemData?.body);
-
         console.log(parsedBody.data, "parsed");
 
+        // Extract order item IDs
         const orderItemIds =
           parsedBody?.data?.map((it) => it.order_item_id.toString()) || [];
+
+        // Extract shipment provider for THIS specific order
+        const orderShipmentProvider =
+          parsedBody?.data?.find(
+            (it) => it.order_id?.toString() === orderId?.toString()
+          )?.shipment_provider || parsedBody?.data[0]?.shipment_provider;
 
         if (!orderItemIds.length) {
           console.warn("No order_item_id found for order", orderId);
@@ -1559,25 +1562,25 @@ const LazadaBatchPrint = () => {
 
         const providerInfo = shipmentData?.result?.data;
 
-        if (!providerInfo?.shipment_providers?.length) {
-          console.warn(
-            "No shipment providers found for order",
-            providerInfo,
-            orderId
-          );
-          failedOrders.push({ orderId, reason: "No shipment providers found" });
-          continue;
-        }
+        // if (!providerInfo?.shipment_providers?.length) {
+        //   console.warn(
+        //     "No shipment providers found for order",
+        //     providerInfo,
+        //     orderId
+        //   );
+        //   failedOrders.push({ orderId, reason: "No shipment providers found" });
+        //   continue;
+        // }
 
-        const shipmentProviderCode =
-          providerInfo?.shipment_providers[0]?.provider_code;
+        const shipmentProviderCode = orderShipmentProvider
+          ? orderShipmentProvider
+          : providerInfo?.shipment_providers[0]?.provider_code;
         const shippingAllocateType = providerInfo?.shipping_allocate_type;
         console.log(
           shipmentProviderCode,
           shippingAllocateType,
           "log shipment provider"
         );
-
         // Step 3: Pack the order
         const packRes = await fetch(
           `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/pack2?account=${encodeURIComponent(

@@ -91,7 +91,7 @@ const ForgotPassword = () => {
         <h1 className="text-[#004368] text-3xl font-semibold mb-7">
           {t("change_password")}
         </h1>
-        <p className="text-center text-black text-sm font-normal leading-normal mb-5">
+        <p className="text-center text-black text-sm font-normal leading-normal mb-5 px-5">
           {t("verify_email_instruction")}
         </p>
         <form className="w-full px-20" onSubmit={handleSubmit}>

@@ -125,8 +125,33 @@ const lazadaCountries = [
 
 const tiktokCountries = [
   {
+    code: "SG",
+    name: "Singapore",
+    baseUrl: "https://open-api.tiktokglobalshop.com",
+  },
+  {
     code: "MY",
     name: "Malaysia",
+    baseUrl: "https://open-api.tiktokglobalshop.com",
+  },
+  {
+    code: "TH",
+    name: "Thailand",
+    baseUrl: "https://open-api.tiktokglobalshop.com",
+  },
+  {
+    code: "VN",
+    name: "Vietnam",
+    baseUrl: "https://open-api.tiktokglobalshop.com",
+  },
+  {
+    code: "PH",
+    name: "Philippines",
+    baseUrl: "https://open-api.tiktokglobalshop.com",
+  },
+  {
+    code: "ID",
+    name: "Indonesia",
     baseUrl: "https://open-api.tiktokglobalshop.com",
   },
 ];

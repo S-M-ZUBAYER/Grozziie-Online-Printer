@@ -473,10 +473,10 @@ const Home = () => {
           } else if (status === "Packed") {
             setLazadaPacked(orderList);
             setLazadaPackedPrinted(printedOrders);
-            setLazadaPrintedToday(printedOrders);
-
-            setLazadaPackedUnprinted(unprintedOrders);
           } else if (status === "ready_to_ship") {
+            setLazadaPrintedToday(printedOrders);
+            setLazadaPackedUnprinted(unprintedOrders);
+            setLazadaPackedPrinted(printedOrders);
           } else if (status === "shipped") {
             const today = new Date();
             const startOfDay = new Date(today.setHours(0, 0, 0, 0));

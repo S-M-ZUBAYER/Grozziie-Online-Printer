@@ -75,6 +75,201 @@ const LazadaAWBPrinting = () => {
     setIsConfirmModalOpen(true);
   };
 
+  // const handleMergeAndPrint = async () => {
+  //   try {
+  //     setIsLoading(true);
+
+  //     if (!checkedItems?.items?.length) {
+  //       showErrorModal(t("NoItemsSelected"));
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     const docUrls = [];
+  //     const printedOrderIds = [];
+
+  //     for (const order of checkedItems.items) {
+  //       const { order_id, data } = order;
+
+  //       const packages = data
+  //         .map((item) => item?.package_id)
+  //         .filter(Boolean)
+  //         .map((id) => ({ package_id: id }));
+
+  //       if (!packages.length) {
+  //         // toast.error(`No valid package_id found for order ${order_id}`);
+  //         showErrorModal(`${t("no_valid_package")} ${order_id}`);
+  //         continue;
+  //       }
+
+  //       try {
+  //         // 🟠 Step 1: Print AWB
+  //         const response = await fetch(
+  //           // "https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/print-awb",
+  //           `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/print-awb?account=${lazadaAccountId}`,
+  //           {
+  //             method: "POST",
+  //             headers: {
+  //               Accept: "*/*",
+  //               "Content-Type": "application/json",
+  //             },
+  //             body: JSON.stringify({
+  //               doc_type: "PDF",
+  //               print_item_list: true,
+  //               packages,
+  //             }),
+  //           }
+  //         );
+  //         console.log(
+  //           {
+  //             doc_type: "PDF",
+  //             print_item_list: true,
+  //             packages,
+  //           },
+  //           "image................."
+  //         );
+
+  //         const result = await response.json();
+  //         const pdfUrl = result?.result?.data?.pdf_url;
+
+  //         if (pdfUrl) {
+  //           docUrls.push(pdfUrl);
+  //           printedOrderIds.push(order_id);
+
+  //           // 🟢 Step 2: Call "ready to ship" API for each package
+
+  //           const skipStatuses = [
+  //             "Packed_Printed",
+  //             "ready_to_ship",
+  //             "ready_to_ship_pending",
+  //           ];
+
+  //           if (!skipStatuses.includes(checkedItems?.from)) {
+  //             console.log(checkedItems?.from, "from");
+
+  //             for (const pkg of packages) {
+  //               try {
+  //                 // 1. MARK AS DELIVERED
+  //                 const deliveryRes = await fetch(
+  //                   `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/order/package/sof/delivered?account=${lazadaAccountId}`,
+  //                   {
+  //                     method: "POST",
+  //                     headers: {
+  //                       Accept: "*/*",
+  //                       "Content-Type": "application/json",
+  //                     },
+  //                     body: JSON.stringify({ packages: [pkg] }),
+  //                   }
+  //                 );
+
+  //                 const deliveryData = await deliveryRes.json();
+  //                 console.log("✅ Delivery API Response", deliveryData);
+
+  //                 // Stop here if failed
+  //                 if (!deliveryData?.success) {
+  //                   console.error(
+  //                     "❌ Delivery failed, skipping ready-to-ship:",
+  //                     pkg.package_id
+  //                   );
+  //                   continue;
+  //                 }
+
+  //                 // 2. CALL READY TO SHIP
+  //                 try {
+  //                   console.log({ package_id: pkg.package_id }, "ready ship");
+
+  //                   const rtsRes = await fetch(
+  //                     `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/ready-to-ship?account=${lazadaAccountId}`,
+  //                     {
+  //                       method: "POST",
+  //                       headers: {
+  //                         Accept: "*/*",
+  //                         "Content-Type": "application/json",
+  //                       },
+  //                       body: JSON.stringify({
+  //                         packages: [{ package_id: pkg.package_id }],
+  //                       }),
+  //                     }
+  //                   );
+
+  //                   const rtsData = await rtsRes.json();
+  //                   console.log("📦 Ready-To-Ship Response:", rtsData);
+  //                 } catch (rtsErr) {
+  //                   console.error(
+  //                     `❌ Failed Ready-To-Ship for ${pkg.package_id}`,
+  //                     rtsErr
+  //                   );
+  //                 }
+  //               } catch (deliveryErr) {
+  //                 console.error(
+  //                   `❌ Failed to mark package ${pkg.package_id} as delivered`,
+  //                   deliveryErr
+  //                 );
+  //               }
+  //             }
+  //           }
+  //         } else {
+  //           console.error(`No PDF URL returned for order ${order_id}`);
+  //           // toast.error(`No PDF URL returned for order ${order_id}`);
+  //         }
+  //       } catch (error) {
+  //         console.error(`❌ Error printing AWB for order ${order_id}`, error);
+  //         // toast.error(`Failed to print AWB for order ${order_id}`);
+  //         continue;
+  //       }
+  //     }
+
+  //     if (!docUrls.length) {
+  //       showErrorModal(t("no_valid_labels"));
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     // Merge all collected PDFs
+  //     const mergeRes = await fetch(
+  //       "https://grozziieget.zjweiting.com:8033/tht/merge-pdfs",
+  //       {
+  //         method: "POST",
+  //         headers: { "Content-Type": "application/json" },
+  //         body: JSON.stringify({ urls: docUrls }),
+  //       }
+  //     );
+
+  //     if (!mergeRes.ok) throw new Error("Failed to merge PDFs");
+
+  //     const blob = await mergeRes.blob();
+  //     const pdfUrl = URL.createObjectURL(blob);
+  //     setLazadaPdf(pdfUrl);
+
+  //     // ✅ Call store API for each printed order_id
+  //     if (checkedItems?.from !== "Packed_Printed") {
+  //       for (const lazadaId of printedOrderIds) {
+  //         try {
+  //           await fetch(
+  //             `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds/add?LazadaPrintedId=${lazadaId}&email=${encodeURIComponent(
+  //               currentUser
+  //             )}`,
+  //             {
+  //               method: "POST",
+  //             }
+  //           );
+  //           console.log(`✅ Stored LazadaPrintedId ${lazadaId}`);
+  //         } catch (err) {
+  //           console.error(
+  //             `❌ Failed to store LazadaPrintedId ${lazadaId}`,
+  //             err
+  //           );
+  //         }
+  //       }
+  //     }
+  //   } catch (err) {
+  //     console.error("❌ Merge print failed:", err);
+  //     showErrorModal(t("pdf_error"));
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
   const handleMergeAndPrint = async () => {
     try {
       setIsLoading(true);
@@ -88,16 +283,25 @@ const LazadaAWBPrinting = () => {
       const docUrls = [];
       const printedOrderIds = [];
 
+      // Statuses to skip delivery + ready-to-ship
+      const skipStatuses = [
+        "Packed_Printed",
+        "ready_to_ship",
+        "Delivered",
+        "shipped",
+        "completed",
+      ];
+
       for (const order of checkedItems.items) {
         const { order_id, data } = order;
 
+        // Collect valid package_ids
         const packages = data
           .map((item) => item?.package_id)
           .filter(Boolean)
           .map((id) => ({ package_id: id }));
 
         if (!packages.length) {
-          // toast.error(`No valid package_id found for order ${order_id}`);
           showErrorModal(`${t("no_valid_package")} ${order_id}`);
           continue;
         }
@@ -105,7 +309,6 @@ const LazadaAWBPrinting = () => {
         try {
           // 🟠 Step 1: Print AWB
           const response = await fetch(
-            // "https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/print-awb",
             `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/print-awb?account=${lazadaAccountId}`,
             {
               method: "POST",
@@ -128,23 +331,13 @@ const LazadaAWBPrinting = () => {
             docUrls.push(pdfUrl);
             printedOrderIds.push(order_id);
 
-            // 🟢 Step 2: Call "ready to ship" API for each package
-
-            const skipStatuses = [
-              "Packed_Printed",
-              "ready_to_ship",
-              "ready_to_ship_pending",
-            ];
-
+            // 🟢 Step 2: Delivery + Ready-to-Ship (if needed)
             if (!skipStatuses.includes(checkedItems?.from)) {
-              console.log(checkedItems?.from, "from");
-
               for (const pkg of packages) {
                 try {
+                  // 1. MARK AS DELIVERED
                   const deliveryRes = await fetch(
-                    // "https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/order/package/sof/delivered",
                     `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/order/package/sof/delivered?account=${lazadaAccountId}`,
-
                     {
                       method: "POST",
                       headers: {
@@ -157,9 +350,42 @@ const LazadaAWBPrinting = () => {
 
                   const deliveryData = await deliveryRes.json();
                   console.log("✅ Delivery API Response", deliveryData);
+
+                  if (!deliveryData?.result?.success) {
+                    console.error(
+                      "❌ Delivery failed, skipping RTS:",
+                      pkg.package_id
+                    );
+                    continue;
+                  }
+
+                  // 2. READY TO SHIP API
+                  try {
+                    const rtsRes = await fetch(
+                      `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/ready-to-ship?account=${lazadaAccountId}`,
+                      {
+                        method: "POST",
+                        headers: {
+                          Accept: "*/*",
+                          "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                          packages: [{ package_id: pkg.package_id }],
+                        }),
+                      }
+                    );
+
+                    const rtsData = await rtsRes.json();
+                    console.log("📦 Ready-To-Ship Response:", rtsData);
+                  } catch (rtsErr) {
+                    console.error(
+                      `❌ Ready-To-Ship failed for ${pkg.package_id}`,
+                      rtsErr
+                    );
+                  }
                 } catch (deliveryErr) {
                   console.error(
-                    `❌ Failed to mark package ${pkg.package_id} as delivered`,
+                    `❌ SOF Delivery failed for ${pkg.package_id}`,
                     deliveryErr
                   );
                 }
@@ -167,22 +393,21 @@ const LazadaAWBPrinting = () => {
             }
           } else {
             console.error(`No PDF URL returned for order ${order_id}`);
-            // toast.error(`No PDF URL returned for order ${order_id}`);
           }
         } catch (error) {
           console.error(`❌ Error printing AWB for order ${order_id}`, error);
-          // toast.error(`Failed to print AWB for order ${order_id}`);
           continue;
         }
       }
 
+      // No valid PDFs
       if (!docUrls.length) {
         showErrorModal(t("no_valid_labels"));
         setIsLoading(false);
         return;
       }
 
-      // Merge all collected PDFs
+      // 🟣 Merge all collected PDFs
       const mergeRes = await fetch(
         "https://grozziieget.zjweiting.com:8033/tht/merge-pdfs",
         {
@@ -198,24 +423,23 @@ const LazadaAWBPrinting = () => {
       const pdfUrl = URL.createObjectURL(blob);
       setLazadaPdf(pdfUrl);
 
-      // ✅ Call store API for each printed order_id
-      if (checkedItems?.from !== "Packed_Printed") {
+      // 🟢 Store printed order IDs
+      if (
+        checkedItems?.from !== "Packed_Printed" &&
+        checkedItems?.from !== "ready_to_ship"
+      ) {
         for (const lazadaId of printedOrderIds) {
           try {
             await fetch(
               `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds/add?LazadaPrintedId=${lazadaId}&email=${encodeURIComponent(
                 currentUser
               )}`,
-              {
-                method: "POST",
-              }
+              { method: "POST" }
             );
+
             console.log(`✅ Stored LazadaPrintedId ${lazadaId}`);
           } catch (err) {
-            console.error(
-              `❌ Failed to store LazadaPrintedId ${lazadaId}`,
-              err
-            );
+            console.error(`❌ Failed to store ${lazadaId}`, err);
           }
         }
       }

@@ -65,7 +65,7 @@ const VerifyEmailPage = () => {
           <h4 className="text-[#004368] text-4xl font-semibold leading-normal">
             {t("verify_email")}
           </h4>
-          <p className="text-center text-black text-sm font-normal leading-normal">
+          <p className="text-center text-black text-sm font-normal leading-normal px-5">
             {t("verify_email_instruction")}
           </p>
           <div>

@@ -67,6 +67,7 @@ import ShopeedeliveryType from "../components/Settings/DeliveryType/Shopeedelive
 import LazadaDeliveryType from "../components/Settings/DeliveryType/LazadaDeliveryType";
 import TiktokDeliveryType from "../components/Settings/DeliveryType/TiktokDeliveryType";
 import TikTokBatchPrint from "../components/TikTokShop/TikTokBatchPrint";
+import PaymentFromApp from "../components/Pricing/PaymentSystemFromApp";
 
 export const routes = createBrowserRouter([
   {
@@ -593,6 +594,10 @@ export const routes = createBrowserRouter([
   {
     path: "/onlineprint/payment",
     element: <PaymentSystem />,
+  },
+  {
+    path: "/onlineprint/payment/:duration/:amount/:packageId/:email/:country/:platform/:shopName",
+    element: <PaymentFromApp />,
   },
   {
     path: "/onlineprint/success",
