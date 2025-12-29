@@ -163,7 +163,7 @@
   "PaymentMethod": "支付方式",
 
   "_comment_package": "Package",
-  "NoAvailableOrder": "没有可用的订单。请稍后再试....",
+  "NoAvailableOrder": "没有可用的订单",
   "TrackingUpdates": "跟踪更新",
   "_comment_SinglePrint": "Single Print",
 

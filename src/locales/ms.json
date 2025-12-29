@@ -163,7 +163,7 @@
   "PaymentMethod": "Metode Pembayaran",
 
   "_comment_package": "Package",
-  "NoAvailableOrder": "Tiada pesanan yang tersedia. Sila cuba lagi nanti....",
+  "NoAvailableOrder": "Tiada pesanan yang tersedia",
   "TrackingUpdates": "Kemaskini Penjejakan",
   "_comment_single_print": "Single Print",
 

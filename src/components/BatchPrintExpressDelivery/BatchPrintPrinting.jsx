@@ -240,7 +240,7 @@ const BatchPrintPrinting = () => {
         <div className="grid grid-cols-11 max-h-[549px]">
           {/* Left - Warehouses */}
           <div className="col-span-4 mr-12">
-            <div className="bg-[#004368] bg-opacity-[0.05] rounded-md px-6 pt-6">
+            <div className="bg-[#004368] bg-opacity-[0.05] rounded-md px-6 pt-6  h-[705px] overflow-scroll">
               <p className="text-lg font-semibold mb-2">{t("WarehouseList")}</p>
               {warehouses.map((warehouse) => (
                 <div
@@ -300,7 +300,7 @@ const BatchPrintPrinting = () => {
 
           {/* Right - Shipment Providers */}
           <div className="col-span-3 ml-12">
-            <div className="bg-[#004368] bg-opacity-[0.05] rounded-md px-6 pt-6">
+            <div className="bg-[#004368] bg-opacity-[0.05] rounded-md px-6 pt-6  h-[705px] overflow-scroll">
               <p className="text-lg font-semibold mb-2">
                 {t("ShipmentProviderList")}
               </p>

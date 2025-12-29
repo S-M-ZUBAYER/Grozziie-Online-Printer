@@ -162,7 +162,7 @@
   "PaymentMethod": "Phương thức thanh toán",
 
   "_comment_package": "Package",
-  "NoAvailableOrder": "Không có đơn hàng nào khả dụng. Vui lòng thử lại sau....",
+  "NoAvailableOrder": "Không có đơn hàng nào khả dụng",
   "TrackingUpdates": "Cập nhật theo dõi",
   "_comment_SinglePrint": "Single Print",
 
