@@ -24,6 +24,31 @@ function App() {
   const [currentUser, setCurrentUser] = useState("");
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [freeTrailPlatform, setFreeTrailPlatform] = useState("");
+  const [freeTrailDays, setFreeTrailDays] = useState("3 Months");
+
+  // Get the Free Trail package duration information
+  const fetchFreeTrialDuration = async () => {
+    try {
+      const res = await fetch(
+        `https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/pricing/country/MY/platform/tiktok`
+      );
+
+      if (!res.ok) throw new Error("Failed to fetch pricing");
+
+      const json = await res.json();
+
+      const freeTrial = json?.data?.find(
+        (pkg) => pkg.packageName === "Free Trial"
+      );
+      setFreeTrailDays(freeTrial?.duration || "03 Month");
+      return freeTrial?.duration || "03 Month"; // fallback
+    } catch (err) {
+      console.error("❌ Pricing fetch failed:", err);
+      return "03 Months"; // safe fallback
+    }
+  };
+
+  const freeTrailsTime = fetchFreeTrialDuration();
 
   useEffect(() => {
     const storedUser = localStorage.getItem("printerUser");
@@ -64,6 +89,7 @@ function App() {
         for (const shop of backendData.data) {
           const tiktokOpenId = shop.TikTokAPPKey;
           const tiktokAuthCountry = shop.ShopCountry;
+          const freeTrialDuration = await fetchFreeTrialDuration();
 
           const partnerRes = await fetch(
             `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/shops/authorizedShops?openId=${tiktokOpenId}`
@@ -97,6 +123,7 @@ function App() {
 
           const firstShop = shops[0];
           const shopId = firstShop?.id?.toString();
+
           // 3️⃣ Create default payment record if not exists
           if (!paidShopNames.includes(shopId)) {
             const paymentInfo = {
@@ -104,7 +131,7 @@ function App() {
               shopPlatform: "tiktok",
               shopName: shopId,
               paymentTime: new Date().toISOString().split(".")[0] + "Z",
-              paymentExpireTime: calculatePaymentExpireTime("01 Month"),
+              paymentExpireTime: calculatePaymentExpireTime(freeTrialDuration),
               amount: 0,
               currency: "USD",
             };
@@ -252,13 +279,16 @@ function App() {
             paymentData?.result?.["lazada"]?.map((p) => p.shopName) || [];
 
           for (const shop of matchedShops) {
+            const freeTrialDuration = await fetchFreeTrialDuration();
+
             if (!paidShopNames.includes(shop.id)) {
               const paymentInfo = {
                 email: currentUser,
                 shopPlatform: "lazada",
                 shopName: shop.id,
                 paymentTime: new Date().toISOString().split(".")[0] + "Z",
-                paymentExpireTime: calculatePaymentExpireTime("01 Month"),
+                paymentExpireTime:
+                  calculatePaymentExpireTime(freeTrialDuration),
                 amount: 0,
                 currency: "USD",
               };
@@ -305,7 +335,7 @@ function App() {
 
         // 2️⃣ Fetch all authorized Shopee shops from main Shopee API
         const partnerRes = await fetch(
-          "https://grozziie.zjweiting.com:3091/shopee-open-shop/auth/get_shops_by_partner?pageNo=1&pageSize=50"
+          "https://grozziie.zjweiting.com:3091/shopee-open-shop/auth/get_shops_by_partner?pageNo=1&pageSize=100"
         );
         if (!partnerRes.ok)
           throw new Error("Shopee partner API response was not ok");
@@ -364,6 +394,7 @@ function App() {
 
           for (const shop of matchedShops) {
             const shopId = shop.shop_id?.toString();
+            const freeTrialDuration = await fetchFreeTrialDuration();
 
             if (!paidShopNames.includes(shopId)) {
               const paymentInfo = {
@@ -371,7 +402,8 @@ function App() {
                 shopPlatform: "shopee",
                 shopName: shopId,
                 paymentTime: new Date().toISOString().split(".")[0] + "Z",
-                paymentExpireTime: calculatePaymentExpireTime("01 Month"),
+                paymentExpireTime:
+                  calculatePaymentExpireTime(freeTrialDuration),
                 amount: 0,
                 currency: "USD",
               };
@@ -381,6 +413,8 @@ function App() {
                   "https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/add",
                   paymentInfo
                 );
+                setFreeTrailPlatform("Shopee");
+                setShowSuccessModal(true);
                 console.log(`✅ Free trial added for Shopee shop ${shopId}`);
                 localStorage.setItem("paymentInfo", JSON.stringify(data));
               } catch (err) {
@@ -433,7 +467,7 @@ function App() {
             </h2>
             <p className="text-gray-700 mb-6 leading-relaxed">
               You’ve successfully activated your{" "}
-              <strong>1-Month Free Trial</strong>. Enjoy access to all{" "}
+              <strong>{freeTrailDays} Free Trial</strong>. Enjoy access to all{" "}
               <strong>{freeTrailPlatform} </strong>
               order printing, packaging, and shipping features.
             </p>

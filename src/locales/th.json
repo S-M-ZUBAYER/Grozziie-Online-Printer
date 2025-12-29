@@ -163,7 +163,7 @@
   "PaymentMethod": "วิธีการชำระเงิน",
 
   "_comment_package": "Package",
-  "NoAvailableOrder": "ไม่มีคำสั่งซื้อที่พร้อมใช้งาน กรุณาลองใหม่ภายหลัง....",
+  "NoAvailableOrder": "ไม่มีคำสั่งซื้อที่พร้อมใช้งาน",
   "TrackingUpdates": "การติดตามการอัปเดต",
   "_comment_single_print": " Single Print",
 
