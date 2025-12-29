@@ -1,6 +1,8 @@
 const calculatePaymentExpireTime = (duration) => {
   const now = new Date();
   let expireDate = new Date(now);
+  console.log(duration, "duration");
+
 
   const durationMatch = duration.toLowerCase().match(/(\d+)\s*(month|months?)/);
 

@@ -139,16 +139,16 @@ const Login = () => {
   return (
     <div className="bg-[#004368] bg-opacity-5 min-h-screen py-32">
       <div className="w-[1140px] mx-auto grid grid-cols-7 shadow-lg rounded-2xl">
-        <div className="col-span-3 bg-[#004368] bg-opacity-5 rounded-l-2xl">
-          <div className="flex flex-col items-center justify-center py-20">
+        <div className="col-span-3 bg-white  rounded-l-2xl">
+          <div className="flex flex-col items-center justify-center bg-[#004368] bg-opacity-5 py-20 m-[6px] rounded-2xl">
             <div className="flex flex-col items-center gap-y-7">
               <h1 className="text-[#004368] text-6xl font-bold">Grozziie</h1>
               <p className="text-[#004368] text-xl font-normal">
-                {t("register_to_explore")}
+                {t("login_to_explore")}
               </p>
             </div>
-            <div>
-              <img src={login} alt="Registration" width={327} height={450} />
+            <div className="mt-8">
+              <img src={login} alt="LogIn" className="w-72 h-80" />
             </div>
           </div>
         </div>
@@ -215,9 +215,9 @@ const Login = () => {
               </p>
             </div>
 
-            <div className="flex items-center justify-center mb-6">
+            <div className="flex items-center justify-center mb-6 mt-16">
               <button
-                className="bg-[#004368] hover:bg-opacity-60 text-white hover:text-black w-[150px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mr-3 mt-6"
+                className="bg-[#004368] hover:bg-opacity-60 text-white hover:text-black w-[250px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mr-3 mt-6"
                 type="submit"
                 disabled={loading}
               >
@@ -290,7 +290,7 @@ const Login = () => {
               </div>
             </dialog>
           </div>
-          <p className="mt-24 text-black text-opacity-60">
+          <p className="mt-16 text-black text-opacity-60">
             {t("no_account")}{" "}
             <Link
               to="/onlineprint/register"
