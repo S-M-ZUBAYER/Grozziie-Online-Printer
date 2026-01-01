@@ -1,205 +1,419 @@
 import React from "react";
 import { useDispatch } from "react-redux";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 import { decryptArrayData } from "./OrderListFunctions";
 import { orderList } from "../Data/ClientData";
 import { orderListData } from "../../features/slice/orderListSlice";
 
-//pindoudou
-// export const arrayToExcel = (data, fileName) => {
-//   const updateData = data?.map((item, index) => {
-//     if (item.item_list) {
-//       const newData = {
-//         ...item,
-//         goods_count: item?.item_list[0]?.goods_count,
-//         goods_id: item?.item_list[0]?.goods_id,
-//         goods_img: item?.item_list[0]?.goods_img,
-//         goods_name: item?.item_list[0]?.goods_name,
-//         goods_price: item?.item_list[0]?.goods_price,
-//         goods_spec: item?.item_list[0]?.goods_spec,
-//         outer_goods_id: item?.item_list[0]?.outer_goods_id,
-//         outer_id: item?.item_list[0]?.outer_id,
-//         sku_id: item?.item_list[0]?.sku_id,
-//       };
-//       return newData;
-//     }
-//     return item;
-//   });
-//   const ws = XLSX.utils.json_to_sheet(updateData);
-//   const wb = XLSX.utils.book_new();
-//   XLSX.utils.book_append_sheet(wb, ws, "Sheet 1");
-//   XLSX.writeFile(wb, fileName + ".xlsx");
-// };
+export const arrayToExcel = async (data, fileName) => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("TikTok Orders");
 
-export const arrayToExcel = (data, fileName) => {
-  const updateData = data?.map((item) => {
-    const lineItem = item?.lineItems?.[0] || {};
+  // =========================
+  // 1️⃣ Define columns
+  // =========================
+  worksheet.columns = [
+    { header: "Order ID", key: "orderId", width: 24 },
+    { header: "Order Status", key: "orderStatus", width: 18 },
+    { header: "Created Time", key: "createTime", width: 22 },
+    { header: "Updated Time", key: "updateTime", width: 22 },
 
-    return {
-      // Order-level fields
-      orderId: item.id,
-      buyerEmail: item.buyerEmail,
-      commercePlatform: item.commercePlatform,
-      createTime: item.createTime,
-      paidTime: item.paidTime,
-      paymentMethod: item.paymentMethodName,
-      fulfillmentType: item.fulfillmentType,
-      deliveryType: item.deliveryType,
-      status: item.status,
-      trackingNumber: item.trackingNumber,
-      shippingProvider: item.shippingProvider,
-      shippingFee: item.payment?.shippingFee,
-      totalAmount: item.payment?.totalAmount,
+    { header: "Buyer Email", key: "buyerEmail", width: 35 },
+    { header: "Payment Method", key: "paymentMethod", width: 22 },
+    { header: "COD", key: "isCod", width: 12 },
 
-      // Address details
-      recipientName: item.recipientAddress?.name,
-      phoneNumber: item.recipientAddress?.phoneNumber,
-      address: item.recipientAddress?.fullAddress,
-      postalCode: item.recipientAddress?.postalCode,
+    { header: "Recipient Name", key: "recipientName", width: 22 },
+    { header: "Recipient Phone", key: "recipientPhone", width: 22 },
+    { header: "Full Address", key: "fullAddress", width: 50 },
+    { header: "Country", key: "country", width: 16 },
+    { header: "State", key: "state", width: 18 },
+    { header: "District", key: "district", width: 18 },
+    { header: "Post Code", key: "postCode", width: 14 },
 
-      // Line item fields (first item only)
-      productId: lineItem.productId,
-      productName: lineItem.productName,
-      skuName: lineItem.skuName,
-      skuId: lineItem.skuId,
-      skuImage: lineItem.skuImage,
-      salePrice: lineItem.salePrice,
-      sellerSku: lineItem.sellerSku,
-      currency: lineItem.currency,
-      displayStatus: lineItem.displayStatus,
-      packageId: lineItem.packageId,
+    { header: "Item ID", key: "itemId", width: 24 },
+    { header: "Product Name", key: "productName", width: 45 },
+    { header: "SKU Name", key: "skuName", width: 28 },
+    { header: "Seller SKU", key: "sellerSku", width: 22 },
+    { header: "SKU ID", key: "skuId", width: 26 },
+    { header: "SKU Items Count", key: "skuItemsCount", width: 20 },
+
+    { header: "Original Price", key: "originalPrice", width: 18 },
+    { header: "Sale Price", key: "salePrice", width: 18 },
+    { header: "Platform Discount", key: "platformDiscount", width: 18 },
+    { header: "Seller Discount", key: "sellerDiscount", width: 18 },
+
+    { header: "Shipping Provider", key: "shippingProvider", width: 22 },
+    { header: "Tracking Number", key: "trackingNumber", width: 26 },
+  ];
+
+  // =========================
+  // 2️⃣ Header Style (GREEN)
+  // =========================
+  worksheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true, size: 13 };
+    cell.alignment = { vertical: "middle", horizontal: "center" };
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF4CAF50" }, // ✅ Green
+    };
+    cell.border = {
+      top: { style: "thin" },
+      left: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" },
     };
   });
 
-  const ws = XLSX.utils.json_to_sheet(updateData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Sheet 1");
-  XLSX.writeFile(wb, `${fileName}.xlsx`);
+  // =========================
+  // 3️⃣ Fill data (GROUP BY SKU)
+  // =========================
+  data?.forEach((order) => {
+    const address = order?.recipientAddress || {};
+    const districts = address?.districtInfo || [];
+
+    const country = districts.find((d) => d.addressLevel === "L0")?.addressName;
+    const state = districts.find((d) => d.addressLevel === "L1")?.addressName;
+    const district = districts.find(
+      (d) => d.addressLevel === "L2"
+    )?.addressName;
+
+    // 🔥 GROUP lineItems by skuId
+    const skuMap = {};
+
+    order?.lineItems?.forEach((item) => {
+      const skuKey = item.skuId;
+
+      if (!skuMap[skuKey]) {
+        skuMap[skuKey] = {
+          count: 0,
+          item, // store first item as reference
+        };
+      }
+      skuMap[skuKey].count += 1;
+    });
+
+    // 🔥 Add ONE row per SKU
+    Object.values(skuMap).forEach(({ item, count }) => {
+      worksheet.addRow({
+        orderId: order.id,
+        orderStatus: order.status,
+        createTime: new Date(order.createTime * 1000).toLocaleString(),
+        updateTime: new Date(order.updateTime * 1000).toLocaleString(),
+
+        buyerEmail: order.buyerEmail,
+        paymentMethod: order.paymentMethodName,
+        isCod: order.isCod ? "YES" : "NO",
+
+        recipientName: address.name,
+        recipientPhone: address.phoneNumber,
+        fullAddress: address.fullAddress,
+        country,
+        state,
+        district,
+        postCode: address.postalCode,
+
+        // ✅ SKU LEVEL
+        skuId: item.skuId,
+        itemId: item.id,
+        productName: item.productName,
+        skuName: item.skuName,
+        sellerSku: item.sellerSku,
+
+        // ✅ COUNT
+        skuItemsCount: count,
+
+        originalPrice: item.originalPrice,
+        salePrice: item.salePrice,
+        platformDiscount: item.platformDiscount,
+        sellerDiscount: item.sellerDiscount,
+
+        shippingProvider: item.shippingProviderName,
+        trackingNumber: item.trackingNumber,
+      });
+    });
+  });
+
+  // =========================
+  // 4️⃣ Export Excel file
+  // =========================
+  const buffer = await workbook.xlsx.writeBuffer();
+  saveAs(
+    new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    }),
+    `${fileName}.xlsx`
+  );
 };
 
-export const lazadaArrayToExcel = (data, fileName) => {
-  const updateData = data?.map((item) => {
-    const shippingAddress = item?.address_shipping || {};
-    const billingAddress = item?.address_billing || {};
+export const lazadaArrayToExcel = async (data, fileName) => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Lazada Orders");
 
-    return {
-      // Order-level fields
-      orderId: item.order_id,
-      orderNumber: item.order_number,
-      createdAt: item.created_at,
-      updatedAt: item.updated_at,
-      paymentMethod: item.payment_method,
-      price: item.price,
-      status: (item.statuses && item.statuses[0]) || "",
+  // ======================
+  // 1️⃣ Columns definition
+  // ======================
+  worksheet.columns = [
+    { header: "Order ID", key: "orderId", width: 22 },
+    { header: "Order Status", key: "orderStatus", width: 18 },
+    { header: "Created At", key: "createdAt", width: 22 },
+    { header: "Updated At", key: "updatedAt", width: 22 },
 
-      // Shipping details
-      shippingFee: item.shipping_fee,
-      shippingFeeOriginal: item.shipping_fee_original,
-      shippingFeeDiscountPlatform: item.shipping_fee_discount_platform,
-      shippingFeeDiscountSeller: item.shipping_fee_discount_seller,
-      warehouseCode: item.warehouse_code,
+    { header: "Buyer First Name", key: "buyerFirstName", width: 22 },
+    { header: "Buyer Last Name", key: "buyerLastName", width: 22 },
+    { header: "Buyer Phone", key: "buyerPhone", width: 22 },
 
-      // Buyer info
-      customerFirstName: item.customer_first_name,
-      customerLastName: item.customer_last_name,
-      buyerNote: item.buyer_note,
-      remarks: item.remarks,
+    { header: "Shipping Address", key: "shippingAddress", width: 45 },
+    { header: "Shipping City", key: "shippingCity", width: 20 },
+    { header: "Shipping Country", key: "shippingCountry", width: 20 },
+    { header: "Shipping Post Code", key: "shippingPostCode", width: 22 },
 
-      // Shipping address
-      shippingName: `${shippingAddress.first_name || ""} ${
-        shippingAddress.last_name || ""
-      }`.trim(),
-      shippingPhone: shippingAddress.phone,
-      shippingAddress1: shippingAddress.address1,
-      shippingAddress2: shippingAddress.address2,
-      shippingAddress3: shippingAddress.address3,
-      shippingAddress4: shippingAddress.address4,
-      shippingAddress5: shippingAddress.address5,
-      shippingCity: shippingAddress.city,
-      shippingPostCode: shippingAddress.post_code,
-      shippingCountry: shippingAddress.country,
+    { header: "Item ID", key: "itemId", width: 22 },
+    { header: "Item Name", key: "itemName", width: 45 },
+    { header: "Variation", key: "variation", width: 30 },
+    { header: "SKU Name", key: "sku", width: 18 },
+    { header: "SKU ID", key: "skuId", width: 26 },
+    { header: "SKU Items Count", key: "skuItemsCount", width: 20 },
 
-      // Billing address
-      billingName: `${billingAddress.first_name || ""} ${
-        billingAddress.last_name || ""
-      }`.trim(),
-      billingPhone: billingAddress.phone,
-      billingAddress1: billingAddress.address1,
-      billingAddress2: billingAddress.address2,
-      billingAddress3: billingAddress.address3,
-      billingAddress4: billingAddress.address4,
-      billingAddress5: billingAddress.address5,
-      billingCity: billingAddress.city,
-      billingPostCode: billingAddress.post_code,
-      billingCountry: billingAddress.country,
+    { header: "Original Price", key: "originalPrice", width: 18 },
+    { header: "Paid Price", key: "paidPrice", width: 18 },
+    { header: "Voucher Amount", key: "voucherAmount", width: 20 },
 
-      // Vouchers & tax
-      voucher: item.voucher,
-      voucherPlatform: item.voucher_platform,
-      voucherSeller: item.voucher_seller,
-      taxCode: item.tax_code,
+    { header: "Shipping Provider", key: "shippingProvider", width: 28 },
+    { header: "Tracking Code", key: "trackingCode", width: 28 },
+  ];
 
-      // Misc
-      branchNumber: item.branch_number,
-      deliveryInfo: item.delivery_info,
-      promisedShippingTimes: item.promised_shipping_times,
-      giftOption: item.gift_option,
-      giftMessage: item.gift_message,
+  // ======================
+  // 2️⃣ Header Styling (GREEN)
+  // ======================
+  worksheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true, size: 13 };
+    cell.alignment = { vertical: "middle", horizontal: "center" };
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FF9C27B0" }, // ✅ Purple
+    };
+    cell.border = {
+      top: { style: "thin" },
+      left: { style: "thin" },
+      bottom: { style: "thin" },
+      right: { style: "thin" },
     };
   });
 
-  const ws = XLSX.utils.json_to_sheet(updateData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Sheet 1");
-  XLSX.writeFile(wb, `${fileName}.xlsx`);
+  // ======================
+  // 3️⃣ Data rows (GROUP BY SKU)
+  // ======================
+  data?.forEach((order) => {
+    const shipping = order?.address_shipping || {};
+
+    // 🔥 Group order items by sku_id
+    const skuMap = {};
+
+    order?.orderItemInfo?.forEach((item) => {
+      const skuKey = item.sku_id;
+
+      if (!skuMap[skuKey]) {
+        skuMap[skuKey] = {
+          count: 0,
+          item, // store first item as reference
+        };
+      }
+
+      skuMap[skuKey].count += 1;
+    });
+
+    // 🔥 One row per unique SKU
+    Object.values(skuMap).forEach(({ item, count }) => {
+      worksheet.addRow({
+        orderId: order.order_id,
+        orderStatus: item.status,
+        createdAt: order.created_at,
+        updatedAt: order.updated_at,
+
+        buyerFirstName: order.customer_first_name,
+        buyerLastName: order.customer_last_name,
+        buyerPhone: shipping.phone,
+
+        shippingAddress: [
+          shipping.address1,
+          shipping.address2,
+          shipping.address3,
+          shipping.address4,
+          shipping.address5,
+        ]
+          .filter(Boolean)
+          .join(", "),
+        shippingCity: shipping.city,
+        shippingCountry: shipping.country,
+        shippingPostCode: shipping.post_code,
+
+        // ✅ SKU LEVEL
+        skuId: item.sku_id,
+        itemId: item.order_item_id,
+        itemName: item.name,
+        variation: item.variation,
+        sku: item.sku,
+
+        // ✅ COUNT
+        skuItemsCount: count,
+
+        originalPrice: item.item_price,
+        paidPrice: item.paid_price,
+        voucherAmount: item.voucher_amount,
+
+        shippingProvider: item.shipment_provider,
+        trackingCode: item.tracking_code,
+      });
+    });
+  });
+
+  // ======================
+  // 4️⃣ Export file
+  // ======================
+  const buffer = await workbook.xlsx.writeBuffer();
+  saveAs(
+    new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    }),
+    `${fileName}.xlsx`
+  );
 };
 
-export const shopeeArrayToExcel = (data, fileName) => {
-  const updateData = data?.map((item) => {
-    const address = item?.recipient_address || {};
-    const firstItem = item?.item_list?.[0] || {};
+export const shopeeArrayToExcel = async (data, fileName) => {
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet("Shopee Orders");
 
-    return {
-      // Order-level fields
-      orderSn: item.order_sn,
-      orderStatus: item.order_status,
-      createTime: new Date(item.create_time * 1000).toLocaleString(),
-      updateTime: new Date(item.update_time * 1000).toLocaleString(),
-      shipByDate: item.ship_by_date
-        ? new Date(item.ship_by_date * 1000).toLocaleString()
-        : "",
+  /* ===================== DEFINE COLUMNS ===================== */
+  worksheet.columns = [
+    { header: "Order SN", key: "orderSn", width: 25 },
+    { header: "Order Status", key: "orderStatus", width: 20 },
+    { header: "Create Time", key: "createTime", width: 22 },
+    { header: "Update Time", key: "updateTime", width: 22 },
+    { header: "Ship By Date", key: "shipByDate", width: 22 },
+    { header: "Currency", key: "currency", width: 12 },
+    { header: "Total Amount", key: "totalAmount", width: 18 },
 
-      // Buyer info
-      buyerUsername: item.buyer_username,
-      note: item.note,
+    { header: "Recipient Name", key: "recipientName", width: 22 },
+    { header: "Recipient Phone", key: "recipientPhone", width: 20 },
+    { header: "Full Address", key: "recipientFullAddress", width: 40 },
+    { header: "City", key: "recipientCity", width: 18 },
+    { header: "State", key: "recipientState", width: 18 },
+    { header: "Zip Code", key: "recipientZipcode", width: 15 },
 
-      // Price
-      totalAmount: item.total_amount,
+    // ✅ SKU LEVEL
+    { header: "SKU Name", key: "itemSku", width: 18 },
+    { header: "SKU Items Count", key: "skuItemsCount", width: 18 },
 
-      // Shipping address
-      recipientName: address.name,
-      recipientPhone: address.phone,
-      recipientFullAddress: address.full_address,
-      recipientCity: address.city,
-      recipientState: address.state,
-      recipientDistrict: address.district,
-      recipientZipcode: address.zipcode,
-      recipientCountry: address.country || "",
+    { header: "Item ID", key: "itemId", width: 22 },
+    { header: "Item Name", key: "itemName", width: 35 },
+    { header: "Model ID", key: "modelId", width: 22 },
+    { header: "Model Name", key: "modelName", width: 25 },
 
-      // First item details (for multi-items, you can expand separately)
-      firstItemId: firstItem.item_id,
-      firstItemName: firstItem.item_name,
-      firstItemModel: firstItem.model_name,
-      firstItemQty: firstItem.model_quantity_purchased,
-      firstItemOriginalPrice: firstItem.model_original_price,
-      firstItemDiscountedPrice: firstItem.model_discounted_price,
+    { header: "Original Price", key: "originalPrice", width: 18 },
+    { header: "Discounted Price", key: "discountedPrice", width: 18 },
+    { header: "Item Total", key: "itemTotal", width: 18 },
+
+    { header: "Tracking Number", key: "trackingNumber", width: 25 },
+  ];
+
+  /* ===================== HEADER STYLE (ORANGE) ===================== */
+  worksheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true, size: 14, color: { argb: "FFFFFFFF" } };
+    cell.alignment = { vertical: "middle", horizontal: "center" };
+    cell.fill = {
+      type: "pattern",
+      pattern: "solid",
+      fgColor: { argb: "FFFF9800" }, // 🟠 Shopee Orange
+    };
+    cell.border = {
+      top: { style: "thin" },
+      bottom: { style: "thin" },
+      left: { style: "thin" },
+      right: { style: "thin" },
     };
   });
 
-  const ws = XLSX.utils.json_to_sheet(updateData);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, "Shopee Orders");
-  XLSX.writeFile(wb, `${fileName}.xlsx`);
+  /* ===================== ADD ROWS (GROUP BY item_sku) ===================== */
+  data?.forEach((order) => {
+    const address = order?.recipient_address || {};
+
+    // 🔥 Group items by item_sku
+    const skuMap = {};
+
+    order?.item_list?.forEach((item) => {
+      const skuKey = item.item_sku;
+
+      if (!skuMap[skuKey]) {
+        skuMap[skuKey] = {
+          count: 0,
+          item,
+        };
+      }
+
+      skuMap[skuKey].count += item.model_quantity_purchased || 0;
+    });
+
+    // 🔥 One row per SKU
+    Object.values(skuMap).forEach(({ item, count }) => {
+      worksheet.addRow({
+        orderSn: order.order_sn,
+        orderStatus: order.order_status,
+        createTime: order.create_time
+          ? new Date(order.create_time * 1000).toLocaleString()
+          : "",
+        updateTime: order.update_time
+          ? new Date(order.update_time * 1000).toLocaleString()
+          : "",
+        shipByDate: order.ship_by_date
+          ? new Date(order.ship_by_date * 1000).toLocaleString()
+          : "",
+        currency: order.currency || "",
+        totalAmount: order.total_amount || "",
+
+        recipientName: address.name || "",
+        recipientPhone: address.phone || "",
+        recipientFullAddress: address.full_address || "",
+        recipientCity: address.city || "",
+        recipientState: address.state || "",
+        recipientZipcode: address.zipcode || "",
+
+        // ✅ SKU DATA
+        itemSku: item.item_sku,
+        skuItemsCount: count,
+
+        itemId: item.item_id,
+        itemName: item.item_name,
+        modelId: item.model_id,
+        modelName: item.model_name || "",
+
+        originalPrice: item.model_original_price || 0,
+        discountedPrice: item.model_discounted_price || 0,
+        itemTotal: (item.model_discounted_price || 0) * count,
+
+        trackingNumber: order.tracking_number || "",
+      });
+    });
+  });
+
+  /* ===================== DATA ROW STYLE ===================== */
+  worksheet.eachRow((row, rowNumber) => {
+    if (rowNumber !== 1) {
+      row.height = 22;
+      row.eachCell((cell) => {
+        cell.alignment = { vertical: "middle", horizontal: "left" };
+      });
+    }
+  });
+
+  /* ===================== FREEZE HEADER ===================== */
+  worksheet.views = [{ state: "frozen", ySplit: 1 }];
+
+  /* ===================== EXPORT FILE ===================== */
+  const buffer = await workbook.xlsx.writeBuffer();
+  saveAs(new Blob([buffer]), `${fileName}.xlsx`);
 };
 
 export const generateRandomNumberWithTime = () => {

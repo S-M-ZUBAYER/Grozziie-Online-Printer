@@ -16,6 +16,7 @@ const batchPrintApi = baseApi.injectEndpoints({
     loadOrderList: builder.mutation({
       query: ({
         pageSize = 100,
+        pageToken,
         createTimeGe,
         createTimeLt,
         updateTimeGe,
@@ -46,6 +47,7 @@ const batchPrintApi = baseApi.injectEndpoints({
           shippingType,
           sortField,
           sortOrder,
+          ...(pageToken && { pageToken }),
         });
         console.log("tikttok....................................", queryParams);
 

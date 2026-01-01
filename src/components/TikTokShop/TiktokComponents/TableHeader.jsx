@@ -7,6 +7,8 @@ const TableHeader = ({
   checkedItemsCount,
   selectedStatus,
   totalOrders,
+  totalItems,
+  totalOrderSkus,
   pagination,
   onExport,
   t,
@@ -28,7 +30,7 @@ const TableHeader = ({
         {t("SelectAll")}
       </label>
       <span className="text-black opacity-80 text-xs font-light capitalize">
-        ({checkedItemsCount} {t("Selected")})
+        ({checkedItemsCount} {t("ordersSelected")})
       </span>
     </div>
 
@@ -39,13 +41,19 @@ const TableHeader = ({
     </div>
 
     <div className="flex items-center justify-center">
-      <p className="text-black opacity-40 text-sm font-medium capitalize">
-        0 {t("Buyers")}
-      </p>
-      <div className="w-[1px] h-8 bg-black opacity-40 mx-2"></div>
-      <p className="text-black opacity-40 text-sm font-medium capitalize">
-        {totalOrders} {t("Orders")}
-      </p>
+      <div className="flex items-center justify-center">
+        <p className="text-black opacity-40 text-sm font-medium capitalize">
+          {totalOrders} {t("Orders")}
+        </p>
+        <div className="w-[1px] h-8 bg-black opacity-40 mx-2"></div>
+        <p className="text-black opacity-40 text-sm font-medium capitalize">
+          {totalItems} {t("Items")}
+        </p>
+        <div className="w-[1px] h-8 bg-black opacity-40 mx-2"></div>
+        <p className="text-black opacity-40 text-sm font-medium capitalize">
+          {totalOrderSkus} {t("SKU")}
+        </p>
+      </div>
     </div>
 
     <div className="flex items-center justify-center">

@@ -269,6 +269,8 @@
   "CreatedAt": "创建时间",
   "UpdatedAt": "更新时间",
   "OrderItems": "订单商品",
+  "Items": "商品",
+  "ordersSelected": "已选择订单",
   "LuluTshirtC6LazadaDel": "Lulu T恤 C6 Lazada 配送",
   "SKU": "库存单位",
   "Variation": "规格",

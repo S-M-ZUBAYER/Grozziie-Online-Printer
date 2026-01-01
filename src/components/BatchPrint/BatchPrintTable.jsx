@@ -170,8 +170,13 @@ const BatchPrintTable = ({
 
                     {/* Product Details */}
                     <td className="px-3 py-2 text-left">
-                      <div className="flex items-center gap-2">
-                        <img
+                      <span className="text-black opacity-80 text-xs font-normal capitalize ml-[6px] mr-6">
+                        {order?.lineItems
+                          ? `Items: ${order?.lineItems.length}`
+                          : t("NoData")}
+                      </span>
+
+                      {/* <img
                           src={
                             item.skuImage || "https://via.placeholder.com/40"
                           }
@@ -182,14 +187,13 @@ const BatchPrintTable = ({
                           {formatText(item.productName)
                             ? item?.productName?.slice(0, 15) + "..."
                             : t("NoData")}
-                        </span>
-                        <button
-                          onClick={() => handleDetailsClick(order)}
-                          className="ml-auto text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
-                        >
-                          {t("Details")}
-                        </button>
-                      </div>
+                        </span> */}
+                      <button
+                        onClick={() => handleDetailsClick(order)}
+                        className="ml-auto text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
+                      >
+                        {t("Details")}
+                      </button>
                     </td>
 
                     {/* Tracking Code */}

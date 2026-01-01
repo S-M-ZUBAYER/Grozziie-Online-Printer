@@ -269,6 +269,8 @@
   "CreatedAt": "สร้างเมื่อ",
   "UpdatedAt": "อัปเดตเมื่อ",
   "OrderItems": "รายการสินค้า",
+  "Items": "รายการ",
+  "ordersSelected": "คำสั่งซื้อที่เลือก",
   "LuluTshirtC6LazadaDel": "เสื้อยืด Lulu C6 Lazada Del",
   "SKU": "SKU",
   "Variation": "รูปแบบ",

@@ -162,9 +162,14 @@ const ShopeeBatchPrintTable = ({
                   <td>
                     <span>
                       {order?.item_list?.length
-                        ? `Items: ${order.item_list.length}`
+                        ? `Items: ${order.item_list.reduce(
+                            (sum, item) =>
+                              sum + (item.model_quantity_purchased || 0),
+                            0
+                          )}`
                         : t("NoData")}
                     </span>
+
                     <button
                       className="ml-3 text-[#004368] text-xs"
                       onClick={() => handleDetailsClick(order)}
