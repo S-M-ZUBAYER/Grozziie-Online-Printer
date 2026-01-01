@@ -99,7 +99,7 @@ const TikTokBatchPrint = () => {
 
   // Handlers (keep your existing handlers)
   const handleBatchPrinterExcelClick = () => {
-    arrayToExcel(checkedItems, "BatchPrinterOrderList");
+    arrayToExcel(checkedItems, "TikTokBatchPrinterOrderList");
   };
 
   const handleToCheckItemsPackageUpdate = () => {
@@ -228,6 +228,22 @@ const TikTokBatchPrint = () => {
     closeConfirmModal();
   };
 
+  const totalLineItems = customersData.reduce((total, customer) => {
+    return total + (customer.lineItems?.length || 0);
+  }, 0);
+  const totalOrderSkus = customersData.reduce((total, customer) => {
+    const items = customer.lineItems || [];
+
+    // ✅ collect unique sku_id for THIS order only
+    const uniqueSkuSet = new Set(
+      items.map((item) => item.skuId).filter(Boolean)
+    );
+
+    return total + uniqueSkuSet.size;
+  }, 0);
+
+  const totalOrders = customersData?.length;
+
   return (
     <div className="bg-[#004368] bg-opacity-5 w-full h-screen">
       <div className="px-[30px] pt-6 pb-4">
@@ -256,7 +272,9 @@ const TikTokBatchPrint = () => {
             onSelectAllChange={() => handleMasterCheckboxChange(customersData)}
             checkedItemsCount={checkedItems.length}
             selectedStatus={selectedStatus}
-            totalOrders={customersData.length}
+            totalItems={totalLineItems}
+            totalOrders={totalOrders}
+            totalOrderSkus={totalOrderSkus}
             pagination={pagination}
             onExport={handleBatchPrinterExcelClick}
             t={t}

@@ -272,6 +272,8 @@
   "CreatedAt": "Created At",
   "UpdatedAt": "Updated At",
   "OrderItems": "Order Items",
+  "Items": "Items",
+  "ordersSelected": "Orders Selected",
   "LuluTshirtC6LazadaDel": "Lulu tshirt C6 Lazada Del",
   "SKU": "SKU",
   "Variation": "Variation",

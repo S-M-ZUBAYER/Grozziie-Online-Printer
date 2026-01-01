@@ -100,6 +100,216 @@ export const useTikTokOrders = ({
 
         let isMounted = true;
 
+        // const fetchData = async () => {
+        //     try {
+        //         setLoading(true);
+        //         console.log("⏳ TikTok Loading ON");
+
+        //         if (!cipher?.[0]?.cipher) return;
+
+        //         const now = Math.floor(Date.now() / 1000);
+        //         const sevenDaysAgo = now - 7 * 24 * 60 * 60;
+
+
+
+        //         // ============================================================
+
+        //         const shopInfoRaw = localStorage.getItem("tiktokShopInfo");
+        //         const shopInfo = shopInfoRaw ? JSON.parse(shopInfoRaw) : [];
+
+        //         const countryCode = shopInfo?.[0]?.region || "MY";
+        //         console.log("Shopee country:", countryCode);
+
+
+        //         function getRegionTimestamps(regionCode) {
+        //             // Map region codes to Luxon timezone strings
+        //             const regionTimezones = {
+        //                 // Southeast Asia
+        //                 MY: "Asia/Kuala_Lumpur", // Malaysia
+        //                 SG: "Asia/Singapore", // Singapore
+        //                 PH: "Asia/Manila", // Philippines
+        //                 TH: "Asia/Bangkok", // Thailand
+        //                 VN: "Asia/Ho_Chi_Minh", // Vietnam
+        //                 ID: "Asia/Jakarta", // Indonesia (Western)
+        //                 "ID-B": "Asia/Makassar", // Indonesia (Central)
+        //                 "ID-P": "Asia/Jayapura", // Indonesia (Eastern)
+
+        //                 // East Asia
+        //                 CN: "Asia/Shanghai", // China
+        //                 HK: "Asia/Hong_Kong", // Hong Kong
+        //                 TW: "Asia/Taipei", // Taiwan
+        //                 JP: "Asia/Tokyo", // Japan
+        //                 KR: "Asia/Seoul", // South Korea
+
+        //                 // South Asia
+        //                 IN: "Asia/Kolkata", // India
+        //                 BD: "Asia/Dhaka", // Bangladesh
+        //                 PK: "Asia/Karachi", // Pakistan
+        //                 LK: "Asia/Colombo", // Sri Lanka
+
+        //                 // Middle East
+        //                 AE: "Asia/Dubai", // UAE
+        //                 SA: "Asia/Riyadh", // Saudi Arabia
+        //                 QA: "Asia/Qatar", // Qatar
+
+        //                 // Europe
+        //                 GB: "Europe/London", // UK
+        //                 DE: "Europe/Berlin", // Germany
+        //                 FR: "Europe/Paris", // France
+        //                 IT: "Europe/Rome", // Italy
+        //                 ES: "Europe/Madrid", // Spain
+        //                 RU: "Europe/Moscow", // Russia
+
+        //                 // Americas
+        //                 US: "America/New_York", // USA (Eastern)
+        //                 "US-C": "America/Chicago", // USA (Central)
+        //                 "US-M": "America/Denver", // USA (Mountain)
+        //                 "US-P": "America/Los_Angeles", // USA (Pacific)
+        //                 CA: "America/Toronto", // Canada (Eastern)
+        //                 "CA-P": "America/Vancouver", // Canada (Pacific)
+        //                 BR: "America/Sao_Paulo", // Brazil
+        //                 MX: "America/Mexico_City", // Mexico
+
+        //                 // Oceania
+        //                 AU: "Australia/Sydney", // Australia (Eastern)
+        //                 "AU-C": "Australia/Adelaide", // Australia (Central)
+        //                 "AU-W": "Australia/Perth", // Australia (Western)
+        //                 NZ: "Pacific/Auckland", // New Zealand
+        //             };
+
+        //             try {
+        //                 if (!regionCode || typeof regionCode !== "string") {
+        //                     throw new Error("Please provide a region code");
+        //                 }
+
+        //                 const regionUpper = regionCode.toUpperCase();
+        //                 const timezone = regionTimezones[regionUpper];
+
+        //                 if (!timezone) {
+        //                     const validRegions = Object.keys(regionTimezones)
+        //                         .filter(
+        //                             (k) =>
+        //                                 !k.includes("-") || k.startsWith(regionUpper.split("-")[0])
+        //                         )
+        //                         .slice(0, 20) // Show first 20 for readability
+        //                         .join(", ");
+        //                     throw new Error(
+        //                         `Invalid region code. Some valid codes are: ${validRegions}...`
+        //                     );
+        //                 }
+
+        //                 // Get current time in the region
+        //                 const nowInRegion = DateTime.now().setZone(timezone);
+
+        //                 // Get 7 days ago at midnight in the region
+        //                 const sevenDaysAgo = nowInRegion.minus({ days: 7 }).startOf("day");
+
+        //                 // Convert to timestamps (seconds since epoch)
+        //                 const currentTimestamp = Math.floor(nowInRegion.toSeconds());
+        //                 const sevenDaysAgoTimestamp = Math.floor(sevenDaysAgo.toSeconds());
+
+        //                 // Also get ISO strings for verification
+        //                 const currentISO = nowInRegion.toISO();
+        //                 const sevenDaysAgoISO = sevenDaysAgo.toISO();
+
+        //                 return {
+        //                     currentTime: currentTimestamp, // Unix timestamp in seconds
+        //                     sevenDaysAgo: sevenDaysAgoTimestamp, // Unix timestamp in seconds
+        //                     currentTimeISO: currentISO, // ISO string for debugging
+        //                     sevenDaysAgoISO: sevenDaysAgoISO, // ISO string for debugging
+        //                     region: regionUpper,
+        //                     timezone: timezone,
+        //                     regionCurrentTime: nowInRegion.toFormat("yyyy-MM-dd HH:mm:ss"),
+        //                     regionSevenDaysAgo: sevenDaysAgo.toFormat("yyyy-MM-dd HH:mm:ss"),
+        //                 };
+        //             } catch (error) {
+        //                 console.error("Error:", error.message);
+        //                 return {
+        //                     error: error.message,
+        //                     regionCode: regionCode,
+        //                 };
+        //             }
+        //         }
+
+        //         const dateRange = getRegionTimestamps(countryCode);
+        //         console.log({
+        //             cipher: cipher[0]?.cipher,
+        //             shippingType: "TIKTOK",
+        //             createTimeGe: dateRange?.sevenDaysAgo,
+        //             createTimeLt: dateRange?.currentTime,
+        //             updateTimeGe: dateRange?.sevenDaysAgo,
+        //             updateTimeLt: dateRange?.currentTime,
+        //             // createTimeGe: sevenDaysAgo,
+        //             // createTimeLt: now,
+        //             // updateTimeGe: sevenDaysAgo,
+        //             // updateTimeLt: now,
+        //             orderStatus: tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED" ? "AWAITING_COLLECTION" : tikTokOrderStatusCheck,
+        //             pageSize: 100,
+        //             sortOrder: "DESC",
+        //         })
+
+
+        //         // ============================================================
+
+
+
+        //         dispatch(checkedItemsChange({ items: [], from: tikTokOrderStatusCheck }));
+        //         clearSelection();
+
+        //         const response = await loadOrderList({
+        //             cipher: cipher[0]?.cipher,
+        //             shippingType: "TIKTOK",
+        //             createTimeGe: dateRange?.sevenDaysAgo,
+        //             createTimeLt: dateRange?.currentTime,
+        //             updateTimeGe: dateRange?.sevenDaysAgo,
+        //             updateTimeLt: dateRange?.currentTime,
+        //             // createTimeGe: sevenDaysAgo,
+        //             // createTimeLt: now,
+        //             // updateTimeGe: sevenDaysAgo,
+        //             // updateTimeLt: now,
+        //             orderStatus: tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED" ? "AWAITING_COLLECTION" : tikTokOrderStatusCheck,
+        //             pageSize: 100,
+        //             sortOrder: "DESC",
+        //         }).unwrap();
+
+        //         const orders = response?.data?.orders ?? [];
+        //         console.log(response, "orders");
+
+        //         let filteredOrderList = orders.filter((item) => item?.buyerEmail);
+
+        //         // Apply filters
+        //         const printedIdSet = new Set(tikTokPrintedIds.map((item) => item.tikTokPrintedId));
+
+        //         console.log(tikTokOrderStatusCheck);
+
+
+        //         if (tikTokOrderStatusCheck === "AWAITING_COLLECTION") {
+        //             filteredOrderList = filteredOrderList.filter(item => !printedIdSet.has(item.id));
+        //         } else if (tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") {
+        //             filteredOrderList = filteredOrderList.filter(item => printedIdSet.has(item.id));
+        //         }
+
+        //         // Update state
+        //         if (isMounted) {
+        //             dispatch(orderListData(filteredOrderList));
+        //             setCustomersData(filteredOrderList);
+        //             setAllData(filteredOrderList);
+        //             console.log("✅ TikTok data fetch COMPLETE");
+        //         }
+
+        //     } catch (error) {
+        //         console.error("❌ TikTok fetch error:", error);
+        //     } finally {
+        //         // ✅ GUARANTEED: Always turn off loading
+        //         if (isMounted) {
+        //             setLoading(false);
+        //             console.log("🏁 TikTok Loading OFF");
+        //         }
+        //     }
+        // };
+
+        let nothing;
+
         const fetchData = async () => {
             try {
                 setLoading(true);
@@ -107,19 +317,10 @@ export const useTikTokOrders = ({
 
                 if (!cipher?.[0]?.cipher) return;
 
-                const now = Math.floor(Date.now() / 1000);
-                const sevenDaysAgo = now - 7 * 24 * 60 * 60;
-
-
-
                 // ============================================================
-
                 const shopInfoRaw = localStorage.getItem("tiktokShopInfo");
                 const shopInfo = shopInfoRaw ? JSON.parse(shopInfoRaw) : [];
-
                 const countryCode = shopInfo?.[0]?.region || "MY";
-                console.log("Shopee country:", countryCode);
-
 
                 function getRegionTimestamps(regionCode) {
                     // Map region codes to Luxon timezone strings
@@ -231,80 +432,85 @@ export const useTikTokOrders = ({
                     }
                 }
 
+
                 const dateRange = getRegionTimestamps(countryCode);
-                console.log({
-                    cipher: cipher[0]?.cipher,
-                    shippingType: "TIKTOK",
-                    createTimeGe: dateRange?.sevenDaysAgo,
-                    createTimeLt: dateRange?.currentTime,
-                    updateTimeGe: dateRange?.sevenDaysAgo,
-                    updateTimeLt: dateRange?.currentTime,
-                    // createTimeGe: sevenDaysAgo,
-                    // createTimeLt: now,
-                    // updateTimeGe: sevenDaysAgo,
-                    // updateTimeLt: now,
-                    orderStatus: tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED" ? "AWAITING_COLLECTION" : tikTokOrderStatusCheck,
-                    pageSize: 70,
-                    sortOrder: "DESC",
-                })
-
-
-                // ============================================================
-
-
 
                 dispatch(checkedItemsChange({ items: [], from: tikTokOrderStatusCheck }));
                 clearSelection();
 
-                const response = await loadOrderList({
-                    cipher: cipher[0]?.cipher,
-                    shippingType: "TIKTOK",
-                    createTimeGe: dateRange?.sevenDaysAgo,
-                    createTimeLt: dateRange?.currentTime,
-                    updateTimeGe: dateRange?.sevenDaysAgo,
-                    updateTimeLt: dateRange?.currentTime,
-                    // createTimeGe: sevenDaysAgo,
-                    // createTimeLt: now,
-                    // updateTimeGe: sevenDaysAgo,
-                    // updateTimeLt: now,
-                    orderStatus: tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED" ? "AWAITING_COLLECTION" : tikTokOrderStatusCheck,
-                    pageSize: 70,
-                    sortOrder: "DESC",
-                }).unwrap();
+                // ============================================================
+                // 🔁 PAGINATION LOOP
+                let allOrders = [];
+                let nextPageToken = undefined;
 
-                const orders = response?.data?.orders ?? [];
-                let filteredOrderList = orders.filter((item) => item?.buyerEmail);
+                while (true) {
+                    const response = await loadOrderList({
+                        cipher: cipher[0]?.cipher,
+                        shippingType: "TIKTOK",
 
-                // Apply filters
-                const printedIdSet = new Set(tikTokPrintedIds.map((item) => item.tikTokPrintedId));
+                        createTimeGe: dateRange?.sevenDaysAgo,
+                        createTimeLt: dateRange?.currentTime,
+                        updateTimeGe: dateRange?.sevenDaysAgo,
+                        updateTimeLt: dateRange?.currentTime,
 
-                console.log(tikTokOrderStatusCheck);
+                        orderStatus:
+                            tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED"
+                                ? "AWAITING_COLLECTION"
+                                : tikTokOrderStatusCheck,
 
+                        pageSize: 50,
+                        sortOrder: "DESC",
 
-                if (tikTokOrderStatusCheck === "AWAITING_COLLECTION") {
-                    filteredOrderList = filteredOrderList.filter(item => !printedIdSet.has(item.id));
-                } else if (tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") {
-                    filteredOrderList = filteredOrderList.filter(item => printedIdSet.has(item.id));
+                        ...(nextPageToken && { pageToken: nextPageToken }),
+                    }).unwrap();
+
+                    const orders = response?.data?.orders ?? [];
+                    allOrders = [...allOrders, ...orders];
+
+                    nextPageToken = response?.data?.nextPageToken;
+
+                    // 🛑 Stop when no more pages
+                    if (!nextPageToken) break;
                 }
 
-                // Update state
+                console.log("📦 Total orders fetched:", allOrders);
+
+                // ============================================================
+                // 🔍 EXISTING FILTER LOGIC
+                let filteredOrderList = allOrders.filter(item => item?.buyerEmail);
+
+                const printedIdSet = new Set(
+                    tikTokPrintedIds.map(item => item.tikTokPrintedId)
+                );
+
+                if (tikTokOrderStatusCheck === "AWAITING_COLLECTION") {
+                    filteredOrderList = filteredOrderList.filter(
+                        item => !printedIdSet.has(item.id)
+                    );
+                } else if (tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") {
+                    filteredOrderList = filteredOrderList.filter(
+                        item => printedIdSet.has(item.id)
+                    );
+                }
+
+                // ============================================================
+                // ✅ UPDATE STATE
                 if (isMounted) {
                     dispatch(orderListData(filteredOrderList));
                     setCustomersData(filteredOrderList);
                     setAllData(filteredOrderList);
                     console.log("✅ TikTok data fetch COMPLETE");
                 }
-
             } catch (error) {
                 console.error("❌ TikTok fetch error:", error);
             } finally {
-                // ✅ GUARANTEED: Always turn off loading
                 if (isMounted) {
                     setLoading(false);
                     console.log("🏁 TikTok Loading OFF");
                 }
             }
         };
+
 
         fetchData();
 

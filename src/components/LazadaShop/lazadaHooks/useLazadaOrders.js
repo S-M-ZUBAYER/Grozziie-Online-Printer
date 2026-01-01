@@ -557,29 +557,68 @@ export const useLazadaOrders = ({
 
 
 
-            const response = await getLazadaOrders({
-                sortBy: "updated_at",
+            // const response = await getLazadaOrders({
+            //     sortBy: "updated_at",
 
-                // createdAfter: toISOString(sevenDaysAgo, offset),
-                // createdBefore: toISOString(now, offset),
-                // updateAfter: toISOString(sevenDaysAgo, offset),
-                // updateBefore: toISOString(now, offset),
+            //     // createdAfter: toISOString(sevenDaysAgo, offset),
+            //     // createdBefore: toISOString(now, offset),
+            //     // updateAfter: toISOString(sevenDaysAgo, offset),
+            //     // updateBefore: toISOString(now, offset),
 
-                createdAfter: lazadaDateFormate.sevenDaysAgo,
-                createdBefore: lazadaDateFormate.currentTime,
-                updateAfter: lazadaDateFormate.sevenDaysAgo,
-                updateBefore: lazadaDateFormate.currentTime,
+            //     createdAfter: lazadaDateFormate.sevenDaysAgo,
+            //     createdBefore: lazadaDateFormate.currentTime,
+            //     updateAfter: lazadaDateFormate.sevenDaysAgo,
+            //     updateBefore: lazadaDateFormate.currentTime,
 
-                status: fetchStatus === "Packed_Printed" ? "ready_to_ship" : fetchStatus,
-                sortDirection: "DESC",
-                offset: 0,
-                limit: 100,
-            }).unwrap();
+            //     status: fetchStatus === "Packed_Printed" ? "ready_to_ship" : fetchStatus,
+            //     sortDirection: "DESC",
+            //     offset: 0,
+            //     limit: 1,
+            // }).unwrap();
 
-            const parsedBody = JSON.parse(response?.body || "{}");
-            let filteredOrderList = parsedBody?.data?.orders || [];
+            // const parsedBody = JSON.parse(response?.body || "{}");
+            // let filteredOrderList = parsedBody?.data?.orders || [];
 
-            console.log("📊 Raw orders from API:", filteredOrderList.length);
+
+            // console.log("📊 Raw orders from API:", parsedBody);
+
+
+            let allOrders = [];
+            let offset = 0;
+            const limit = 50;
+            let countTotal = 0;
+
+            while (true) {
+                const response = await getLazadaOrders({
+                    sortBy: "updated_at",
+                    createdAfter: lazadaDateFormate.sevenDaysAgo,
+                    createdBefore: lazadaDateFormate.currentTime,
+                    updateAfter: lazadaDateFormate.sevenDaysAgo,
+                    updateBefore: lazadaDateFormate.currentTime,
+                    status: fetchStatus === "Packed_Printed" ? "ready_to_ship" : fetchStatus,
+                    sortDirection: "DESC",
+                    offset,
+                    limit,
+                }).unwrap();
+
+                const parsedBody = JSON.parse(response?.body || "{}");
+                const orders = parsedBody?.data?.orders || [];
+                countTotal = parsedBody?.data?.countTotal || 0;
+
+                allOrders.push(...orders);
+
+                // 🛑 Stop conditions
+                if (allOrders.length >= countTotal || orders.length === 0) break;
+
+                offset += 1;
+            }
+
+            let filteredOrderList = allOrders;
+            console.log("📦 Total Lazada orders fetched:", filteredOrderList.length);
+
+
+
+
 
             // ✅ Filter printed/unprinted using fetchStatus
             const printedIdSet = new Set(
