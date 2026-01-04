@@ -207,10 +207,10 @@ const Pricing = () => {
           <h4 className="text-black text-4xl font-semibold capitalize mb-4">
             {t("purchase_subscription")}
           </h4>
-          <h6 className="text-black text-opacity-60 text-xl mb-4">
+          {/* <h6 className="text-black text-opacity-60 text-xl mb-4">
             {t("Selected Shop Platform Country")}
           </h6>
-          <CountrySelector country={country} setCountry={setCountry} t={t} />
+          <CountrySelector country={country} setCountry={setCountry} t={t} /> */}
         </div>
 
         {/* Content */}

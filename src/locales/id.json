@@ -163,7 +163,7 @@
   "PaymentMethod": "Metode Pembayaran",
 
   "_comment_package": "Package",
-  "NoAvailableOrder": "Tidak ada pesanan yang tersedia. Silakan coba lagi nanti....",
+  "NoAvailableOrder": "Tidak ada pesanan yang tersedia",
   "TrackingUpdates": "Update Pelacakan",
   "_comment_SinglePrint": "Single Print",
 
@@ -269,6 +269,8 @@
   "CreatedAt": "Dibuat Pada",
   "UpdatedAt": "Diperbarui Pada",
   "OrderItems": "Item Pesanan",
+  "Items": "Item",
+  "ordersSelected": "Pesanan yang Dipilih",
   "LuluTshirtC6LazadaDel": "Kaos Lulu C6 Lazada Del",
   "SKU": "SKU",
   "Variation": "Varian",
@@ -348,5 +350,6 @@
   "shipmentProvider": "Penyedia Pengiriman",
   "AuthorizationExpiredTitle": "Otorisasi {{platform}} Kedaluwarsa",
   "AccessTokenExpiredMessage": "Token akses untuk (Shop ID: {{shopId}}) telah kedaluwarsa. Harap otorisasi ulang untuk melanjutkan sinkronisasi pesanan.",
-  "BackToHomePage": "Kembali ke Beranda"
+  "BackToHomePage": "Kembali ke Beranda",
+  "Shop": "Toko"
 }

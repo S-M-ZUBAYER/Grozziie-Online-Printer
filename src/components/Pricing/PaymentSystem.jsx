@@ -102,6 +102,7 @@ const PaymentForm = ({ email, setEmail, duration, amount, currency }) => {
     try {
       const { data } = await axios.post(
         "https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/add",
+        // "http://localhost:2000/tht/printerUserPaymentInfo/add",
         paymentInfo
       );
       localStorage.setItem("paymentInfo", JSON.stringify(data));

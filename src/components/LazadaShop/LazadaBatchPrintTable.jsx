@@ -108,11 +108,11 @@ const LazadaBatchPrintTable = ({
           </p>
         </div>
       ) : isError ? (
-        <p className="text-center text-3xl text-red-500 font-medium py-20">
+        <p className="text-center text-3xl text-gray-800 font-medium py-20">
           {t("DataNotFound")}
         </p>
       ) : filteredData?.length === 0 || !filteredData?.length ? (
-        <p className="text-center text-3xl text-red-500 font-medium py-20">
+        <p className="text-center text-3xl text-gray-800 font-medium py-20">
           {t("NoAvailableOrder")}
         </p>
       ) : (

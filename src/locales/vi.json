@@ -162,7 +162,7 @@
   "PaymentMethod": "Phương thức thanh toán",
 
   "_comment_package": "Package",
-  "NoAvailableOrder": "Không có đơn hàng nào khả dụng. Vui lòng thử lại sau....",
+  "NoAvailableOrder": "Không có đơn hàng nào khả dụng",
   "TrackingUpdates": "Cập nhật theo dõi",
   "_comment_SinglePrint": "Single Print",
 
@@ -268,6 +268,8 @@
   "CreatedAt": "Ngày tạo",
   "UpdatedAt": "Ngày cập nhật",
   "OrderItems": "Sản phẩm đặt hàng",
+  "Items": "Mục",
+  "ordersSelected": "Đơn hàng đã chọn",
   "LuluTshirtC6LazadaDel": "Áo thun Lulu C6 Lazada Del",
   "SKU": "SKU",
   "Variation": "Biến thể",
@@ -347,5 +349,6 @@
   "shipmentProvider": "Nhà cung cấp vận chuyển",
   "AuthorizationExpiredTitle": "Ủy quyền {{platform}} đã hết hạn",
   "AccessTokenExpiredMessage": "Mã truy cập cho (Shop ID: {{shopId}}) đã hết hạn. Vui lòng ủy quyền lại để tiếp tục đồng bộ đơn hàng.",
-  "BackToHomePage": "Quay lại Trang Chủ"
+  "BackToHomePage": "Quay lại Trang Chủ",
+  "Shop": "Cửa hàng"
 }

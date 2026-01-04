@@ -80,11 +80,11 @@ const ShopeeBatchPrintTable = ({
           </p>
         </div>
       ) : isError ? (
-        <p className="text-center text-3xl text-red-500 font-medium py-20">
+        <p className="text-center text-3xl text-gray-800 font-medium py-20">
           {t("DataNotFound")}
         </p>
       ) : !filteredData || filteredData.length === 0 ? (
-        <p className="text-center text-3xl text-red-500 font-medium py-20">
+        <p className="text-center text-3xl text-gray-800 font-medium py-20">
           {t("NoAvailableOrder")}
         </p>
       ) : (
@@ -162,9 +162,14 @@ const ShopeeBatchPrintTable = ({
                   <td>
                     <span>
                       {order?.item_list?.length
-                        ? `Items: ${order.item_list.length}`
+                        ? `Items: ${order.item_list.reduce(
+                            (sum, item) =>
+                              sum + (item.model_quantity_purchased || 0),
+                            0
+                          )}`
                         : t("NoData")}
                     </span>
+
                     <button
                       className="ml-3 text-[#004368] text-xs"
                       onClick={() => handleDetailsClick(order)}

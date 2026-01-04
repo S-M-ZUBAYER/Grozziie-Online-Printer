@@ -50,6 +50,23 @@ const TikTokBatchPrint = () => {
   const tiktokAuthCountry = localStorage.getItem("tiktokAuthCountry");
   const tiktokOpenId = localStorage.getItem("tiktokOpenId");
   const cipher = localStorage.getItem("tiktokAuthCipher");
+  const selectedShopInfoRaw = localStorage.getItem("tiktokShopInfo");
+  const selectedTikTokStore = localStorage.getItem("SelectedTikTokStore");
+  // const selectedTikTokStore = JSON.parse(selectedTikTokStoreRow);
+  const selectedShopInfo = selectedShopInfoRaw
+    ? JSON.parse(selectedShopInfoRaw)
+    : [];
+
+  // find store by name
+  const store = selectedShopInfo.find(
+    (item) => item.name === selectedTikTokStore
+  );
+
+  // build final string
+  const selectedStore = store
+    ? `${store.region ?? ""}-${store.name ?? ""}`
+    : "";
+
   const { customersData, setCustomersData } = useOrderData();
   const { filteredData, setFilteredData, tiktokLoading } = useTikTokOrders({
     tikTokOrderStatusCheck,
@@ -63,6 +80,7 @@ const TikTokBatchPrint = () => {
     useState("");
 
   useEffect(() => {
+    localStorage.setItem("SelectedStore", selectedTikTokStore);
     const savedType = localStorage.getItem("tikTokDeliveryType");
     if (savedType) {
       setSelectedTikTokDeliveryType(savedType);
@@ -99,7 +117,7 @@ const TikTokBatchPrint = () => {
 
   // Handlers (keep your existing handlers)
   const handleBatchPrinterExcelClick = () => {
-    arrayToExcel(checkedItems, "BatchPrinterOrderList");
+    arrayToExcel(checkedItems, "TikTokBatchPrinterOrderList");
   };
 
   const handleToCheckItemsPackageUpdate = () => {
@@ -228,6 +246,22 @@ const TikTokBatchPrint = () => {
     closeConfirmModal();
   };
 
+  const totalLineItems = customersData.reduce((total, customer) => {
+    return total + (customer.lineItems?.length || 0);
+  }, 0);
+  const totalOrderSkus = customersData.reduce((total, customer) => {
+    const items = customer.lineItems || [];
+
+    // ✅ collect unique sku_id for THIS order only
+    const uniqueSkuSet = new Set(
+      items.map((item) => item.skuId).filter(Boolean)
+    );
+
+    return total + uniqueSkuSet.size;
+  }, 0);
+
+  const totalOrders = customersData?.length;
+
   return (
     <div className="bg-[#004368] bg-opacity-5 w-full h-screen">
       <div className="px-[30px] pt-6 pb-4">
@@ -256,7 +290,10 @@ const TikTokBatchPrint = () => {
             onSelectAllChange={() => handleMasterCheckboxChange(customersData)}
             checkedItemsCount={checkedItems.length}
             selectedStatus={selectedStatus}
-            totalOrders={customersData.length}
+            selectedStore={selectedStore}
+            totalItems={totalLineItems}
+            totalOrders={totalOrders}
+            totalOrderSkus={totalOrderSkus}
             pagination={pagination}
             onExport={handleBatchPrinterExcelClick}
             t={t}

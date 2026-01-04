@@ -572,6 +572,7 @@ import {
   lazadaSelectStatusChange,
   tikTokSelectStatusChange,
   shopeeSelectStatusChange,
+  selectedDateRangChange,
 } from "../../features/slice/userSlice";
 
 // Constants
@@ -661,11 +662,51 @@ const NewSearchComponent = ({
   }, []);
 
   // Handlers
+  // const handleDateSelect = (date) => {
+  //   console.log(date, "date...");
+
+  //   setStartDate(date.selection.startDate);
+  //   setEndDate(date.selection.endDate);
+
+  //   if (date.selection.startDate && date.selection.endDate) {
+  //     const filterFunction = getDateFilterFunction(currentShop);
+  //     setFilteredData(
+  //       filterFunction(
+  //         customersData,
+  //         date.selection.startDate,
+  //         date.selection.endDate
+  //       )
+  //     );
+  //   }
+  // };
+
   const handleDateSelect = (date) => {
     console.log(date, "date...");
 
-    setStartDate(date.selection.startDate);
-    setEndDate(date.selection.endDate);
+    // setStartDate(date.selection.startDate);
+    // setEndDate(date.selection.endDate);
+    const getStartOfDay = (date) => {
+      const newDate = new Date(date);
+      newDate.setHours(0, 0, 0, 0);
+      return newDate;
+    };
+
+    const getEndOfDay = (date) => {
+      const newDate = new Date(date);
+      newDate.setHours(23, 59, 59, 999);
+      return newDate;
+    };
+
+    setStartDate(getStartOfDay(date.selection.startDate));
+    setEndDate(getEndOfDay(date.selection.endDate));
+
+    dispatch(
+      selectedDateRangChange({
+        startDate: getStartOfDay(date.selection.startDate).toISOString(),
+        endDate: getEndOfDay(date.selection.endDate).toISOString(),
+      })
+    );
+    console.log(startDate, endDate, "check date ................");
 
     if (date.selection.startDate && date.selection.endDate) {
       const filterFunction = getDateFilterFunction(currentShop);

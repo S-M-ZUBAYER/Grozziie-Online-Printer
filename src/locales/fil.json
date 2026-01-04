@@ -164,7 +164,7 @@
 
   "_comment_package": "Package",
 
-  "NoAvailableOrder": "Walang Natagpuang Order. Pakisubukang muli mamaya....",
+  "NoAvailableOrder": "Walang Natagpuang Order",
   "TrackingUpdates": "Mga Update ng Pagsubaybay",
   "_comment_SinglePrint": "Single Print",
 
@@ -270,6 +270,8 @@
   "CreatedAt": "Nilikha Noong",
   "UpdatedAt": "Na-update Noong",
   "OrderItems": "Mga Item sa Order",
+  "Items": "Mga Item",
+  "ordersSelected": "Napiling Mga Order",
   "LuluTshirtC6LazadaDel": "Lulu tshirt C6 Lazada Del",
   "SKU": "SKU",
   "Variation": "Baryasyon",
@@ -349,5 +351,6 @@
   "shipmentProvider": "Tagapaghatid ng Padala",
   "AuthorizationExpiredTitle": "Nag-expire ang {{platform}} Authorization",
   "AccessTokenExpiredMessage": "Ang access token para sa (Shop ID: {{shopId}}) ay nag-expire na. Mangyaring muling pahintulutan upang magpatuloy sa pag-sync ng mga order.",
-  "BackToHomePage": "Bumalik sa Homepage"
+  "BackToHomePage": "Bumalik sa Homepage",
+  "Shop": "Tindahan"
 }

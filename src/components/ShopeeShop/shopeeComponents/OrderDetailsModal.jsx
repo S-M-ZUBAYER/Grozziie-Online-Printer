@@ -168,11 +168,18 @@ const OrderDetailsModal = ({ isOpen, selectedCustomer, onClose, t }) => {
       className="modal backdrop-blur-sm bg-black/10 fixed inset-0 z-50 flex items-center justify-center"
       open={isOpen}
     >
-      <div className="modal-box w-[900px] max-w-full bg-white shadow-xl rounded-2xl p-8 overflow-y-auto max-h-[90vh]">
-        <div className="flex items-center justify-center mb-6">
+      <div className="modal-box w-[1100px] max-w-full bg-white shadow-xl rounded-2xl p-8 overflow-y-auto max-h-[95vh]">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
           <h2 className="text-3xl font-semibold text-[#004368]">
             {t("ShopeeOrderDetails")}
           </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 text-2xl"
+          >
+            ✕
+          </button>
         </div>
 
         <OrderDetailsContent selectedCustomer={selectedCustomer} t={t} />

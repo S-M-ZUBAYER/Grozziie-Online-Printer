@@ -33,7 +33,10 @@ const BatchPrint = () => {
   const orderListDataGet = useSelector((state) => state.orderList.data);
   const [totalOrderData, setTotalOrderData] = useState(orderListDataGet);
   const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(() => {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    return sevenDaysAgo;
+  });
   const selectedTitTokOrderStatus = useSelector(
     (state) => state.user.tikTokSelectStatus
   );
@@ -439,7 +442,7 @@ const BatchPrint = () => {
   //make array to excel
 
   const handleBatchPrinterExcelClick = () => {
-    arrayToExcel(checkedItems, "BatchPrinterOrderList");
+    arrayToExcel(checkedItems, "TikTokBatchPrinterOrderList");
   };
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -785,7 +788,7 @@ const BatchPrint = () => {
               {/* this data coming from dynamic when items selected */}
 
               <span className="text-black opacity-80 text-xs font-light capitalize">
-                ({checkedItems?.length} {t("Selected")})
+                ({checkedItems?.length} {t("ordersSelected")})
               </span>
             </div>
 
@@ -800,12 +803,12 @@ const BatchPrint = () => {
             </div>
 
             <div className="col-span-1 flex items-center justify-center">
-              <p className="text-black opacity-40 text-sm font-medium capitalize">
+              {/* <p className="text-black opacity-40 text-sm font-medium capitalize">
                 0 {t("Buyers")}
               </p>
-              <div className="w-[1px] h-8 bg-black opacity-40 mx-2"></div>
-              <p className="text-black opacity-40 text-sm font-medium capitalize">
-                {totalOrderData?.length} {t("Orders")}
+              <div className="w-[1px] h-8 bg-black opacity-40 mx-2"></div> */}
+              <p className="text-[#004368] text-sm font-medium capitalize text-center">
+                {totalOrderData?.length} {t("Items")}
               </p>
             </div>
 

@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 
-export const usePagination = (initialData, itemsPerPage = 5) => {
+export const usePagination = (initialData, itemsPerPage = 10) => {
     const [data, setData] = useState(initialData);
     const [currentPage, setCurrentPage] = useState(1);
 

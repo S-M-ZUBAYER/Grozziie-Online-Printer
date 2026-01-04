@@ -163,7 +163,7 @@
   "PaymentMethod": "วิธีการชำระเงิน",
 
   "_comment_package": "Package",
-  "NoAvailableOrder": "ไม่มีคำสั่งซื้อที่พร้อมใช้งาน กรุณาลองใหม่ภายหลัง....",
+  "NoAvailableOrder": "ไม่มีคำสั่งซื้อที่พร้อมใช้งาน",
   "TrackingUpdates": "การติดตามการอัปเดต",
   "_comment_single_print": " Single Print",
 
@@ -269,6 +269,8 @@
   "CreatedAt": "สร้างเมื่อ",
   "UpdatedAt": "อัปเดตเมื่อ",
   "OrderItems": "รายการสินค้า",
+  "Items": "รายการ",
+  "ordersSelected": "คำสั่งซื้อที่เลือก",
   "LuluTshirtC6LazadaDel": "เสื้อยืด Lulu C6 Lazada Del",
   "SKU": "SKU",
   "Variation": "รูปแบบ",
@@ -348,5 +350,6 @@
   "shipmentProvider": "ผู้ให้บริการจัดส่ง",
   "AuthorizationExpiredTitle": "การอนุญาตของ {{platform}} หมดอายุ",
   "AccessTokenExpiredMessage": "โทเค็นการเข้าถึงของร้าน (Shop ID: {{shopId}}) หมดอายุแล้ว กรุณาอนุญาตใหม่เพื่อดำเนินการซิงค์คำสั่งซื้อ",
-  "BackToHomePage": "กลับไปหน้าหลัก"
+  "BackToHomePage": "กลับไปหน้าหลัก",
+  "Shop": "ร้านค้า"
 }

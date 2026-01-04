@@ -165,7 +165,7 @@
 
   "_comment_package": "Package",
 
-  "NoAvailableOrder": "No Available Order. Please try again later....",
+  "NoAvailableOrder": "No Available Order",
   "TrackingUpdates": "Tracking Updates",
 
   "_comment_Single_print": "Single Print",
@@ -272,6 +272,8 @@
   "CreatedAt": "Created At",
   "UpdatedAt": "Updated At",
   "OrderItems": "Order Items",
+  "Items": "Items",
+  "ordersSelected": "Orders Selected",
   "LuluTshirtC6LazadaDel": "Lulu tshirt C6 Lazada Del",
   "SKU": "SKU",
   "Variation": "Variation",
@@ -347,5 +349,6 @@
   "shipmentProvider": "Shipment Provider",
   "AuthorizationExpiredTitle": "{{platform}} Authorization Expired",
   "AccessTokenExpiredMessage": "The access token for (Shop ID: {{shopId}}) has expired. Please reauthorize to continue syncing orders.",
-  "BackToHomePage": "Back home page"
+  "BackToHomePage": "Back home page",
+  "Shop": "Shop"
 }

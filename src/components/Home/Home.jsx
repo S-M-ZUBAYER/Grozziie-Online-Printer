@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { CiCalendarDate, CiDeliveryTruck, CiTimer } from "react-icons/ci";
 import { HiOutlineReceiptRefund } from "react-icons/hi2";
 import { FiPrinter } from "react-icons/fi";
 import { format } from "date-fns";
+import { DateTime } from "luxon";
 import {
   isSameDay,
   parseISO,
@@ -44,10 +45,11 @@ const Home = () => {
   const tiktokAuthCountry = localStorage.getItem("tiktokAuthCountry");
   const shopeeAuthCountry = localStorage.getItem("shopeeAuthCountry");
   const storedShopPlatform = localStorage.getItem("SelectedPlatform");
+  const storedShopStore = localStorage.getItem("SelectedStore");
   const [selectedPlatform, setSelectedPlatform] = useState(
     storedShopPlatform || "tiktok"
   );
-  const [selectedStore, setSelectedStore] = useState(null);
+  const [selectedStore, setSelectedStore] = useState(storedShopStore || null);
   const [openShop, setOpenShop] = useState(null);
   const now = new Date();
   const sevenDaysAgo = new Date(now);
@@ -96,6 +98,13 @@ const Home = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showAccessTokenModal, setShowAccessTokenModal] = useState(false);
   const [expiredShopInfo, setExpiredShopInfo] = useState(null); // holds shop info
+
+  // // ============================================
+  // // 1. ADD THESE STATE VARIABLES (after line with tiktokHomeLoading)
+  // // ============================================
+  const [tiktokHomeLoading, setTikTokHomeLoading] = useState(false);
+  const [lazadaHomeLoading, setLazadaHomeLoading] = useState(false);
+  const [shopeeHomeLoading, setShopeeHomeLoading] = useState(false);
 
   // ✅ Parse the user from localStorage properly
   const storedUser = localStorage.getItem("printerUser");
@@ -178,6 +187,279 @@ const Home = () => {
     }
     return null;
   };
+
+  // ====================================================
+  const shopeeShopInfoRaw = localStorage.getItem("shopeeShopInfo");
+  const shopeeShopInfo = shopeeShopInfoRaw ? JSON.parse(shopeeShopInfoRaw) : [];
+
+  const shopeeCountryCode = shopeeShopInfo?.[0]?.region || "MY";
+
+  const lazadaShopInfoRaw = localStorage.getItem("shopeeShopInfo");
+  const lazadaShopInfo = lazadaShopInfoRaw ? JSON.parse(lazadaShopInfoRaw) : [];
+
+  const lazadaCountryCode = lazadaShopInfo?.[0]?.region || "MY";
+
+  const titkokShopInfoRaw = localStorage.getItem("tiktokShopInfo");
+  const titkokShopInfo = titkokShopInfoRaw ? JSON.parse(titkokShopInfoRaw) : [];
+
+  const tiktokCountryCode = titkokShopInfo?.[0]?.region || "MY";
+
+  function getRegionTimestampsShopeTiktok(regionCode) {
+    // Map region codes to Luxon timezone strings
+    const regionTimezones = {
+      // Southeast Asia
+      MY: "Asia/Kuala_Lumpur", // Malaysia
+      SG: "Asia/Singapore", // Singapore
+      PH: "Asia/Manila", // Philippines
+      TH: "Asia/Bangkok", // Thailand
+      VN: "Asia/Ho_Chi_Minh", // Vietnam
+      ID: "Asia/Jakarta", // Indonesia (Western)
+      "ID-B": "Asia/Makassar", // Indonesia (Central)
+      "ID-P": "Asia/Jayapura", // Indonesia (Eastern)
+
+      // East Asia
+      CN: "Asia/Shanghai", // China
+      HK: "Asia/Hong_Kong", // Hong Kong
+      TW: "Asia/Taipei", // Taiwan
+      JP: "Asia/Tokyo", // Japan
+      KR: "Asia/Seoul", // South Korea
+
+      // South Asia
+      IN: "Asia/Kolkata", // India
+      BD: "Asia/Dhaka", // Bangladesh
+      PK: "Asia/Karachi", // Pakistan
+      LK: "Asia/Colombo", // Sri Lanka
+
+      // Middle East
+      AE: "Asia/Dubai", // UAE
+      SA: "Asia/Riyadh", // Saudi Arabia
+      QA: "Asia/Qatar", // Qatar
+
+      // Europe
+      GB: "Europe/London", // UK
+      DE: "Europe/Berlin", // Germany
+      FR: "Europe/Paris", // France
+      IT: "Europe/Rome", // Italy
+      ES: "Europe/Madrid", // Spain
+      RU: "Europe/Moscow", // Russia
+
+      // Americas
+      US: "America/New_York", // USA (Eastern)
+      "US-C": "America/Chicago", // USA (Central)
+      "US-M": "America/Denver", // USA (Mountain)
+      "US-P": "America/Los_Angeles", // USA (Pacific)
+      CA: "America/Toronto", // Canada (Eastern)
+      "CA-P": "America/Vancouver", // Canada (Pacific)
+      BR: "America/Sao_Paulo", // Brazil
+      MX: "America/Mexico_City", // Mexico
+
+      // Oceania
+      AU: "Australia/Sydney", // Australia (Eastern)
+      "AU-C": "Australia/Adelaide", // Australia (Central)
+      "AU-W": "Australia/Perth", // Australia (Western)
+      NZ: "Pacific/Auckland", // New Zealand
+    };
+
+    try {
+      if (!regionCode || typeof regionCode !== "string") {
+        throw new Error("Please provide a region code");
+      }
+
+      const regionUpper = regionCode.toUpperCase();
+      const timezone = regionTimezones[regionUpper];
+
+      if (!timezone) {
+        const validRegions = Object.keys(regionTimezones)
+          .filter(
+            (k) => !k.includes("-") || k.startsWith(regionUpper.split("-")[0])
+          )
+          .slice(0, 20) // Show first 20 for readability
+          .join(", ");
+        throw new Error(
+          `Invalid region code. Some valid codes are: ${validRegions}...`
+        );
+      }
+
+      // Get current time in the region
+      const nowInRegion = DateTime.now().setZone(timezone);
+
+      // Get 7 days ago at midnight in the region
+      const sevenDaysAgo = nowInRegion.minus({ days: 7 }).startOf("day");
+
+      // Convert to timestamps (seconds since epoch)
+      const currentTimestamp = Math.floor(nowInRegion.toSeconds());
+      const sevenDaysAgoTimestamp = Math.floor(sevenDaysAgo.toSeconds());
+
+      // Also get ISO strings for verification
+      const currentISO = nowInRegion.toISO();
+      const sevenDaysAgoISO = sevenDaysAgo.toISO();
+
+      return {
+        currentTime: currentTimestamp, // Unix timestamp in seconds
+        sevenDaysAgo: sevenDaysAgoTimestamp, // Unix timestamp in seconds
+        currentTimeISO: currentISO, // ISO string for debugging
+        sevenDaysAgoISO: sevenDaysAgoISO, // ISO string for debugging
+        region: regionUpper,
+        timezone: timezone,
+        regionCurrentTime: nowInRegion.toFormat("yyyy-MM-dd HH:mm:ss"),
+        regionSevenDaysAgo: sevenDaysAgo.toFormat("yyyy-MM-dd HH:mm:ss"),
+      };
+    } catch (error) {
+      console.error("Error:", error.message);
+      return {
+        error: error.message,
+        regionCode: regionCode,
+      };
+    }
+  }
+
+  function getRegionTimestampsLazada(regionCode) {
+    // Map region codes to Luxon timezone strings
+    const regionTimezones = {
+      // Southeast Asia
+      MY: "Asia/Kuala_Lumpur", // Malaysia
+      SG: "Asia/Singapore", // Singapore
+      PH: "Asia/Manila", // Philippines
+      TH: "Asia/Bangkok", // Thailand
+      VN: "Asia/Ho_Chi_Minh", // Vietnam
+      ID: "Asia/Jakarta", // Indonesia (Western)
+      "ID-B": "Asia/Makassar", // Indonesia (Central)
+      "ID-P": "Asia/Jayapura", // Indonesia (Eastern)
+
+      // East Asia
+      CN: "Asia/Shanghai", // China
+      HK: "Asia/Hong_Kong", // Hong Kong
+      TW: "Asia/Taipei", // Taiwan
+      JP: "Asia/Tokyo", // Japan
+      KR: "Asia/Seoul", // South Korea
+
+      // South Asia
+      IN: "Asia/Kolkata", // India
+      BD: "Asia/Dhaka", // Bangladesh
+      PK: "Asia/Karachi", // Pakistan
+      LK: "Asia/Colombo", // Sri Lanka
+
+      // Middle East
+      AE: "Asia/Dubai", // UAE
+      SA: "Asia/Riyadh", // Saudi Arabia
+      QA: "Asia/Qatar", // Qatar
+
+      // Europe
+      GB: "Europe/London", // UK
+      DE: "Europe/Berlin", // Germany
+      FR: "Europe/Paris", // France
+      IT: "Europe/Rome", // Italy
+      ES: "Europe/Madrid", // Spain
+      RU: "Europe/Moscow", // Russia
+
+      // Americas
+      US: "America/New_York", // USA (Eastern)
+      "US-C": "America/Chicago", // USA (Central)
+      "US-M": "America/Denver", // USA (Mountain)
+      "US-P": "America/Los_Angeles", // USA (Pacific)
+      CA: "America/Toronto", // Canada (Eastern)
+      "CA-P": "America/Vancouver", // Canada (Pacific)
+      BR: "America/Sao_Paulo", // Brazil
+      MX: "America/Mexico_City", // Mexico
+
+      // Oceania
+      AU: "Australia/Sydney", // Australia (Eastern)
+      "AU-C": "Australia/Adelaide", // Australia (Central)
+      "AU-W": "Australia/Perth", // Australia (Western)
+      NZ: "Pacific/Auckland", // New Zealand
+    };
+
+    try {
+      if (!regionCode || typeof regionCode !== "string") {
+        throw new Error("Please provide a region code");
+      }
+
+      const regionUpper = regionCode.toUpperCase();
+      const timezone = regionTimezones[regionUpper];
+
+      if (!timezone) {
+        const validRegions = Object.keys(regionTimezones)
+          .filter(
+            (k) => !k.includes("-") || k.startsWith(regionUpper.split("-")[0])
+          )
+          .slice(0, 20) // Show first 20 for readability
+          .join(", ");
+        throw new Error(
+          `Invalid region code. Some valid codes are: ${validRegions}...`
+        );
+      }
+
+      // Get current time in the region
+      const nowInRegion = DateTime.now().setZone(timezone);
+
+      // Get 7 days ago at midnight in the region
+      const sevenDaysAgo = nowInRegion.minus({ days: 7 }).startOf("day");
+
+      // Convert to format: 2025-12-22T08:06:56Z
+      const currentTimeUTC = nowInRegion
+        .toUTC()
+        .toISO()
+        .replace(/\.\d+/, "")
+        .replace(/\+00:00$/, "Z");
+      const sevenDaysAgoUTC = sevenDaysAgo
+        .toUTC()
+        .toISO()
+        .replace(/\.\d+/, "")
+        .replace(/\+00:00$/, "Z");
+
+      // Also keep local timezone versions for debugging
+      const currentTimeLocal = nowInRegion
+        .toISO()
+        .replace(/\.\d+/, "")
+        .replace(/\+00:00$/, "Z");
+      const sevenDaysAgoLocal = sevenDaysAgo
+        .toISO()
+        .replace(/\.\d+/, "")
+        .replace(/\+00:00$/, "Z");
+
+      return {
+        // Main return values in the format you need: 2025-12-22T08:06:56Z
+        currentTime: currentTimeUTC,
+        sevenDaysAgo: sevenDaysAgoUTC,
+
+        // Local timezone versions (also in Z format)
+        currentTimeLocal: currentTimeLocal,
+        sevenDaysAgoLocal: sevenDaysAgoLocal,
+
+        // Unix timestamps (seconds since epoch) - kept for compatibility
+        currentTimestamp: Math.floor(nowInRegion.toSeconds()),
+        sevenDaysAgoTimestamp: Math.floor(sevenDaysAgo.toSeconds()),
+
+        // Debug info
+        region: regionUpper,
+        timezone: timezone,
+        regionCurrentTime: nowInRegion.toFormat("yyyy-MM-dd HH:mm:ss"),
+        regionSevenDaysAgo: sevenDaysAgo.toFormat("yyyy-MM-dd HH:mm:ss"),
+      };
+    } catch (error) {
+      console.error("Error:", error.message);
+
+      // Fallback to current UTC time in the required format
+      const nowUTC = new Date()
+        .toISOString()
+        .replace(/\.\d+/, "")
+        .replace(/\+00:00$/, "Z");
+      const sevenDaysAgoUTC = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .replace(/\.\d+/, "")
+        .replace(/\+00:00$/, "Z");
+
+      return {
+        currentTime: nowUTC,
+        sevenDaysAgo: sevenDaysAgoUTC,
+        region: "UTC",
+        timezone: "UTC",
+        error: error.message,
+      };
+    }
+  }
+
+  // =====================================================
 
   // Cipher Manage for Tiktok
   useEffect(() => {
@@ -301,12 +583,499 @@ const Home = () => {
     localStorage.setItem("SelectedPlatform", selectedPlatform);
   }, [selectedPlatform]);
 
+  // // TikTok Fetch Printed IDs
+  // useEffect(() => {
+  //   const fetchPrintedIds = async () => {
+  //     if (selectedPlatform?.toLowerCase().trim() !== "tiktok") return;
+  //     // setTikTokHomeLoading(true);
+  //     try {
+  //       const res = await fetch(
+  //         // "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds"
+  //         `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds/by-email/${user?.email}`
+  //       );
+  //       const data = await res.json();
+
+  //       if (Array.isArray(data)) {
+  //         setTikTokPrintedIds(data);
+  //         const todayPrinted = data.filter((item) =>
+  //           isSameDay(parseISO(item.createdAt), now)
+  //         );
+  //       }
+  //     } catch (err) {
+  //       console.error("❌ Failed to fetch printed IDs:", err);
+  //     } finally {
+  //       // setTikTokHomeLoading(false);
+  //     }
+  //   };
+
+  //   if (cipher.length > 0) {
+  //     fetchPrintedIds();
+  //   }
+  // }, [cipher, selectedStore]);
+
+  // // TikTok Fetch Orders according to the Status
+  // useEffect(() => {
+  //   const fetchStatusOrders = async () => {
+  //     if (selectedPlatform?.toLowerCase().trim() !== "tiktok") return;
+  //     setTikTokHomeLoading(true);
+  //     const statuses = [
+  //       "AWAITING_SHIPMENT",
+  //       "AWAITING_COLLECTION",
+  //       "IN_TRANSIT",
+  //       "DELIVERED",
+  //       "CANCELLED",
+  //     ];
+
+  //     // Previouse correct one
+  //     // const nowUnix = Math.floor(Date.now() / 1000);
+  //     // const sevenDaysAgoUnix = nowUnix - 7 * 24 * 60 * 60;
+
+  //     // Try new accrding to the time zone
+
+  //     const tiktokDateRange = getRegionTimestampsShopeTiktok(tiktokCountryCode);
+  //     const nowUnix = tiktokDateRange?.currentTime;
+  //     const sevenDaysAgoUnix = tiktokDateRange?.sevenDaysAgo;
+
+  //     const printedSet = new Set(
+  //       tikTokPrintedIds.map((item) => item.tikTokPrintedId?.toString())
+  //     );
+
+  //     for (const status of statuses) {
+  //       try {
+  //         const response = await loadOrderList({
+  //           cipher: cipher[0]?.cipher,
+  //           // appKey: tiktokAppKey,
+  //           createTimeGe: sevenDaysAgoUnix,
+  //           createTimeLt: nowUnix,
+  //           updateTimeGe: sevenDaysAgoUnix,
+  //           updateTimeLt: nowUnix,
+  //           orderStatus: status,
+  //           pageSize: 100,
+  //           sortOrder: "DESC",
+  //         }).unwrap();
+
+  //         const orderList = response?.data?.orders || [];
+  //         const printedOrders = orderList?.filter((item) =>
+  //           printedSet.has(item.id?.toString())
+  //         );
+  //         const unprintedOrders = orderList.filter(
+  //           (item) => !printedSet.has(item.id?.toString())
+  //         );
+
+  //         if (status === "AWAITING_SHIPMENT") {
+  //           setAwaitingShipment(orderList);
+  //         } else if (status === "AWAITING_COLLECTION") {
+  //           setAwaitingCollection(orderList);
+  //           setAwaitingCollectionPrinted(printedOrders);
+  //           const todayPrintedObjects = () => {
+  //             const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+  //             return tikTokPrintedIds.filter((item) =>
+  //               item.createdAt?.startsWith(today)
+  //             );
+  //           };
+
+  //           const todayPrintedData = todayPrintedObjects();
+
+  //           // ✅ Today printed IDs from DB (already filtered by createdAt)
+  //           const todayPrintedIdSet = new Set(
+  //             todayPrintedData.map((item) => item.tikTokPrintedId)
+  //           );
+  //           // ✅ Match by order_sn only
+  //           const todayTiktokPrinted = printedOrders.filter(
+  //             // (order) => console.log(order?.id)
+
+  //             (order) => todayPrintedIdSet.has(order?.id)
+  //           );
+  //           setTikTokPrintedToday(todayTiktokPrinted);
+  //           setAwaitingCollectionUnprinted(unprintedOrders);
+  //         } else if (status === "DELIVERED") {
+  //           setDeliveredOrders(orderList);
+  //         } else if (status === "IN_TRANSIT") {
+  //           const todayShippedOrders = orderList.filter((order) => {
+  //             const updateDate = fromUnixTime(order.updateTime);
+  //             return updateDate >= start && updateDate <= end;
+  //           });
+  //           setTikTokShippedToday(todayShippedOrders);
+  //         } else if (status === "CANCELLED") {
+  //           setCancelledOrders(orderList);
+  //         }
+  //       } catch (error) {
+  //         console.error(
+  //           `❌ Failed to load orders for status: ${status}`,
+  //           error
+  //         );
+  //       } finally {
+  //         setTikTokHomeLoading(false);
+  //       }
+  //     }
+  //   };
+
+  //   fetchStatusOrders();
+  // }, [cipher, tikTokPrintedIds, selectedStore]);
+
+  // // Lazada Fetch Printed IDs
+  // useEffect(() => {
+  //   const fetchPrintedIds = async () => {
+  //     if (selectedPlatform?.toLowerCase().trim() !== "lazada") return;
+  //     try {
+  //       const res = await fetch(
+  //         // "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds"
+  //         `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds/by-email/${user?.email}`
+  //       );
+  //       const data = await res.json();
+
+  //       if (Array.isArray(data)) {
+  //         setLazadaPrintedIds(data);
+  //         const todayPrinted = data.filter((item) =>
+  //           isSameDay(parseISO(item.createdAt), now)
+  //         );
+  //         // setLazadaPrintedToday(todayPrinted);
+  //       }
+  //     } catch (err) {
+  //       console.error("❌ Failed to fetch printed IDs:", err);
+  //     }
+  //   };
+
+  //   if (cipher.length > 0) {
+  //     fetchPrintedIds();
+  //   }
+  // }, [selectedStore]);
+
+  // // Lazada Fetch Orders according to the Status
+  // useEffect(() => {
+  //   if (selectedPlatform?.toLowerCase().trim() !== "lazada") return;
+  //   const fetchLazadaStatusOrders = async () => {
+  //     setLazadaHomeLoading(true);
+  //     setLazadaOnShipping(true);
+  //     const statuses = [
+  //       "pending",
+  //       "Packed",
+  //       "ready_to_ship",
+  //       "shipped",
+  //       "delivered",
+  //       "Canceled",
+  //     ];
+
+  //     // Previouse date work properly
+  //     // const now = new Date();
+  //     // const tenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  //     // const toISOString = (date) => date.toISOString().split(".")[0] + "Z";
+
+  //     // Now try new to according to the different country zone
+  //     const lazadaDateRange = getRegionTimestampsLazada(lazadaCountryCode);
+  //     const now = lazadaDateRange.currentTime;
+  //     const tenDaysAgo = lazadaDateRange.sevenDaysAgo;
+
+  //     // Precompute printed set
+  //     const printedSet = new Set(
+  //       lazadaPrintedIds.map((item) => String(item.lazadaPrintedId))
+  //     );
+
+  //     for (const status of statuses) {
+  //       try {
+  //         const response = await getLazadaOrders({
+  //           sortBy: "updated_at",
+  //           // createdAfter: toISOString(tenDaysAgo),
+  //           // createdBefore: toISOString(now),
+  //           // updateAfter: toISOString(tenDaysAgo),
+  //           // updateBefore: toISOString(now),
+  //           createdAfter: tenDaysAgo,
+  //           createdBefore: now,
+  //           updateAfter: tenDaysAgo,
+  //           updateBefore: now,
+  //           status,
+  //           status,
+  //           sortDirection: "DESC",
+  //           offset: 0,
+  //           limit: 100,
+  //         }).unwrap();
+
+  //         const parsedBody = JSON.parse(response?.body || "{}");
+  //         const orderList = parsedBody?.data?.orders || [];
+  //         const printedOrders = orderList.filter((item) =>
+  //           printedSet.has(String(item.order_id))
+  //         );
+  //         const unprintedOrders = orderList.filter(
+  //           (item) => !printedSet.has(String(item.order_id))
+  //         );
+
+  //         // Assign to relevant state
+  //         if (status === "pending") {
+  //           setLazadaNewOrders(orderList);
+  //         } else if (status === "Packed") {
+  //           setLazadaPacked(orderList);
+  //           setLazadaPackedPrinted(printedOrders);
+  //         } else if (status === "ready_to_ship") {
+  //           const todayLazadaPrintedObjects = () => {
+  //             const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+  //             return lazadaPrintedIds.filter((item) =>
+  //               item.createdAt?.startsWith(today)
+  //             );
+  //           };
+  //           const todayLazadaPrintedData = todayLazadaPrintedObjects();
+
+  //           // ✅ Today printed IDs from DB (already filtered by createdAt)
+  //           const todayLazadaPrintedIdSet = new Set(
+  //             todayLazadaPrintedData.map((item) => item.lazadaPrintedId)
+  //           );
+
+  //           // ✅ Match by order_sn only
+  //           const todayLazadaPrinted = printedOrders.filter((order) =>
+  //             todayLazadaPrintedIdSet.has(String(order?.order_number))
+  //           );
+
+  //           setLazadaPrintedToday(todayLazadaPrinted);
+
+  //           setLazadaPackedUnprinted(unprintedOrders);
+  //           setLazadaPackedPrinted(printedOrders);
+  //         } else if (status === "shipped") {
+  //           const today = new Date();
+  //           const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+  //           const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+  //           const todayShipped = orderList.filter((order) => {
+  //             const updatedAt = new Date(order.updated_at);
+  //             return updatedAt >= startOfDay && updatedAt <= endOfDay;
+  //           });
+  //           setLazadaShippedToday(todayShipped);
+  //           // Optional: Could also capture "shipped" separately
+  //         } else if (status === "delivered") {
+  //           setLazadaDeliveredOrders(orderList);
+  //         } else if (status === "Canceled") {
+  //           setLazadacancelledOrders(orderList);
+  //         }
+  //       } catch (error) {
+  //         console.error(
+  //           `❌ Failed to load Lazada orders for status: ${status}`,
+  //           error
+  //         );
+  //       } finally {
+  //         setLazadaHomeLoading(false);
+  //       }
+  //     }
+  //   };
+
+  //   fetchLazadaStatusOrders();
+  // }, [lazadaPrintedIds, selectedStore]);
+
+  // // Shopee Fetch Printed IDs
+  // useEffect(() => {
+  //   const fetchShopeePrintedIds = async () => {
+  //     if (selectedPlatform?.toLowerCase().trim() !== "shopee") return;
+  //     try {
+  //       const res = await fetch(
+  //         // "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/shopee/printedIds"
+  //         `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/shopee/printedIds/by-email/${user.email}`
+  //       );
+
+  //       const data = await res.json();
+
+  //       if (Array.isArray(data)) {
+  //         setShopeePrintedIds(data);
+  //       }
+  //     } catch (err) {
+  //       console.error("❌ Failed to fetch Shopee printed IDs:", err);
+  //     }
+  //   };
+
+  //   // if (selectedStore === "Shopee") {
+  //   fetchShopeePrintedIds();
+  //   // }
+  // }, [selectedStore]);
+
+  // // Shopee Fetch Orders according to the Status
+  // useEffect(() => {
+  //   if (selectedPlatform?.toLowerCase().trim() !== "shopee") return;
+  //   const fetchShopeeStatusOrders = async () => {
+  //     setShopeeHomeLoading(true);
+  //     const statuses = [
+  //       "READY_TO_SHIP",
+  //       "PROCESSED",
+  //       "SHIPPED",
+  //       "COMPLETED",
+  //       "CANCELLED",
+  //     ];
+
+  //     // previouse Correct one
+  //     // const now = Math.floor(Date.now() / 1000); // seconds
+  //     // const sevenDaysAgo = now - 7 * 24 * 60 * 60;
+
+  //     // try new one also work according to the time zone
+  //     const shopeeDateRange = getRegionTimestampsShopeTiktok(shopeeCountryCode);
+  //     const now = shopeeDateRange?.currentTime;
+  //     const sevenDaysAgo = shopeeDateRange?.sevenDaysAgo;
+
+  //     const printedSet = new Set(
+  //       shopeePrintedIds.map((item) => String(item.shopeePrintedId))
+  //     );
+
+  //     const todayPrintedObjects = () => {
+  //       const today = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+  //       return shopeePrintedIds.filter((item) =>
+  //         item.createdAt?.startsWith(today)
+  //       );
+  //     };
+
+  //     const todayPrintedData = todayPrintedObjects();
+
+  //     // ✅ Today printed IDs from DB (already filtered by createdAt)
+  //     const todayPrintedIdSet = new Set(
+  //       todayPrintedData.map((item) => item.shopeePrintedId)
+  //     );
+
+  //     for (const status of statuses) {
+  //       try {
+  //         // 1️⃣ Get base orders (now returns direct array instead of nested response)
+  //         const orderListResponse = await getShopeeOrders({
+  //           timeFrom: sevenDaysAgo,
+  //           timeTo: now,
+  //           orderStatus: status,
+  //         }).unwrap();
+
+  //         // Check for invalid access token error (structure might be different now)
+  //         if (
+  //           orderListResponse?.error === "invalid_acceess_token" &&
+  //           selectedPlatform === "shopee"
+  //         ) {
+  //           // Save shop info for modal
+  //           setExpiredShopInfo({
+  //             platform: "Shopee",
+  //             shopId: localStorage.getItem("shopeeAuthShopId"),
+  //           });
+
+  //           // Wait 1 second before showing modal
+  //           setTimeout(() => {
+  //             const currentPlatform = localStorage.getItem("SelectedPlatform");
+  //             if (currentPlatform === "shopee") {
+  //               setShowAccessTokenModal(true);
+  //               console.log("🟡 Showing Shopee authorization expired modal...");
+  //             } else {
+  //               console.log("⚪ Skipped modal — platform changed.");
+  //             }
+  //           }, 1000);
+
+  //           return;
+  //         }
+
+  //         // Now orderListResponse is the direct array (no more nested .response.order_list)
+  //         const orderList = Array.isArray(orderListResponse)
+  //           ? orderListResponse
+  //           : [];
+
+  //         if (!orderList.length) continue;
+
+  //         // 2️⃣ Extract order_sn
+  //         const orderSnList = orderList.map((o) => o.order_sn);
+
+  //         // 3️⃣ Get order details (now returns direct array)
+  //         const detailsResponse = await getShopeeOrderDetails({
+  //           orderSnList,
+  //           request_order_status_pending: true,
+  //           response_optional_fields:
+  //             "total_amount,recipient_address,item_list",
+  //         }).unwrap();
+
+  //         // Now detailsResponse is the direct array (no more nested .response.order_list)
+  //         const detailedOrders = Array.isArray(detailsResponse)
+  //           ? detailsResponse
+  //           : [];
+
+  //         // 4️⃣ Merge orders with details
+  //         const mergedOrders = orderList.map((order) => {
+  //           const details = detailedOrders.find(
+  //             (d) => d.order_sn === order.order_sn
+  //           );
+  //           return { ...order, ...details };
+  //         });
+
+  //         // 5️⃣ Split printed/unprinted
+  //         const printedOrders = mergedOrders.filter((item) =>
+  //           printedSet.has(String(item.order_sn))
+  //         );
+  //         const unprintedOrders = mergedOrders.filter(
+  //           (item) => !printedSet.has(String(item.order_sn))
+  //         );
+
+  //         // 6️⃣ Assign to relevant state
+  //         if (status === "READY_TO_SHIP") {
+  //           setShopeeReadyToShip(mergedOrders);
+  //         } else if (status === "PROCESSED") {
+  //           setShopeeProcessed(mergedOrders);
+  //           setShopeeProcessedPrinted(printedOrders);
+  //           setShopeeProcessedUnprinted(unprintedOrders);
+
+  //           // Convert UNIX timestamp (seconds) → Date
+  //           const fromUnix = (ts) => new Date(ts * 1000);
+  //           const now = new Date();
+
+  //           // ✅ Match by order_sn only
+  //           const todayPrinted = printedOrders.filter((order) =>
+  //             todayPrintedIdSet.has(order.order_sn)
+  //           );
+
+  //           setShopeeTodayPrinted(todayPrinted);
+  //         } else if (status === "SHIPPED") {
+  //           // Filter to ensure only SHIPPED orders are included
+
+  //           const shippedOrders = mergedOrders.filter(
+  //             (order) => order.order_status === "SHIPPED"
+  //           );
+
+  //           setShopeeShippedOrders(shippedOrders);
+
+  //           const shippedToday = shippedOrders.filter((order) => {
+  //             // Use update_time (fallback to ship_by_date or created_time if missing)
+  //             const updateTime = new Date(
+  //               (order.update_time ||
+  //                 order.ship_by_date ||
+  //                 order.created_time ||
+  //                 Date.now() / 1000) * 1000
+  //             );
+
+  //             const today = new Date();
+  //             return (
+  //               updateTime.getFullYear() === today.getFullYear() &&
+  //               updateTime.getMonth() === today.getMonth() &&
+  //               updateTime.getDate() === today.getDate()
+  //             );
+  //           });
+
+  //           setShopeeShippedTodayOrders(shippedToday);
+  //         } else if (status === "COMPLETED") {
+  //           setShopeeCompletedOrders(mergedOrders);
+  //         } else if (status === "CANCELLED") {
+  //           setShopeeCancelledOrders(mergedOrders);
+  //         }
+  //       } catch (error) {
+  //         console.error(`❌ Failed to load Shopee orders for ${status}`, error);
+  //       } finally {
+  //         setShopeeHomeLoading(false);
+  //       }
+  //     }
+  //   };
+
+  //   // if (selectedStore === "Shopee" && shopeePrintedIds.length > 0) {
+  //   fetchShopeeStatusOrders();
+  //   // }
+  // }, [shopeePrintedIds, selectedStore]);
+
+  // ============================================
+  // BETTER SOLUTION: Fix TikTok Loading Logic
+  // ============================================
+
+  console.log(selectedPlatform, selectedStore);
+
   // TikTok Fetch Printed IDs
   useEffect(() => {
     const fetchPrintedIds = async () => {
+      if (selectedPlatform?.toLowerCase().trim() !== "tiktok") return;
+
+      setTikTokHomeLoading(true); // ✅ Enable this
       try {
         const res = await fetch(
-          "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds"
+          `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds/by-email/${user?.email}`
         );
         const data = await res.json();
 
@@ -315,10 +1084,11 @@ const Home = () => {
           const todayPrinted = data.filter((item) =>
             isSameDay(parseISO(item.createdAt), now)
           );
-          setTikTokPrintedToday(todayPrinted);
         }
       } catch (err) {
         console.error("❌ Failed to fetch printed IDs:", err);
+      } finally {
+        // setTikTokHomeLoading(false); // ✅ Enable this
       }
     };
 
@@ -331,6 +1101,16 @@ const Home = () => {
   useEffect(() => {
     const fetchStatusOrders = async () => {
       if (selectedPlatform?.toLowerCase().trim() !== "tiktok") return;
+
+      setAwaitingCollectionUnprinted([]);
+      setCancelledOrders([]);
+      setAwaitingShipment([]);
+      setAwaitingCollectionPrinted([]);
+      setAwaitingCollectionUnprinted([]);
+      setTikTokShippedToday([]);
+      setTikTokPrintedToday([]);
+
+      // setTikTokHomeLoading(true);
       const statuses = [
         "AWAITING_SHIPMENT",
         "AWAITING_COLLECTION",
@@ -338,69 +1118,100 @@ const Home = () => {
         "DELIVERED",
         "CANCELLED",
       ];
-      const nowUnix = Math.floor(Date.now() / 1000);
-      const sevenDaysAgoUnix = nowUnix - 7 * 24 * 60 * 60;
+
+      const tiktokDateRange = getRegionTimestampsShopeTiktok(tiktokCountryCode);
+      const nowUnix = tiktokDateRange?.currentTime;
+      const sevenDaysAgoUnix = tiktokDateRange?.sevenDaysAgo;
+
       const printedSet = new Set(
         tikTokPrintedIds.map((item) => item.tikTokPrintedId?.toString())
       );
 
-      for (const status of statuses) {
-        try {
-          const response = await loadOrderList({
-            cipher: cipher[0]?.cipher,
-            // appKey: tiktokAppKey,
-            createTimeGe: sevenDaysAgoUnix,
-            createTimeLt: nowUnix,
-            updateTimeGe: sevenDaysAgoUnix,
-            updateTimeLt: nowUnix,
-            orderStatus: status,
-            pageSize: 100,
-            sortOrder: "DESC",
-          }).unwrap();
+      try {
+        // ✅ MOVE try-finally OUTSIDE the loop
+        for (const status of statuses) {
+          try {
+            const response = await loadOrderList({
+              cipher: cipher[0]?.cipher,
+              createTimeGe: sevenDaysAgoUnix,
+              createTimeLt: nowUnix,
+              updateTimeGe: sevenDaysAgoUnix,
+              updateTimeLt: nowUnix,
+              orderStatus: status,
+              pageSize: 100,
+              sortOrder: "DESC",
+            }).unwrap();
 
-          const orderList = response?.data?.orders || [];
-          const printedOrders = orderList?.filter((item) =>
-            printedSet.has(item.id?.toString())
-          );
-          const unprintedOrders = orderList.filter(
-            (item) => !printedSet.has(item.id?.toString())
-          );
+            const orderList = response?.data?.orders || [];
+            const printedOrders = orderList?.filter((item) =>
+              printedSet.has(item.id?.toString())
+            );
+            const unprintedOrders = orderList.filter(
+              (item) => !printedSet.has(item.id?.toString())
+            );
 
-          if (status === "AWAITING_SHIPMENT") {
-            setAwaitingShipment(orderList);
-          } else if (status === "AWAITING_COLLECTION") {
-            setAwaitingCollection(orderList);
-            setAwaitingCollectionPrinted(printedOrders);
-            setAwaitingCollectionUnprinted(unprintedOrders);
-          } else if (status === "DELIVERED") {
-            setDeliveredOrders(orderList);
-          } else if (status === "IN_TRANSIT") {
-            const todayShippedOrders = orderList.filter((order) => {
-              const updateDate = fromUnixTime(order.updateTime);
-              return updateDate >= start && updateDate <= end;
-            });
-            setTikTokShippedToday(todayShippedOrders);
-          } else if (status === "CANCELLED") {
-            setCancelledOrders(orderList);
+            if (status === "AWAITING_SHIPMENT") {
+              setAwaitingShipment(orderList);
+            } else if (status === "AWAITING_COLLECTION") {
+              setAwaitingCollection(orderList);
+              setAwaitingCollectionPrinted(printedOrders);
+              const todayPrintedObjects = () => {
+                const today = new Date().toISOString().split("T")[0];
+                return tikTokPrintedIds.filter((item) =>
+                  item.createdAt?.startsWith(today)
+                );
+              };
+
+              const todayPrintedData = todayPrintedObjects();
+              const todayPrintedIdSet = new Set(
+                todayPrintedData.map((item) => item.tikTokPrintedId)
+              );
+              const todayTiktokPrinted = printedOrders.filter((order) =>
+                todayPrintedIdSet.has(order?.id)
+              );
+              setTikTokPrintedToday(todayTiktokPrinted);
+              setAwaitingCollectionUnprinted(unprintedOrders);
+            } else if (status === "DELIVERED") {
+              setDeliveredOrders(orderList);
+            } else if (status === "IN_TRANSIT") {
+              const todayShippedOrders = orderList.filter((order) => {
+                const updateDate = fromUnixTime(order.updateTime);
+                return updateDate >= start && updateDate <= end;
+              });
+              setTikTokShippedToday(todayShippedOrders);
+            } else if (status === "CANCELLED") {
+              setCancelledOrders(orderList);
+            }
+          } catch (error) {
+            console.error(
+              `❌ Failed to load orders for status: ${status}`,
+              error
+            );
+            // ✅ REMOVED finally block from here - continue to next status
           }
-        } catch (error) {
-          console.error(
-            `❌ Failed to load orders for status: ${status}`,
-            error
-          );
         }
+      } finally {
+        // ✅ Set loading false only AFTER all statuses complete
+        setTikTokHomeLoading(false);
       }
     };
 
     fetchStatusOrders();
   }, [cipher, tikTokPrintedIds, selectedStore]);
 
+  // ============================================
+  // APPLY SAME PATTERN TO LAZADA
+  // ============================================
+
   // Lazada Fetch Printed IDs
   useEffect(() => {
     const fetchPrintedIds = async () => {
+      if (selectedPlatform?.toLowerCase().trim() !== "lazada") return;
+
+      setLazadaHomeLoading(true);
       try {
         const res = await fetch(
-          "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds"
+          `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds/by-email/${user?.email}`
         );
         const data = await res.json();
 
@@ -409,10 +1220,11 @@ const Home = () => {
           const todayPrinted = data.filter((item) =>
             isSameDay(parseISO(item.createdAt), now)
           );
-          // setLazadaPrintedToday(todayPrinted);
         }
       } catch (err) {
         console.error("❌ Failed to fetch printed IDs:", err);
+      } finally {
+        // setLazadaHomeLoading(false);
       }
     };
 
@@ -424,8 +1236,16 @@ const Home = () => {
   // Lazada Fetch Orders according to the Status
   useEffect(() => {
     if (selectedPlatform?.toLowerCase().trim() !== "lazada") return;
+    setLazadaPacked([]);
+    setLazadacancelledOrders([]);
+    setLazadaNewOrders([]);
+    setLazadaPackedPrinted([]);
+    setLazadaPackedUnprinted([]);
+    setLazadaShippedToday([]);
+    setLazadaPrintedToday([]);
+
     const fetchLazadaStatusOrders = async () => {
-      setLazadaOnShipping(true);
+      // setLazadaHomeLoading(true);
       const statuses = [
         "pending",
         "Packed",
@@ -435,82 +1255,109 @@ const Home = () => {
         "Canceled",
       ];
 
-      const now = new Date();
-      const tenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      const toISOString = (date) => date.toISOString().split(".")[0] + "Z";
+      const lazadaDateRange = getRegionTimestampsLazada(lazadaCountryCode);
+      const now = lazadaDateRange.currentTime;
+      const tenDaysAgo = lazadaDateRange.sevenDaysAgo;
 
-      // Precompute printed set
       const printedSet = new Set(
         lazadaPrintedIds.map((item) => String(item.lazadaPrintedId))
       );
 
-      for (const status of statuses) {
-        try {
-          const response = await getLazadaOrders({
-            sortBy: "updated_at",
-            createdAfter: toISOString(tenDaysAgo),
-            createdBefore: toISOString(now),
-            updateAfter: toISOString(tenDaysAgo),
-            updateBefore: toISOString(now),
-            status,
-            sortDirection: "DESC",
-            offset: 0,
-            limit: 100,
-          }).unwrap();
+      try {
+        // ✅ try-finally OUTSIDE the loop
+        for (const status of statuses) {
+          try {
+            const response = await getLazadaOrders({
+              sortBy: "updated_at",
+              createdAfter: tenDaysAgo,
+              createdBefore: now,
+              updateAfter: tenDaysAgo,
+              updateBefore: now,
+              status,
+              sortDirection: "DESC",
+              offset: 0,
+              limit: 100,
+            }).unwrap();
 
-          const parsedBody = JSON.parse(response?.body || "{}");
-          const orderList = parsedBody?.data?.orders || [];
-          const printedOrders = orderList.filter((item) =>
-            printedSet.has(String(item.order_id))
-          );
-          const unprintedOrders = orderList.filter(
-            (item) => !printedSet.has(String(item.order_id))
-          );
+            const parsedBody = JSON.parse(response?.body || "{}");
+            const orderList = parsedBody?.data?.orders || [];
+            const printedOrders = orderList.filter((item) =>
+              printedSet.has(String(item.order_id))
+            );
 
-          // Assign to relevant state
-          if (status === "pending") {
-            setLazadaNewOrders(orderList);
-          } else if (status === "Packed") {
-            setLazadaPacked(orderList);
-            setLazadaPackedPrinted(printedOrders);
-          } else if (status === "ready_to_ship") {
-            setLazadaPrintedToday(printedOrders);
-            setLazadaPackedUnprinted(unprintedOrders);
-            setLazadaPackedPrinted(printedOrders);
-          } else if (status === "shipped") {
-            const today = new Date();
-            const startOfDay = new Date(today.setHours(0, 0, 0, 0));
-            const endOfDay = new Date(today.setHours(23, 59, 59, 999));
-            const todayShipped = orderList.filter((order) => {
-              const updatedAt = new Date(order.updated_at);
-              return updatedAt >= startOfDay && updatedAt <= endOfDay;
-            });
-            setLazadaShippedToday(todayShipped);
-            // Optional: Could also capture "shipped" separately
-          } else if (status === "delivered") {
-            setLazadaDeliveredOrders(orderList);
-          } else if (status === "Canceled") {
-            setLazadacancelledOrders(orderList);
+            if (status === "pending") {
+              setLazadaNewOrders(orderList);
+            } else if (status === "Packed") {
+              setLazadaPacked(orderList);
+              setLazadaPackedPrinted(printedOrders);
+              const unprintedOrders = orderList.filter(
+                (item) => !printedSet.has(String(item.order_id))
+              );
+            
+              setLazadaPackedUnprinted(unprintedOrders);
+            } else if (status === "ready_to_ship") {
+              const todayLazadaPrintedObjects = () => {
+                const today = new Date().toISOString().split("T")[0];
+                return lazadaPrintedIds.filter((item) =>
+                  item.createdAt?.startsWith(today)
+                );
+              };
+              const todayLazadaPrintedData = todayLazadaPrintedObjects();
+              const todayLazadaPrintedIdSet = new Set(
+                todayLazadaPrintedData.map((item) => item.lazadaPrintedId)
+              );
+              const todayLazadaPrinted = printedOrders.filter((order) =>
+                todayLazadaPrintedIdSet.has(String(order?.order_number))
+              );
+
+              setLazadaPrintedToday(todayLazadaPrinted);
+              setLazadaPackedPrinted(printedOrders);
+            } else if (status === "shipped") {
+              const today = new Date();
+              const startOfDay = new Date(today.setHours(0, 0, 0, 0));
+              const endOfDay = new Date(today.setHours(23, 59, 59, 999));
+              const todayShipped = orderList.filter((order) => {
+                const updatedAt = new Date(order.updated_at);
+                return updatedAt >= startOfDay && updatedAt <= endOfDay;
+              });
+              setLazadaShippedToday(todayShipped);
+              setLazadaOnShipping(orderList);
+            } else if (status === "delivered") {
+              setLazadaDeliveredOrders(orderList);
+            } else if (status === "Canceled") {
+              setLazadacancelledOrders(orderList);
+            }
+          } catch (error) {
+            console.error(
+              `❌ Failed to load Lazada orders for status: ${status}`,
+              error
+            );
           }
-        } catch (error) {
-          console.error(
-            `❌ Failed to load Lazada orders for status: ${status}`,
-            error
-          );
         }
+      } finally {
+        // ✅ Set loading false only AFTER all statuses complete
+        setLazadaHomeLoading(false);
       }
     };
 
     fetchLazadaStatusOrders();
   }, [lazadaPrintedIds, selectedStore]);
 
+  // ============================================
+  // APPLY SAME PATTERN TO SHOPEE
+  // ============================================
+
   // Shopee Fetch Printed IDs
   useEffect(() => {
     const fetchShopeePrintedIds = async () => {
+      if (selectedPlatform?.toLowerCase().trim() !== "shopee") return;
+
+      setShopeeHomeLoading(true);
       try {
         const res = await fetch(
-          "https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/shopee/printedIds"
+          `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/shopee/printedIds/by-email/${user.email}`
         );
+
         const data = await res.json();
 
         if (Array.isArray(data)) {
@@ -518,18 +1365,25 @@ const Home = () => {
         }
       } catch (err) {
         console.error("❌ Failed to fetch Shopee printed IDs:", err);
+      } finally {
+        // setShopeeHomeLoading(false);
       }
     };
 
-    // if (selectedStore === "Shopee") {
     fetchShopeePrintedIds();
-    // }
   }, [selectedStore]);
 
   // Shopee Fetch Orders according to the Status
   useEffect(() => {
     if (selectedPlatform?.toLowerCase().trim() !== "shopee") return;
+    setShopeeProcessedUnprinted([]);
+    setShopeeCancelledOrders([]);
+    setShopeeReadyToShip([]);
+    setShopeeProcessedPrinted([]);
+    setShopeeShippedTodayOrders([]);
+    setShopeeTodayPrinted([]);
     const fetchShopeeStatusOrders = async () => {
+      // setShopeeHomeLoading(true);
       const statuses = [
         "READY_TO_SHIP",
         "PROCESSED",
@@ -538,154 +1392,149 @@ const Home = () => {
         "CANCELLED",
       ];
 
-      const now = Math.floor(Date.now() / 1000); // seconds
-      const sevenDaysAgo = now - 7 * 24 * 60 * 60;
+      const shopeeDateRange = getRegionTimestampsShopeTiktok(shopeeCountryCode);
+      const now = shopeeDateRange?.currentTime;
+      const sevenDaysAgo = shopeeDateRange?.sevenDaysAgo;
 
       const printedSet = new Set(
         shopeePrintedIds.map((item) => String(item.shopeePrintedId))
       );
 
-      for (const status of statuses) {
-        try {
-          // 1️⃣ Get base orders (now returns direct array instead of nested response)
-          const orderListResponse = await getShopeeOrders({
-            timeFrom: sevenDaysAgo,
-            timeTo: now,
-            orderStatus: status,
-          }).unwrap();
+      const todayPrintedObjects = () => {
+        const today = new Date().toISOString().split("T")[0];
+        return shopeePrintedIds.filter((item) =>
+          item.createdAt?.startsWith(today)
+        );
+      };
 
-          // Check for invalid access token error (structure might be different now)
-          if (
-            orderListResponse?.error === "invalid_acceess_token" &&
-            selectedPlatform === "shopee"
-          ) {
-            // Save shop info for modal
-            setExpiredShopInfo({
-              platform: "Shopee",
-              shopId: localStorage.getItem("shopeeAuthShopId"),
+      const todayPrintedData = todayPrintedObjects();
+      const todayPrintedIdSet = new Set(
+        todayPrintedData.map((item) => item.shopeePrintedId)
+      );
+
+      try {
+        // ✅ try-finally OUTSIDE the loop
+        for (const status of statuses) {
+          try {
+            const orderListResponse = await getShopeeOrders({
+              timeFrom: sevenDaysAgo,
+              timeTo: now,
+              orderStatus: status,
+            }).unwrap();
+
+            if (
+              orderListResponse?.error === "invalid_acceess_token" &&
+              selectedPlatform === "shopee"
+            ) {
+              setExpiredShopInfo({
+                platform: "Shopee",
+                shopId: localStorage.getItem("shopeeAuthShopId"),
+              });
+
+              setTimeout(() => {
+                const currentPlatform =
+                  localStorage.getItem("SelectedPlatform");
+                if (currentPlatform === "shopee") {
+                  setShowAccessTokenModal(true);
+                  console.log(
+                    "🟡 Showing Shopee authorization expired modal..."
+                  );
+                } else {
+                  console.log("⚪ Skipped modal — platform changed.");
+                }
+              }, 1000);
+
+              return;
+            }
+
+            const orderList = Array.isArray(orderListResponse)
+              ? orderListResponse
+              : [];
+
+            if (!orderList.length) continue;
+
+            const orderSnList = orderList.map((o) => o.order_sn);
+
+            const detailsResponse = await getShopeeOrderDetails({
+              orderSnList,
+              request_order_status_pending: true,
+              response_optional_fields:
+                "total_amount,recipient_address,item_list",
+            }).unwrap();
+
+            const detailedOrders = Array.isArray(detailsResponse)
+              ? detailsResponse
+              : [];
+
+            const mergedOrders = orderList.map((order) => {
+              const details = detailedOrders.find(
+                (d) => d.order_sn === order.order_sn
+              );
+              return { ...order, ...details };
             });
 
-            // Wait 1 second before showing modal
-            setTimeout(() => {
-              const currentPlatform = localStorage.getItem("SelectedPlatform");
-              if (currentPlatform === "shopee") {
-                setShowAccessTokenModal(true);
-                console.log("🟡 Showing Shopee authorization expired modal...");
-              } else {
-                console.log("⚪ Skipped modal — platform changed.");
-              }
-            }, 1000);
-
-            return;
-          }
-
-          // Now orderListResponse is the direct array (no more nested .response.order_list)
-          const orderList = Array.isArray(orderListResponse)
-            ? orderListResponse
-            : [];
-
-          if (!orderList.length) continue;
-
-          // 2️⃣ Extract order_sn
-          const orderSnList = orderList.map((o) => o.order_sn);
-
-          console.log(orderSnList, "from homee....");
-
-          // 3️⃣ Get order details (now returns direct array)
-          const detailsResponse = await getShopeeOrderDetails({
-            orderSnList,
-            request_order_status_pending: true,
-            response_optional_fields:
-              "total_amount,recipient_address,item_list",
-          }).unwrap();
-
-          // Now detailsResponse is the direct array (no more nested .response.order_list)
-          const detailedOrders = Array.isArray(detailsResponse)
-            ? detailsResponse
-            : [];
-
-          // 4️⃣ Merge orders with details
-          const mergedOrders = orderList.map((order) => {
-            const details = detailedOrders.find(
-              (d) => d.order_sn === order.order_sn
+            const printedOrders = mergedOrders.filter((item) =>
+              printedSet.has(String(item.order_sn))
             );
-            return { ...order, ...details };
-          });
-
-          // 5️⃣ Split printed/unprinted
-          const printedOrders = mergedOrders.filter((item) =>
-            printedSet.has(String(item.order_sn))
-          );
-          const unprintedOrders = mergedOrders.filter(
-            (item) => !printedSet.has(String(item.order_sn))
-          );
-
-          // 6️⃣ Assign to relevant state
-          if (status === "READY_TO_SHIP") {
-            setShopeeReadyToShip(mergedOrders);
-          } else if (status === "PROCESSED") {
-            setShopeeProcessed(mergedOrders);
-            setShopeeProcessedPrinted(printedOrders);
-            setShopeeProcessedUnprinted(unprintedOrders);
-
-            // Convert UNIX timestamp (seconds) → Date
-            const fromUnix = (ts) => new Date(ts * 1000);
-            const now = new Date();
-
-            // Filter printed today (fixed logic)
-            const todayPrinted = printedOrders.filter((order) => {
-              const updateTime = fromUnix(
-                order.update_time || order.created_time || Date.now() / 1000
-              );
-              return (
-                updateTime.getDate() === now.getDate() &&
-                updateTime.getMonth() === now.getMonth() &&
-                updateTime.getFullYear() === now.getFullYear()
-              );
-            });
-
-            setShopeeTodayPrinted(todayPrinted); // Fixed: should be todayPrinted, not printedOrders
-          } else if (status === "SHIPPED") {
-            // Filter to ensure only SHIPPED orders are included
-
-            const shippedOrders = mergedOrders.filter(
-              (order) => order.order_status === "SHIPPED"
+            const unprintedOrders = mergedOrders.filter(
+              (item) => !printedSet.has(String(item.order_sn))
             );
 
-            setShopeeShippedOrders(shippedOrders);
+            if (status === "READY_TO_SHIP") {
+              setShopeeReadyToShip(mergedOrders);
+            } else if (status === "PROCESSED") {
+              setShopeeProcessed(mergedOrders);
+              setShopeeProcessedPrinted(printedOrders);
+              setShopeeProcessedUnprinted(unprintedOrders);
 
-            const shippedToday = shippedOrders.filter((order) => {
-              // Use update_time (fallback to ship_by_date or created_time if missing)
-              const updateTime = new Date(
-                (order.update_time ||
-                  order.ship_by_date ||
-                  order.created_time ||
-                  Date.now() / 1000) * 1000
+              const todayPrinted = printedOrders.filter((order) =>
+                todayPrintedIdSet.has(order.order_sn)
               );
 
-              const today = new Date();
-              return (
-                updateTime.getFullYear() === today.getFullYear() &&
-                updateTime.getMonth() === today.getMonth() &&
-                updateTime.getDate() === today.getDate()
+              setShopeeTodayPrinted(todayPrinted);
+            } else if (status === "SHIPPED") {
+              const shippedOrders = mergedOrders.filter(
+                (order) => order.order_status === "SHIPPED"
               );
-            });
 
-            setShopeeShippedTodayOrders(shippedToday);
-          } else if (status === "COMPLETED") {
-            setShopeeCompletedOrders(mergedOrders);
-          } else if (status === "CANCELLED") {
-            setShopeeCancelledOrders(mergedOrders);
+              setShopeeShippedOrders(shippedOrders);
+
+              const shippedToday = shippedOrders.filter((order) => {
+                const updateTime = new Date(
+                  (order.update_time ||
+                    order.ship_by_date ||
+                    order.created_time ||
+                    Date.now() / 1000) * 1000
+                );
+
+                const today = new Date();
+                return (
+                  updateTime.getFullYear() === today.getFullYear() &&
+                  updateTime.getMonth() === today.getMonth() &&
+                  updateTime.getDate() === today.getDate()
+                );
+              });
+
+              setShopeeShippedTodayOrders(shippedToday);
+            } else if (status === "COMPLETED") {
+              setShopeeCompletedOrders(mergedOrders);
+            } else if (status === "CANCELLED") {
+              setShopeeCancelledOrders(mergedOrders);
+            }
+          } catch (error) {
+            console.error(
+              `❌ Failed to load Shopee orders for ${status}`,
+              error
+            );
           }
-        } catch (error) {
-          console.error(`❌ Failed to load Shopee orders for ${status}`, error);
         }
+      } finally {
+        // ✅ Set loading false only AFTER all statuses complete
+        setShopeeHomeLoading(false);
       }
     };
 
-    // if (selectedStore === "Shopee" && shopeePrintedIds.length > 0) {
     fetchShopeeStatusOrders();
-    // }
   }, [shopeePrintedIds, selectedStore]);
 
   // Here complete the Onclick Card dynamic routing
@@ -955,7 +1804,7 @@ const Home = () => {
                     label={t("Processing for Delivery")}
                     value={
                       selectedPlatform === "tiktok"
-                        ? awaitingCollection?.length
+                        ? awaitingCollectionUnprinted?.length
                             ?.toString()
                             .padStart(2, "0") || "00"
                         : selectedPlatform === "lazada"
@@ -974,6 +1823,26 @@ const Home = () => {
           </div>
         </div>
       </div>
+      {/* Loading Overlay */}
+      {(tiktokHomeLoading || lazadaHomeLoading || shopeeHomeLoading) && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
+          <div className="bg-white rounded-lg shadow-2xl p-8 flex flex-col items-center min-w-80">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#004368]"></div>
+            <p className="mt-4 text-[#004368] text-lg font-semibold">
+              {t("Loading")}...
+            </p>
+            <p className="mt-2 text-gray-600 text-sm">
+              {t("Loading")}{" "}
+              {selectedPlatform === "tiktok"
+                ? t("TikTok")
+                : selectedPlatform === "lazada"
+                ? t("Lazada")
+                : t("Shopee")}{" "}
+              {t("Orders")}
+            </p>
+          </div>
+        </div>
+      )}
       <ShopeeAuthModal
         show={showAuthModal}
         onClose={() => setShowAuthModal(false)}
@@ -1016,171 +1885,3 @@ const Home = () => {
 };
 
 export default Home;
-
-// import React, { useState, useEffect } from "react";
-// import HomeSideNavbar from "./HomeSideNavbar";
-// import ShopSelector from "./HomeComponents/ShopSelector";
-// import DashboardCard from "./HomeComponents/DashboardCard";
-// import ActivityRow from "./HomeComponents/ActivityRow";
-// import { CiCalendarDate, CiTimer, CiDeliveryTruck } from "react-icons/ci";
-// import { HiOutlineReceiptRefund } from "react-icons/hi2";
-// import { FiPrinter } from "react-icons/fi";
-// import print from "../../assets/printer01.png";
-// import shipped from "../../assets/shipped01.png";
-// import needPrint from "../../assets/needtoprint01.png";
-// import { useTikTokOrders } from "./HomeHooks/useTikTokOrders";
-// // import { useLazadaOrders } from "./HomeHooks/useLazadaOrders";
-// import { useShopeeOrders } from "./HomeHooks/useShopeeOrders";
-// import { useTranslation } from "react-i18next";
-// import { useNavigate } from "react-router-dom";
-// import { format, subDays } from "date-fns";
-
-// const Home = () => {
-//   const { t } = useTranslation();
-//   const navigate = useNavigate();
-
-//   const storedShopPlatform = localStorage.getItem("SelectedPlatform");
-//   const [selectedPlatform, setSelectedPlatform] = useState(
-//     storedShopPlatform || "tiktok"
-//   );
-//   const [selectedStore, setSelectedStore] = useState(null);
-//   const [openShop, setOpenShop] = useState(null);
-//   const [printedIds, setPrintedIds] = useState([]); // ✅ default to empty array
-
-//   const now = new Date();
-//   const sevenDaysAgo = subDays(now, 7);
-
-//   // ✅ Load only the selected platform's hook
-//   const tikTokData = useTikTokOrders(
-//     printedIds,
-//     selectedStore,
-//     selectedPlatform === "tiktok"
-//   );
-//   // const lazadaData = useLazadaOrders(
-//   //   printedIds,
-//   //   selectedStore,
-//   //   selectedPlatform === "lazada"
-//   // );
-//   const shopeeData = useShopeeOrders(
-//     printedIds,
-//     selectedStore,
-//     selectedPlatform === "shopee"
-//   );
-
-//   const platformData =
-//     selectedPlatform === "tiktok"
-//       ? tikTokData
-//       : selectedPlatform === "lazada"
-//       ? ""
-//       : shopeeData;
-
-//   const platformPaths = {
-//     tiktok: "TikTokOrderManagemnt",
-//     lazada: "LazadaOrderManagement",
-//     shopee: "ShopeeOrderManagement",
-//   };
-
-//   const handleCardClick = (type) => {
-//     const platformPath = platformPaths[selectedPlatform];
-//     if (platformPath) navigate(`/${type}/${platformPath}`);
-//   };
-
-//   const getCount = (type) => platformData?.[type]?.length || 0;
-
-//   return (
-//     <div className="bg-[#0043680D] grid grid-cols-6">
-//       <div className="col-span-1">
-//         <HomeSideNavbar />
-//       </div>
-
-//       <div className="pt-11 pl-[62px] mb-[17px] col-span-5">
-//         <ShopSelector
-//           openShop={openShop}
-//           setOpenShop={setOpenShop}
-//           selectedStore={selectedStore}
-//           setSelectedStore={setSelectedStore}
-//           selectedPlatform={selectedPlatform}
-//           setSelectedPlatform={setSelectedPlatform}
-//         />
-
-//         {/* Dashboard Cards */}
-//         <div className="mb-9 grid grid-cols-3 gap-6">
-//           <button onClick={() => handleCardClick("printed")}>
-//             <DashboardCard
-//               title={t("Printed Today")}
-//               count={getCount("printedToday")}
-//               image={print}
-//             />
-//           </button>
-//           <button onClick={() => handleCardClick("shipped")}>
-//             <DashboardCard
-//               title={t("Shipped Today")}
-//               count={getCount("shippedToday")}
-//               image={shipped}
-//             />
-//           </button>
-//           <button onClick={() => handleCardClick("needPrint")}>
-//             <DashboardCard
-//               title={t("Need To Print")}
-//               count={
-//                 getCount("awaitingCollectionUnprinted") ||
-//                 getCount("packedUnprinted") ||
-//                 getCount("processedUnprinted")
-//               }
-//               image={needPrint}
-//             />
-//           </button>
-//         </div>
-
-//         {/* Activities */}
-//         <div className="w-[600px] h-[413px] rounded-[17px] bg-white mt-4 pt-7 shadow-md">
-//           <div className="flex items-center mt-[14px] ml-7">
-//             <span className="w-[25px] h-[25px] bg-[#00436838] rounded-[6px] flex justify-center items-center">
-//               <CiCalendarDate className="w-[13px] h-[13.5px] text-[#004368]" />
-//             </span>
-//             <span className="text-[#00000099] text-[12px] font-[400] capitalize ml-2">
-//               {format(sevenDaysAgo, "dd MMM yyyy")} to{" "}
-//               {format(now, "dd MMM yyyy")}
-//             </span>
-//           </div>
-//           <div className="pt-[30px]">
-//             <ActivityRow
-//               icon={FiPrinter}
-//               label={t("Printed")}
-//               value={
-//                 getCount("awaitingCollectionPrinted") ||
-//                 getCount("packedPrinted") ||
-//                 getCount("processedPrinted")
-//               }
-//             />
-//             <ActivityRow
-//               icon={CiTimer}
-//               label={t("New Orders")}
-//               value={
-//                 getCount("awaitingShipment") ||
-//                 getCount("newOrders") ||
-//                 getCount("readyToShip")
-//               }
-//             />
-//             <ActivityRow
-//               icon={HiOutlineReceiptRefund}
-//               label={t("Cancelled")}
-//               value={getCount("cancelledOrders") || getCount("cancelled")}
-//             />
-//             <ActivityRow
-//               icon={CiDeliveryTruck}
-//               label={t("Processing for Delivery")}
-//               value={
-//                 getCount("awaitingCollection") ||
-//                 getCount("packed") ||
-//                 getCount("processedUnprinted")
-//               }
-//             />
-//           </div>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Home;

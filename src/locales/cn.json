@@ -163,7 +163,7 @@
   "PaymentMethod": "支付方式",
 
   "_comment_package": "Package",
-  "NoAvailableOrder": "没有可用的订单。请稍后再试....",
+  "NoAvailableOrder": "没有可用的订单",
   "TrackingUpdates": "跟踪更新",
   "_comment_SinglePrint": "Single Print",
 
@@ -269,6 +269,8 @@
   "CreatedAt": "创建时间",
   "UpdatedAt": "更新时间",
   "OrderItems": "订单商品",
+  "Items": "商品",
+  "ordersSelected": "已选择订单",
   "LuluTshirtC6LazadaDel": "Lulu T恤 C6 Lazada 配送",
   "SKU": "库存单位",
   "Variation": "规格",
@@ -347,5 +349,6 @@
   "shipmentProvider": "运输服务商",
   "AuthorizationExpiredTitle": "{{platform}} 授权已过期",
   "AccessTokenExpiredMessage": "店铺 ID: {{shopId}} 的访问令牌已过期。请重新授权以继续同步订单。",
-  "BackToHomePage": "返回首页"
+  "BackToHomePage": "返回首页",
+  "Shop": "店铺"
 }
