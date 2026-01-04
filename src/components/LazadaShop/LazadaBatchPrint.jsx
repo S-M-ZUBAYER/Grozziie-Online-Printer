@@ -33,7 +33,8 @@ const LazadaBatchPrint = () => {
   const lazadaAppKey = localStorage.getItem("lazadaAppKey");
   const lazadaAuthCountry = localStorage.getItem("lazadaAuthCountry");
   const lazadaAccountId = localStorage.getItem("lazadaAccountId");
-
+  const selectedShop = JSON.parse(localStorage.getItem("lazadaShopInfo"));
+  const selectedStore = selectedShop[0]?.name;
   // Custom hooks
   const { lazadaOrderStatusCheck, setLazadaOrderStatusCheck, selectedStatus } =
     useLazadaOrderStatus();
@@ -407,6 +408,7 @@ const LazadaBatchPrint = () => {
             onSelectAllChange={() => handleMasterCheckboxChange(customersData)}
             checkedItemsCount={checkedItems.length}
             selectedStatus={selectedStatus}
+            selectedStore={selectedStore}
             totalItems={totalOrderItemInfo}
             totalOrders={totalOrders}
             totalOrderSkus={totalOrderSkus}

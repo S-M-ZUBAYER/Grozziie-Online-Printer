@@ -326,6 +326,12 @@ export const useLazadaOrders = ({
         if (!printedIdsLoaded) return;
 
         const parts = location.pathname.split("/");
+        const lazadaShopInfoRaw = localStorage.getItem("lazadaShopInfo");
+        if (!lazadaShopInfoRaw) return;
+
+        const lazadaShopInfo = JSON.parse(lazadaShopInfoRaw);
+        if (!Array.isArray(lazadaShopInfo) || lazadaShopInfo.length === 0) return;
+        localStorage.setItem("SelectedStore", lazadaShopInfo[0].name);
 
         if (parts.length === 4) {
             const routeStatus = parts[2];

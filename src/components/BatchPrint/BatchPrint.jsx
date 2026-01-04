@@ -33,7 +33,10 @@ const BatchPrint = () => {
   const orderListDataGet = useSelector((state) => state.orderList.data);
   const [totalOrderData, setTotalOrderData] = useState(orderListDataGet);
   const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(() => {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    return sevenDaysAgo;
+  });
   const selectedTitTokOrderStatus = useSelector(
     (state) => state.user.tikTokSelectStatus
   );

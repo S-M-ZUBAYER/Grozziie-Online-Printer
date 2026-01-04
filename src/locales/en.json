@@ -349,5 +349,6 @@
   "shipmentProvider": "Shipment Provider",
   "AuthorizationExpiredTitle": "{{platform}} Authorization Expired",
   "AccessTokenExpiredMessage": "The access token for (Shop ID: {{shopId}}) has expired. Please reauthorize to continue syncing orders.",
-  "BackToHomePage": "Back home page"
+  "BackToHomePage": "Back home page",
+  "Shop": "Shop"
 }

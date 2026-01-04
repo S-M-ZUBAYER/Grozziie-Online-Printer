@@ -50,6 +50,23 @@ const TikTokBatchPrint = () => {
   const tiktokAuthCountry = localStorage.getItem("tiktokAuthCountry");
   const tiktokOpenId = localStorage.getItem("tiktokOpenId");
   const cipher = localStorage.getItem("tiktokAuthCipher");
+  const selectedShopInfoRaw = localStorage.getItem("tiktokShopInfo");
+  const selectedTikTokStore = localStorage.getItem("SelectedTikTokStore");
+  // const selectedTikTokStore = JSON.parse(selectedTikTokStoreRow);
+  const selectedShopInfo = selectedShopInfoRaw
+    ? JSON.parse(selectedShopInfoRaw)
+    : [];
+
+  // find store by name
+  const store = selectedShopInfo.find(
+    (item) => item.name === selectedTikTokStore
+  );
+
+  // build final string
+  const selectedStore = store
+    ? `${store.region ?? ""}-${store.name ?? ""}`
+    : "";
+
   const { customersData, setCustomersData } = useOrderData();
   const { filteredData, setFilteredData, tiktokLoading } = useTikTokOrders({
     tikTokOrderStatusCheck,
@@ -63,6 +80,7 @@ const TikTokBatchPrint = () => {
     useState("");
 
   useEffect(() => {
+    localStorage.setItem("SelectedStore", selectedTikTokStore);
     const savedType = localStorage.getItem("tikTokDeliveryType");
     if (savedType) {
       setSelectedTikTokDeliveryType(savedType);
@@ -272,6 +290,7 @@ const TikTokBatchPrint = () => {
             onSelectAllChange={() => handleMasterCheckboxChange(customersData)}
             checkedItemsCount={checkedItems.length}
             selectedStatus={selectedStatus}
+            selectedStore={selectedStore}
             totalItems={totalLineItems}
             totalOrders={totalOrders}
             totalOrderSkus={totalOrderSkus}
