@@ -6,6 +6,7 @@ const TableHeader = ({
   onSelectAllChange,
   checkedItemsCount,
   selectedStatus,
+  selectedStore,
   totalOrders,
   totalItems,
   totalOrderSkus,
@@ -32,6 +33,12 @@ const TableHeader = ({
       <span className="text-black opacity-80 text-xs font-light capitalize">
         ({checkedItemsCount} {t("ordersSelected")})
       </span>
+    </div>
+
+    <div>
+      <p className="text-[#004368] text-sm font-medium capitalize text-center">
+        {t("Shop")}: {selectedStore}
+      </p>
     </div>
 
     <div>

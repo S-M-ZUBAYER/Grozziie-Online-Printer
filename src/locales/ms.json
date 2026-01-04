@@ -350,5 +350,6 @@
   "shipmentProvider": "Penyedia Penghantaran",
   "AuthorizationExpiredTitle": "Kebenaran {{platform}} Tamat Tempoh",
   "AccessTokenExpiredMessage": "Token akses untuk (Shop ID: {{shopId}}) telah tamat tempoh. Sila sahkan semula untuk meneruskan penyegerakan pesanan.",
-  "BackToHomePage": "Kembali ke Halaman Utama"
+  "BackToHomePage": "Kembali ke Halaman Utama",
+  "Shop": "Kedai"
 }

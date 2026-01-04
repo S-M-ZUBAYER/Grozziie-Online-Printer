@@ -351,5 +351,6 @@
   "shipmentProvider": "Tagapaghatid ng Padala",
   "AuthorizationExpiredTitle": "Nag-expire ang {{platform}} Authorization",
   "AccessTokenExpiredMessage": "Ang access token para sa (Shop ID: {{shopId}}) ay nag-expire na. Mangyaring muling pahintulutan upang magpatuloy sa pag-sync ng mga order.",
-  "BackToHomePage": "Bumalik sa Homepage"
+  "BackToHomePage": "Bumalik sa Homepage",
+  "Shop": "Tindahan"
 }

@@ -55,6 +55,9 @@ const ShopeeBatchPrint = () => {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const shopeeAuthCountry = localStorage.getItem("shopeeAuthCountry");
   const shopeeAuthShopId = localStorage.getItem("shopeeAuthShopId");
+  const selectedShopInfo = JSON.parse(localStorage.getItem("shopeeShopInfo"));
+  const last3 = String(selectedShopInfo[0].name ?? "").slice(-3);
+  const selectedStore = `${selectedShopInfo[0].region ?? ""}-(***${last3})`;
 
   const {
     selectedCustomer,
@@ -131,6 +134,10 @@ const ShopeeBatchPrint = () => {
   // Route-based status updates
   useEffect(() => {
     const parts = location.pathname.split("/");
+    localStorage.setItem(
+      "SelectedStore",
+      localStorage.getItem("shopeeAuthShopId")
+    );
     console.log("Current path:", location.pathname); // Debug
     console.log("Path parts:", parts); // Debug
 
@@ -159,6 +166,13 @@ const ShopeeBatchPrint = () => {
 
     setIsInitialLoad(false);
   }, [location.pathname, setShopeeOrderStatusCheck]);
+
+  // Get initailly Date rang
+  const shopeeInitialDateRange = useSelector(
+    (state) => state.user.selectedDateRangRedux
+  );
+
+  console.log(shopeeInitialDateRange, " initailly date rang");
 
   // Only fetch data after initial route processing
   useEffect(() => {
@@ -777,6 +791,7 @@ const ShopeeBatchPrint = () => {
             onSelectAllChange={() => handleMasterCheckboxChange(customersData)}
             checkedItemsCount={checkedItems.length}
             selectedStatus={selectedStatus}
+            selectedStore={selectedStore}
             totalItems={totalItemList}
             totalOrders={totalOrders}
             totalOrderSkus={totalOrderSkus}

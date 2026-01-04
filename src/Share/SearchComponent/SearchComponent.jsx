@@ -25,8 +25,13 @@ const SearchComponent = ({ setTikTokOrderStatusCheck }) => {
   const [dateRange, setDateRange] = useState("");
   const [open, setOpen] = useState(false);
   const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
+  const [endDate, setEndDate] = useState(() => {
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    return sevenDaysAgo;
+  });
   const [searchAllQuery, setSearchAllQuery] = useState("");
+
+  console.log(startDate, endDate, "initally date range");
 
   const selectedLanguage = useSelector(
     (state) => state.user.selectedLanguageRedux
