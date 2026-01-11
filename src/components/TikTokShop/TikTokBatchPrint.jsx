@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { checkedItemsChange } from "../../features/slice/userSlice";
-import { arrayToExcel } from "../../Share/Function/FunctionalComponent";
+import { tiktokArrayToExcel } from "../../Share/Function/FunctionalComponent";
 import ConfirmationModal from "../../Share/ConfirmationModal";
 import { TiInfoOutline } from "react-icons/ti";
 import { AiOutlineCheckCircle } from "react-icons/ai";
@@ -117,7 +117,7 @@ const TikTokBatchPrint = () => {
 
   // Handlers (keep your existing handlers)
   const handleBatchPrinterExcelClick = () => {
-    arrayToExcel(checkedItems, "TikTokBatchPrinterOrderList");
+    tiktokArrayToExcel(checkedItems, "TikTokBatchPrinterOrderList", t);
   };
 
   const handleToCheckItemsPackageUpdate = () => {
@@ -192,11 +192,6 @@ const TikTokBatchPrint = () => {
 
           let url = "";
           let body = null;
-
-          // Use new API
-          // url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
-          //   cipherValue
-          // )}`;
           url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
             cipher
           )}&openId=${encodeURIComponent(tiktokOpenId)}`;
@@ -261,6 +256,8 @@ const TikTokBatchPrint = () => {
   }, 0);
 
   const totalOrders = customersData?.length;
+
+  console.log(filteredData, "sdkljfaksd");
 
   return (
     <div className="bg-[#004368] bg-opacity-5 w-full h-screen">

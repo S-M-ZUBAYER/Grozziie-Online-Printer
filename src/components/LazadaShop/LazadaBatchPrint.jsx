@@ -79,7 +79,7 @@ const LazadaBatchPrint = () => {
 
   // Handlers - same as before
   const handleLazadaPrinterExcelClick = useCallback(() => {
-    lazadaArrayToExcel(checkedItems, "lazadaBatchPrinterOrderList");
+    lazadaArrayToExcel(checkedItems, "lazadaBatchPrinterOrderList", t);
   }, [checkedItems]);
 
   const handleToCheckItemsPackageUpdate = useCallback(() => {

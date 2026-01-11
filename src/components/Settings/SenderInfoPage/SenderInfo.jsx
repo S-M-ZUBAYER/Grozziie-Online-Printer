@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { CiSearch } from "react-icons/ci";
 import { FaRegBookmark } from "react-icons/fa";
-import { arrayToExcel } from "../../../Share/Function/FunctionalComponent";
+import { tiktokArrayToExcel } from "../../../Share/Function/FunctionalComponent";
 import {
   useDeleteSenderInfoMutation,
   useGetSenderInfoQuery,
@@ -218,7 +218,7 @@ const SenderInfo = () => {
 
   //excel functionalities
   const handleSenderInfoExcelClick = () => {
-    arrayToExcel(checkedItems, "SenderInfoCustomerList");
+    tiktokArrayToExcel(checkedItems, "SenderInfoCustomerList");
   };
 
   // searching functionalities
