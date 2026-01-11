@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { DateTime } from "luxon";
 import { useLoadOrderListMutation } from "../../../features/allApis/batchPrintApi";
 import { orderListData } from "../../../features/slice/orderListSlice";
 import { checkedItemsChange } from "../../../features/slice/userSlice";
-import { fromUnixTime, isSameDay, parseISO } from "date-fns";
+import { endOfDay, fromUnixTime, isSameDay, parseISO, startOfDay } from "date-fns";
 import { tikTokOrderStatusOptions } from "../../../Share/Data/ClientData";
+import { getRegionTimestampsShopeTiktok } from "../../../Share/Function/FunctionalComponent";
 
 export const useTikTokOrders = ({
     tikTokOrderStatusCheck,
@@ -20,12 +21,23 @@ export const useTikTokOrders = ({
     const [allData, setAllData] = useState([]);
     const [tikTokPrintedIds, setTikTokPrintedIds] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [cardStatus, setCardStatus] = useState(false);
+    const [cardStatusCategory, setCardStatusCategory] = useState("");
+    const now = new Date();
+    const start = startOfDay(now);
+    const end = endOfDay(now);
 
     const previousPathRef = useRef(location.pathname);
     const [cipher] = useState(() => {
         const stored = localStorage.getItem("tiktokShopInfo");
         return stored ? JSON.parse(stored) : [];
     });
+    // Get initailly Date rang
+    const tiktokInitialDateRange = useSelector(
+        (state) => state.user.selectedDateRangRedux
+    );
+
+
 
 
     // ✅ FIXED: Route-based status updates with BOTH status updates
@@ -35,10 +47,16 @@ export const useTikTokOrders = ({
 
         if (parts.length === 4) {
             const routeStatus = parts[2];
+            setCardStatus(true);
+            setCardStatusCategory(routeStatus);
             console.log("🔄 TikTok Route status detected:", routeStatus);
 
             const statusMap = {
                 'printed': {
+                    value: "AWAITING_COLLECTION_PRINTED",
+                    status: "Printed"
+                },
+                'printedToday': {
                     value: "AWAITING_COLLECTION_PRINTED",
                     status: "Printed"
                 },
@@ -89,356 +107,63 @@ export const useTikTokOrders = ({
                 console.error("❌ Error fetching TikTok printed IDs:", error);
             }
         };
-        fetchPrintedIds();
+        if (tikTokOrderStatusCheck === "AWAITING_COLLECTION" || tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") {
+            fetchPrintedIds();
+        }
+
     }, [tikTokOrderStatusCheck]);
+
+    const effectCallCountRef = useRef(0);
 
     // Main data fetching
     useEffect(() => {
         if (!tikTokOrderStatusCheck) return;
+        effectCallCountRef.current += 1;
 
+        console.log(
+            `🔁 TikTok useEffect called: ${effectCallCountRef.current} times`
+        );
         console.log("🚀 Starting TikTok data fetch for:", tikTokOrderStatusCheck);
-
         let isMounted = true;
-
-        // const fetchData = async () => {
-        //     try {
-        //         setLoading(true);
-        //         console.log("⏳ TikTok Loading ON");
-
-        //         if (!cipher?.[0]?.cipher) return;
-
-        //         const now = Math.floor(Date.now() / 1000);
-        //         const sevenDaysAgo = now - 7 * 24 * 60 * 60;
-
-
-
-        //         // ============================================================
-
-        //         const shopInfoRaw = localStorage.getItem("tiktokShopInfo");
-        //         const shopInfo = shopInfoRaw ? JSON.parse(shopInfoRaw) : [];
-
-        //         const countryCode = shopInfo?.[0]?.region || "MY";
-        //         console.log("Shopee country:", countryCode);
-
-
-        //         function getRegionTimestamps(regionCode) {
-        //             // Map region codes to Luxon timezone strings
-        //             const regionTimezones = {
-        //                 // Southeast Asia
-        //                 MY: "Asia/Kuala_Lumpur", // Malaysia
-        //                 SG: "Asia/Singapore", // Singapore
-        //                 PH: "Asia/Manila", // Philippines
-        //                 TH: "Asia/Bangkok", // Thailand
-        //                 VN: "Asia/Ho_Chi_Minh", // Vietnam
-        //                 ID: "Asia/Jakarta", // Indonesia (Western)
-        //                 "ID-B": "Asia/Makassar", // Indonesia (Central)
-        //                 "ID-P": "Asia/Jayapura", // Indonesia (Eastern)
-
-        //                 // East Asia
-        //                 CN: "Asia/Shanghai", // China
-        //                 HK: "Asia/Hong_Kong", // Hong Kong
-        //                 TW: "Asia/Taipei", // Taiwan
-        //                 JP: "Asia/Tokyo", // Japan
-        //                 KR: "Asia/Seoul", // South Korea
-
-        //                 // South Asia
-        //                 IN: "Asia/Kolkata", // India
-        //                 BD: "Asia/Dhaka", // Bangladesh
-        //                 PK: "Asia/Karachi", // Pakistan
-        //                 LK: "Asia/Colombo", // Sri Lanka
-
-        //                 // Middle East
-        //                 AE: "Asia/Dubai", // UAE
-        //                 SA: "Asia/Riyadh", // Saudi Arabia
-        //                 QA: "Asia/Qatar", // Qatar
-
-        //                 // Europe
-        //                 GB: "Europe/London", // UK
-        //                 DE: "Europe/Berlin", // Germany
-        //                 FR: "Europe/Paris", // France
-        //                 IT: "Europe/Rome", // Italy
-        //                 ES: "Europe/Madrid", // Spain
-        //                 RU: "Europe/Moscow", // Russia
-
-        //                 // Americas
-        //                 US: "America/New_York", // USA (Eastern)
-        //                 "US-C": "America/Chicago", // USA (Central)
-        //                 "US-M": "America/Denver", // USA (Mountain)
-        //                 "US-P": "America/Los_Angeles", // USA (Pacific)
-        //                 CA: "America/Toronto", // Canada (Eastern)
-        //                 "CA-P": "America/Vancouver", // Canada (Pacific)
-        //                 BR: "America/Sao_Paulo", // Brazil
-        //                 MX: "America/Mexico_City", // Mexico
-
-        //                 // Oceania
-        //                 AU: "Australia/Sydney", // Australia (Eastern)
-        //                 "AU-C": "Australia/Adelaide", // Australia (Central)
-        //                 "AU-W": "Australia/Perth", // Australia (Western)
-        //                 NZ: "Pacific/Auckland", // New Zealand
-        //             };
-
-        //             try {
-        //                 if (!regionCode || typeof regionCode !== "string") {
-        //                     throw new Error("Please provide a region code");
-        //                 }
-
-        //                 const regionUpper = regionCode.toUpperCase();
-        //                 const timezone = regionTimezones[regionUpper];
-
-        //                 if (!timezone) {
-        //                     const validRegions = Object.keys(regionTimezones)
-        //                         .filter(
-        //                             (k) =>
-        //                                 !k.includes("-") || k.startsWith(regionUpper.split("-")[0])
-        //                         )
-        //                         .slice(0, 20) // Show first 20 for readability
-        //                         .join(", ");
-        //                     throw new Error(
-        //                         `Invalid region code. Some valid codes are: ${validRegions}...`
-        //                     );
-        //                 }
-
-        //                 // Get current time in the region
-        //                 const nowInRegion = DateTime.now().setZone(timezone);
-
-        //                 // Get 7 days ago at midnight in the region
-        //                 const sevenDaysAgo = nowInRegion.minus({ days: 7 }).startOf("day");
-
-        //                 // Convert to timestamps (seconds since epoch)
-        //                 const currentTimestamp = Math.floor(nowInRegion.toSeconds());
-        //                 const sevenDaysAgoTimestamp = Math.floor(sevenDaysAgo.toSeconds());
-
-        //                 // Also get ISO strings for verification
-        //                 const currentISO = nowInRegion.toISO();
-        //                 const sevenDaysAgoISO = sevenDaysAgo.toISO();
-
-        //                 return {
-        //                     currentTime: currentTimestamp, // Unix timestamp in seconds
-        //                     sevenDaysAgo: sevenDaysAgoTimestamp, // Unix timestamp in seconds
-        //                     currentTimeISO: currentISO, // ISO string for debugging
-        //                     sevenDaysAgoISO: sevenDaysAgoISO, // ISO string for debugging
-        //                     region: regionUpper,
-        //                     timezone: timezone,
-        //                     regionCurrentTime: nowInRegion.toFormat("yyyy-MM-dd HH:mm:ss"),
-        //                     regionSevenDaysAgo: sevenDaysAgo.toFormat("yyyy-MM-dd HH:mm:ss"),
-        //                 };
-        //             } catch (error) {
-        //                 console.error("Error:", error.message);
-        //                 return {
-        //                     error: error.message,
-        //                     regionCode: regionCode,
-        //                 };
-        //             }
-        //         }
-
-        //         const dateRange = getRegionTimestamps(countryCode);
-        //         console.log({
-        //             cipher: cipher[0]?.cipher,
-        //             shippingType: "TIKTOK",
-        //             createTimeGe: dateRange?.sevenDaysAgo,
-        //             createTimeLt: dateRange?.currentTime,
-        //             updateTimeGe: dateRange?.sevenDaysAgo,
-        //             updateTimeLt: dateRange?.currentTime,
-        //             // createTimeGe: sevenDaysAgo,
-        //             // createTimeLt: now,
-        //             // updateTimeGe: sevenDaysAgo,
-        //             // updateTimeLt: now,
-        //             orderStatus: tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED" ? "AWAITING_COLLECTION" : tikTokOrderStatusCheck,
-        //             pageSize: 100,
-        //             sortOrder: "DESC",
-        //         })
-
-
-        //         // ============================================================
-
-
-
-        //         dispatch(checkedItemsChange({ items: [], from: tikTokOrderStatusCheck }));
-        //         clearSelection();
-
-        //         const response = await loadOrderList({
-        //             cipher: cipher[0]?.cipher,
-        //             shippingType: "TIKTOK",
-        //             createTimeGe: dateRange?.sevenDaysAgo,
-        //             createTimeLt: dateRange?.currentTime,
-        //             updateTimeGe: dateRange?.sevenDaysAgo,
-        //             updateTimeLt: dateRange?.currentTime,
-        //             // createTimeGe: sevenDaysAgo,
-        //             // createTimeLt: now,
-        //             // updateTimeGe: sevenDaysAgo,
-        //             // updateTimeLt: now,
-        //             orderStatus: tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED" ? "AWAITING_COLLECTION" : tikTokOrderStatusCheck,
-        //             pageSize: 100,
-        //             sortOrder: "DESC",
-        //         }).unwrap();
-
-        //         const orders = response?.data?.orders ?? [];
-        //         console.log(response, "orders");
-
-        //         let filteredOrderList = orders.filter((item) => item?.buyerEmail);
-
-        //         // Apply filters
-        //         const printedIdSet = new Set(tikTokPrintedIds.map((item) => item.tikTokPrintedId));
-
-        //         console.log(tikTokOrderStatusCheck);
-
-
-        //         if (tikTokOrderStatusCheck === "AWAITING_COLLECTION") {
-        //             filteredOrderList = filteredOrderList.filter(item => !printedIdSet.has(item.id));
-        //         } else if (tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") {
-        //             filteredOrderList = filteredOrderList.filter(item => printedIdSet.has(item.id));
-        //         }
-
-        //         // Update state
-        //         if (isMounted) {
-        //             dispatch(orderListData(filteredOrderList));
-        //             setCustomersData(filteredOrderList);
-        //             setAllData(filteredOrderList);
-        //             console.log("✅ TikTok data fetch COMPLETE");
-        //         }
-
-        //     } catch (error) {
-        //         console.error("❌ TikTok fetch error:", error);
-        //     } finally {
-        //         // ✅ GUARANTEED: Always turn off loading
-        //         if (isMounted) {
-        //             setLoading(false);
-        //             console.log("🏁 TikTok Loading OFF");
-        //         }
-        //     }
-        // };
-
         let nothing;
 
         const fetchData = async () => {
             try {
                 setLoading(true);
                 console.log("⏳ TikTok Loading ON");
-
                 if (!cipher?.[0]?.cipher) return;
 
-                // ============================================================
                 const shopInfoRaw = localStorage.getItem("tiktokShopInfo");
                 const shopInfo = shopInfoRaw ? JSON.parse(shopInfoRaw) : [];
                 const countryCode = shopInfo?.[0]?.region || "MY";
+                const dateRange = getRegionTimestampsShopeTiktok(countryCode, tiktokInitialDateRange?.startDate?.split("T")[0], tiktokInitialDateRange?.endDate?.split("T")[0]);
+                console.log(dateRange);
 
-                function getRegionTimestamps(regionCode) {
-                    // Map region codes to Luxon timezone strings
-                    const regionTimezones = {
-                        // Southeast Asia
-                        MY: "Asia/Kuala_Lumpur", // Malaysia
-                        SG: "Asia/Singapore", // Singapore
-                        PH: "Asia/Manila", // Philippines
-                        TH: "Asia/Bangkok", // Thailand
-                        VN: "Asia/Ho_Chi_Minh", // Vietnam
-                        ID: "Asia/Jakarta", // Indonesia (Western)
-                        "ID-B": "Asia/Makassar", // Indonesia (Central)
-                        "ID-P": "Asia/Jayapura", // Indonesia (Eastern)
-
-                        // East Asia
-                        CN: "Asia/Shanghai", // China
-                        HK: "Asia/Hong_Kong", // Hong Kong
-                        TW: "Asia/Taipei", // Taiwan
-                        JP: "Asia/Tokyo", // Japan
-                        KR: "Asia/Seoul", // South Korea
-
-                        // South Asia
-                        IN: "Asia/Kolkata", // India
-                        BD: "Asia/Dhaka", // Bangladesh
-                        PK: "Asia/Karachi", // Pakistan
-                        LK: "Asia/Colombo", // Sri Lanka
-
-                        // Middle East
-                        AE: "Asia/Dubai", // UAE
-                        SA: "Asia/Riyadh", // Saudi Arabia
-                        QA: "Asia/Qatar", // Qatar
-
-                        // Europe
-                        GB: "Europe/London", // UK
-                        DE: "Europe/Berlin", // Germany
-                        FR: "Europe/Paris", // France
-                        IT: "Europe/Rome", // Italy
-                        ES: "Europe/Madrid", // Spain
-                        RU: "Europe/Moscow", // Russia
-
-                        // Americas
-                        US: "America/New_York", // USA (Eastern)
-                        "US-C": "America/Chicago", // USA (Central)
-                        "US-M": "America/Denver", // USA (Mountain)
-                        "US-P": "America/Los_Angeles", // USA (Pacific)
-                        CA: "America/Toronto", // Canada (Eastern)
-                        "CA-P": "America/Vancouver", // Canada (Pacific)
-                        BR: "America/Sao_Paulo", // Brazil
-                        MX: "America/Mexico_City", // Mexico
-
-                        // Oceania
-                        AU: "Australia/Sydney", // Australia (Eastern)
-                        "AU-C": "Australia/Adelaide", // Australia (Central)
-                        "AU-W": "Australia/Perth", // Australia (Western)
-                        NZ: "Pacific/Auckland", // New Zealand
-                    };
-
-                    try {
-                        if (!regionCode || typeof regionCode !== "string") {
-                            throw new Error("Please provide a region code");
-                        }
-
-                        const regionUpper = regionCode.toUpperCase();
-                        const timezone = regionTimezones[regionUpper];
-
-                        if (!timezone) {
-                            const validRegions = Object.keys(regionTimezones)
-                                .filter(
-                                    (k) =>
-                                        !k.includes("-") || k.startsWith(regionUpper.split("-")[0])
-                                )
-                                .slice(0, 20) // Show first 20 for readability
-                                .join(", ");
-                            throw new Error(
-                                `Invalid region code. Some valid codes are: ${validRegions}...`
-                            );
-                        }
-
-                        // Get current time in the region
-                        const nowInRegion = DateTime.now().setZone(timezone);
-
-                        // Get 7 days ago at midnight in the region
-                        const sevenDaysAgo = nowInRegion.minus({ days: 7 }).startOf("day");
-
-                        // Convert to timestamps (seconds since epoch)
-                        const currentTimestamp = Math.floor(nowInRegion.toSeconds());
-                        const sevenDaysAgoTimestamp = Math.floor(sevenDaysAgo.toSeconds());
-
-                        // Also get ISO strings for verification
-                        const currentISO = nowInRegion.toISO();
-                        const sevenDaysAgoISO = sevenDaysAgo.toISO();
-
-                        return {
-                            currentTime: currentTimestamp, // Unix timestamp in seconds
-                            sevenDaysAgo: sevenDaysAgoTimestamp, // Unix timestamp in seconds
-                            currentTimeISO: currentISO, // ISO string for debugging
-                            sevenDaysAgoISO: sevenDaysAgoISO, // ISO string for debugging
-                            region: regionUpper,
-                            timezone: timezone,
-                            regionCurrentTime: nowInRegion.toFormat("yyyy-MM-dd HH:mm:ss"),
-                            regionSevenDaysAgo: sevenDaysAgo.toFormat("yyyy-MM-dd HH:mm:ss"),
-                        };
-                    } catch (error) {
-                        console.error("Error:", error.message);
-                        return {
-                            error: error.message,
-                            regionCode: regionCode,
-                        };
-                    }
-                }
-
-
-                const dateRange = getRegionTimestamps(countryCode);
 
                 dispatch(checkedItemsChange({ items: [], from: tikTokOrderStatusCheck }));
                 clearSelection();
+                console.log({
+                    cipher: cipher[0]?.cipher,
+                    shippingType: "TIKTOK",
 
-                // ============================================================
+                    // createTimeGe: dateRange?.sevenDaysAgo,
+                    // createTimeLt: dateRange?.currentTime,
+                    // updateTimeGe: dateRange?.sevenDaysAgo,
+                    // updateTimeLt: dateRange?.currentTime,
+                    createTimeGe: dateRange?.startTime,
+                    createTimeLt: dateRange?.endTime,
+                    updateTimeGe: dateRange?.startTime,
+                    updateTimeLt: dateRange?.endTime,
+
+                    orderStatus:
+                        tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED"
+                            ? "AWAITING_COLLECTION"
+                            : tikTokOrderStatusCheck,
+
+                    pageSize: 50,
+                    sortOrder: "DESC",
+                });
+
                 // 🔁 PAGINATION LOOP
                 let allOrders = [];
                 let nextPageToken = undefined;
@@ -448,10 +173,14 @@ export const useTikTokOrders = ({
                         cipher: cipher[0]?.cipher,
                         shippingType: "TIKTOK",
 
-                        createTimeGe: dateRange?.sevenDaysAgo,
-                        createTimeLt: dateRange?.currentTime,
-                        updateTimeGe: dateRange?.sevenDaysAgo,
-                        updateTimeLt: dateRange?.currentTime,
+                        // createTimeGe: dateRange?.sevenDaysAgo,
+                        // createTimeLt: dateRange?.currentTime,
+                        // updateTimeGe: dateRange?.sevenDaysAgo,
+                        // updateTimeLt: dateRange?.currentTime,
+                        createTimeGe: dateRange?.startTime,
+                        createTimeLt: dateRange?.endTime,
+                        updateTimeGe: dateRange?.startTime,
+                        updateTimeLt: dateRange?.endTime,
 
                         orderStatus:
                             tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED"
@@ -473,11 +202,18 @@ export const useTikTokOrders = ({
                     if (!nextPageToken) break;
                 }
 
-                console.log("📦 Total orders fetched:", allOrders);
-
-                // ============================================================
                 // 🔍 EXISTING FILTER LOGIC
                 let filteredOrderList = allOrders.filter(item => item?.buyerEmail);
+
+                // Filter printed IDs to only include today's records
+                const todayPrintedIds = tikTokPrintedIds.filter(item => {
+                    if (!item.createdAt) return false;
+                    return isSameDay(new Date(item.createdAt), new Date());
+                });
+
+                const todayPrintedIdSet = new Set(
+                    todayPrintedIds.map(item => item.tikTokPrintedId)
+                );
 
                 const printedIdSet = new Set(
                     tikTokPrintedIds.map(item => item.tikTokPrintedId)
@@ -488,14 +224,31 @@ export const useTikTokOrders = ({
                         item => !printedIdSet.has(item.id)
                     );
                 } else if (tikTokOrderStatusCheck === "AWAITING_COLLECTION_PRINTED") {
-                    filteredOrderList = filteredOrderList.filter(
-                        item => printedIdSet.has(item.id)
-                    );
+                    if (cardStatus === true && cardStatusCategory === "printedToday") {
+                        console.log("today Printed");
+
+                        filteredOrderList = filteredOrderList.filter(
+                            item => todayPrintedIdSet.has(item.id)
+                        );
+                    } else {
+                        console.log("Printed");
+                        filteredOrderList = filteredOrderList.filter(
+                            item => printedIdSet.has(item.id)
+                        );
+                    }
+
+                } else if (tikTokOrderStatusCheck === "IN_TRANSIT" && cardStatus === true) {
+                    filteredOrderList = filteredOrderList.filter((order) => {
+                        const updateDate = fromUnixTime(order.updateTime);
+                        return updateDate >= start && updateDate <= end;
+                    });
+
                 }
 
-                // ============================================================
                 // ✅ UPDATE STATE
                 if (isMounted) {
+                    console.log(filteredOrderList);
+
                     dispatch(orderListData(filteredOrderList));
                     setCustomersData(filteredOrderList);
                     setAllData(filteredOrderList);
@@ -506,18 +259,18 @@ export const useTikTokOrders = ({
             } finally {
                 if (isMounted) {
                     setLoading(false);
+                    setCardStatus(false);
                     console.log("🏁 TikTok Loading OFF");
                 }
             }
         };
-
 
         fetchData();
 
         return () => {
             isMounted = false;
         };
-    }, [tikTokOrderStatusCheck, tikTokPrintedIds]);
+    }, [tikTokOrderStatusCheck, tikTokPrintedIds, tiktokInitialDateRange]);
 
     return {
         filteredData: allData,

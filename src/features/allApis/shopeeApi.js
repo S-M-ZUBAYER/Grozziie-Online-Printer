@@ -182,6 +182,10 @@ const shopeeApi = baseApi.injectEndpoints({
                         }
 
                         const responseData = response.data;
+                        if (responseData?.error === "invalid_acceess_token") {
+                            return { data: responseData }
+                        }
+
                         const orderList = responseData?.response?.order_list || [];
 
                         // Add current page orders to the collection

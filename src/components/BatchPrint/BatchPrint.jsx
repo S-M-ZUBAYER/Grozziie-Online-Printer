@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { MdOutlineLocalPrintshop } from "react-icons/md";
-import { arrayToExcel } from "../../Share/Function/FunctionalComponent";
+import { tiktokArrayToExcel } from "../../Share/Function/FunctionalComponent";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -442,7 +442,7 @@ const BatchPrint = () => {
   //make array to excel
 
   const handleBatchPrinterExcelClick = () => {
-    arrayToExcel(checkedItems, "TikTokBatchPrinterOrderList");
+    tiktokArrayToExcel(checkedItems, "TikTokBatchPrinterOrderList");
   };
 
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
@@ -721,6 +721,7 @@ const BatchPrint = () => {
     );
     setFilteredData(filteredMultipleSearchingData);
   };
+  console.log(startDate, endDate, "date from batchPrint");
 
   return (
     <div className="bg-[#004368] bg-opacity-5 w-full h-screen">
