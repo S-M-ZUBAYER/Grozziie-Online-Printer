@@ -4,7 +4,7 @@ import { FaEdit, FaPlus } from "react-icons/fa";
 import StoredDeliveryCompanyList from "../../../Share/StoredDeliveryCompanyList/StoredDeliveryCompanyList";
 import * as XLSX from "xlsx";
 import { useSelector } from "react-redux";
-import { arrayToExcel } from "../../../Share/Function/FunctionalComponent";
+import { tiktokArrayToExcel } from "../../../Share/Function/FunctionalComponent";
 import { RiContactsLine } from "react-icons/ri";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineLocalPrintshop } from "react-icons/md";
@@ -84,7 +84,7 @@ const MarketingPage = () => {
 
   //Excel functionalities
   const handleBatchPrinterExcelClick = () => {
-    arrayToExcel([selectedClient], "singlePrinterCustomerList");
+    tiktokArrayToExcel([selectedClient], "singlePrinterCustomerList");
   };
 
   // modal submit function
@@ -206,9 +206,10 @@ const MarketingPage = () => {
                   <li
                     key={index}
                     onClick={() => handleToSelectCustomer(client)}
-                    className={`text-black opacity-80 text-sm font-light capitalize pb-2 cursor-pointer ${active === client?.recipientName &&
+                    className={`text-black opacity-80 text-sm font-light capitalize pb-2 cursor-pointer ${
+                      active === client?.recipientName &&
                       "text-[#004368] font-medium text-[15px]"
-                      }`}
+                    }`}
                   >
                     {client?.receiver_name ? client?.receiver_name : "No Name"}
                   </li>
@@ -271,7 +272,9 @@ const MarketingPage = () => {
                   onClick={handleBatchPrinterExcelClick}
                   className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[115px] h-10 px-8 py-2 rounded-md cursor-pointer"
                 >
-                  <p className="text-[15px] font-medium capitalize cursor-pointer">Export</p>
+                  <p className="text-[15px] font-medium capitalize cursor-pointer">
+                    Export
+                  </p>
                 </button>
               </div>
             </div>

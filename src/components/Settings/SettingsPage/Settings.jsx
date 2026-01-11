@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import Delete from "../../../assets/Delete.png";
 import { FaPlus } from "react-icons/fa";
 import { CiSearch } from "react-icons/ci";
-import { arrayToExcel } from "../../../Share/Function/FunctionalComponent";
+import { tiktokArrayToExcel } from "../../../Share/Function/FunctionalComponent";
 import {
   useDeleteRecipientInfoMutation,
   useGetRecipientInfoQuery,
@@ -218,7 +218,7 @@ const Settings = () => {
 
   // Excel Functionalities
   const handleRecipientInfoExcelClick = () => {
-    arrayToExcel(checkedItems, "RecipientCustomerList");
+    tiktokArrayToExcel(checkedItems, "RecipientCustomerList");
   };
 
   // searching functionalities

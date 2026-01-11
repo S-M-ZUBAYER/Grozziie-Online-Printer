@@ -3,7 +3,7 @@ import { MdOutlineLocalPrintshop } from "react-icons/md";
 import { Link, useNavigate } from "react-router-dom";
 import { RxCross1 } from "react-icons/rx";
 import {
-  arrayToExcel,
+  tiktokArrayToExcel,
   generateRandomNumberForOrder_sn,
   generateRandomNumberWithTime,
 } from "../../Share/Function/FunctionalComponent";
@@ -383,7 +383,7 @@ const ManualOrder = () => {
 
   //make array to excel
   const handleBatchPrinterExcelClick = () => {
-    arrayToExcel(checkedItems, "BatchPrinterCustomerList");
+    tiktokArrayToExcel(checkedItems, "BatchPrinterCustomerList");
   };
 
   // Dell the value of checked items

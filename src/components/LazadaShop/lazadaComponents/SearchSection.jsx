@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import NewSearchComponent from "../../../Share/SearchComponent/NewSearchComponent";
 import { filterLazadaDataBySearchFields } from "../../../Share/SearchComponent/SearchComponentFunction";
+import { useSelector } from "react-redux";
 
 const SearchSection = ({
   lazadaOrderStatusCheck,
@@ -19,7 +20,7 @@ const SearchSection = ({
     isActiveAmount: "",
     Product: "",
     isActiveProduct: "",
-    startDate: new Date(),
+    startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
     endDate: new Date(),
   });
 
@@ -53,6 +54,10 @@ const SearchSection = ({
     );
     setFilteredData(filteredMultipleSearchingData);
   };
+  // Get initailly Date rang
+  const lazadaDateRange = useSelector(
+    (state) => state.user.selectedDateRangRedux
+  );
 
   const handleToReset = () => {
     // Clear the search input
@@ -72,8 +77,8 @@ const SearchSection = ({
       isActiveAmount: "",
       Product: "",
       isActiveProduct: "",
-      startDate: new Date(),
-      endDate: new Date(),
+      startDate: lazadaDateRange?.startDate,
+      endDate: lazadaDateRange?.endDate,
     });
 
     setIsActiveBtnRecipientAddress(false);
@@ -85,7 +90,11 @@ const SearchSection = ({
     // Reset to show all data
     setFilteredData(customersData);
   };
-
+  console.log(
+    searchFields.startDate,
+    searchFields.endDate,
+    "date from Search Secition"
+  );
   return (
     <NewSearchComponent
       // Date props

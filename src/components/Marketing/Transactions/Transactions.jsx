@@ -4,7 +4,7 @@ import { FaEdit, FaPlus } from "react-icons/fa";
 import StoredDeliveryCompanyList from "../../../Share/StoredDeliveryCompanyList/StoredDeliveryCompanyList";
 import * as XLSX from "xlsx";
 import { useSelector } from "react-redux";
-import { arrayToExcel } from "../../../Share/Function/FunctionalComponent";
+import { tiktokArrayToExcel } from "../../../Share/Function/FunctionalComponent";
 import { RiContactsLine } from "react-icons/ri";
 import { IoSettingsOutline } from "react-icons/io5";
 import { MdOutlineLocalPrintshop } from "react-icons/md";
@@ -86,7 +86,7 @@ const Transactions = () => {
 
   //Excel functionalities
   const handleBatchPrinterExcelClick = () => {
-    arrayToExcel([selectedClient], "singlePrinterCustomerList");
+    tiktokArrayToExcel([selectedClient], "singlePrinterCustomerList");
   };
 
   // modal submit function

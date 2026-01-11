@@ -4,7 +4,7 @@ import { TbTruckDelivery } from "react-icons/tb";
 import { FaEdit, FaPlus } from "react-icons/fa";
 import { MdOutlineLocalPrintshop } from "react-icons/md";
 import { RiContactsLine } from "react-icons/ri";
-import { arrayToExcel } from "../../Share/Function/FunctionalComponent";
+import { tiktokArrayToExcel } from "../../Share/Function/FunctionalComponent";
 import * as XLSX from "xlsx";
 import { useDispatch, useSelector } from "react-redux";
 import DeliveryCompanyList from "../../Share/DeliveryCompanyList/DeliveryCompanyList";
@@ -143,7 +143,7 @@ const SinglePrint = () => {
 
   //Excel functionalities
   const handleBatchPrinterExcelClick = () => {
-    arrayToExcel([selectedClient], "singlePrinterCustomerList");
+    tiktokArrayToExcel([selectedClient], "singlePrinterCustomerList");
   };
 
   // modal submit function

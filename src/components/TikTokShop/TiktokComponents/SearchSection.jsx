@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import NewSearchComponent from "../../../Share/SearchComponent/NewSearchComponent";
 import { filterDataBySearchFieldsBatchPrint } from "../../../Share/SearchComponent/SearchComponentFunction";
+import { useSelector } from "react-redux";
 
 const SearchSection = ({
   tikTokOrderStatusCheck,
@@ -29,7 +30,7 @@ const SearchSection = ({
     isActiveAmount: "",
     Product: "",
     isActiveProduct: "",
-    startDate: new Date(),
+    startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
     endDate: new Date(),
   });
 
@@ -44,6 +45,11 @@ const SearchSection = ({
     );
     setFilteredData(filteredMultipleSearchingData);
   };
+
+  // Get initailly Date rang
+  const tiktokDateRange = useSelector(
+    (state) => state.user.selectedDateRangRedux
+  );
 
   // 🔹 Handle Reset
   const handleToReset = () => {
@@ -61,8 +67,8 @@ const SearchSection = ({
       isActiveAmount: "",
       Product: "",
       isActiveProduct: "",
-      startDate: new Date(),
-      endDate: new Date(),
+      startDate: tiktokDateRange?.startDate,
+      endDate: tiktokDateRange?.endDate,
     });
 
     setIsActiveBtnRecipientAddress(false);
