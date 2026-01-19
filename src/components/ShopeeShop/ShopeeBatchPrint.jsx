@@ -88,7 +88,7 @@ const ShopeeBatchPrint = () => {
   const [getShopeeOrders] = useLazyGetShopeeOrdersQuery();
   const [getShopeeOrderDetails] = useLazyGetShopeeOrderDetailsQuery();
   const selectedLanguage = useSelector(
-    (state) => state.user.selectedLanguageRedux
+    (state) => state.user.selectedLanguageRedux,
   );
 
   const [searchFields, setSearchFields] = useState({
@@ -110,16 +110,16 @@ const ShopeeBatchPrint = () => {
   const [isActiveBtnRecipientAddress, setIsActiveBtnRecipientAddress] =
     useState(searchFields.isActiveRecipientAddress);
   const [isActiveBtnOrderId, setIsActiveBtnOrderId] = useState(
-    searchFields.isActiveOrderId
+    searchFields.isActiveOrderId,
   );
   const [isActiveBtnAccountName, setIsActiveBtnAccountName] = useState(
-    searchFields.isActiveAccountName
+    searchFields.isActiveAccountName,
   );
   const [isActiveBtnProduct, setIsActiveBtnProduct] = useState(
-    searchFields.isActiveProduct
+    searchFields.isActiveProduct,
   );
   const [isActiveBtnAmount, setIsActiveBtnAmount] = useState(
-    searchFields.isActiveAmount
+    searchFields.isActiveAmount,
   );
 
   const [cipher] = useState(() => {
@@ -147,7 +147,7 @@ const ShopeeBatchPrint = () => {
     const parts = location.pathname.split("/");
     localStorage.setItem(
       "SelectedStore",
-      localStorage.getItem("shopeeAuthShopId")
+      localStorage.getItem("shopeeAuthShopId"),
     );
     console.log("Current path:", location.pathname); // Debug
     console.log("Path parts:", parts); // Debug
@@ -185,7 +185,7 @@ const ShopeeBatchPrint = () => {
 
   // Get initailly Date rang
   const shopeeInitialDateRange = useSelector(
-    (state) => state.user.selectedDateRangRedux
+    (state) => state.user.selectedDateRangRedux,
   );
 
   console.log(shopeeInitialDateRange, " initailly date rang");
@@ -214,7 +214,7 @@ const ShopeeBatchPrint = () => {
       const shopeeDateRange = getRegionTimestampsShopeTiktok(
         countryCode,
         shopeeInitialDateRange?.startDate?.split("T")[0],
-        shopeeInitialDateRange?.endDate?.split("T")[0]
+        shopeeInitialDateRange?.endDate?.split("T")[0],
       );
       console.log({
         timeFrom: shopeeDateRange?.startTime,
@@ -223,8 +223,8 @@ const ShopeeBatchPrint = () => {
           shopeeOrderStatusCheck === "PROCESSED_PRINTED"
             ? "PROCESSED"
             : shopeeOrderStatusCheck === "SHIPPED_CONFIRM_RECEIVE"
-            ? "SHIPPED"
-            : shopeeOrderStatusCheck || "READY_TO_SHIP",
+              ? "SHIPPED"
+              : shopeeOrderStatusCheck || "READY_TO_SHIP",
         pageSize: 50, // Maximum allowed by Shopee
       });
 
@@ -236,8 +236,8 @@ const ShopeeBatchPrint = () => {
           shopeeOrderStatusCheck === "PROCESSED_PRINTED"
             ? "PROCESSED"
             : shopeeOrderStatusCheck === "SHIPPED_CONFIRM_RECEIVE"
-            ? "SHIPPED"
-            : shopeeOrderStatusCheck || "READY_TO_SHIP",
+              ? "SHIPPED"
+              : shopeeOrderStatusCheck || "READY_TO_SHIP",
         pageSize: 50, // Maximum allowed by Shopee
       }).unwrap();
 
@@ -246,11 +246,11 @@ const ShopeeBatchPrint = () => {
       // Apply status filtering based on selectedStatus BEFORE fetching details
       if (selectedStatus === "On The Way") {
         orderList = orderList.filter(
-          (order) => order.order_status === "SHIPPED"
+          (order) => order.order_status === "SHIPPED",
         );
       } else if (selectedStatus === "Delivered") {
         orderList = orderList.filter(
-          (order) => order.order_status === "TO_CONFIRM_RECEIVE"
+          (order) => order.order_status === "TO_CONFIRM_RECEIVE",
         );
       }
 
@@ -266,7 +266,8 @@ const ShopeeBatchPrint = () => {
       const detailsResponse = await getShopeeOrderDetails({
         orderSnList,
         request_order_status_pending: true,
-        response_optional_fields: "total_amount,recipient_address,item_list",
+        response_optional_fields:
+          "total_amount,recipient_address,item_list,package_list",
       }).unwrap();
 
       const detailedOrders = detailsResponse || [];
@@ -274,7 +275,7 @@ const ShopeeBatchPrint = () => {
       // Merge orders with their details
       let mergedOrders = orderList.map((order) => {
         const details = detailedOrders.find(
-          (d) => d.order_sn === order.order_sn
+          (d) => d.order_sn === order.order_sn,
         );
         return { ...order, ...details };
       });
@@ -284,7 +285,7 @@ const ShopeeBatchPrint = () => {
       let printedIds = [];
       try {
         const res = await fetch(
-          `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/shopee/printedIds/by-email/${user?.email}`
+          `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/shopee/printedIds/by-email/${user?.email}`,
         );
         printedIds = await res.json();
       } catch (err) {
@@ -297,7 +298,7 @@ const ShopeeBatchPrint = () => {
       const shopeeTodayPrintedIdSet = new Set(
         printedIds
           .filter((p) => p.createdAt.split("T")[0] === today)
-          .map((p) => p.shopeePrintedId)
+          .map((p) => p.shopeePrintedId),
       );
 
       console.log(
@@ -305,17 +306,17 @@ const ShopeeBatchPrint = () => {
         shopeeTodayPrintedIdSet.size,
         shopeeOrderStatusCheck,
         cardStatus,
-        cardStatusCategory
+        cardStatusCategory,
       );
 
       if (shopeeOrderStatusCheck === "PROCESSED_PRINTED") {
         if (cardStatus == true && cardStatusCategory === "printedToday") {
           mergedOrders = mergedOrders.filter((order) =>
-            shopeeTodayPrintedIdSet.has(order.order_sn)
+            shopeeTodayPrintedIdSet.has(order.order_sn),
           );
         } else {
           mergedOrders = mergedOrders.filter((order) =>
-            shopeePrintedIds.includes(order.order_sn)
+            shopeePrintedIds.includes(order.order_sn),
           );
         }
       } else if (shopeeOrderStatusCheck === "PROCESSED") {
@@ -329,7 +330,7 @@ const ShopeeBatchPrint = () => {
             const updatedStorage = stored.filter((id) => id !== order.order_sn);
             localStorage.setItem(
               "ShopeePackaging",
-              JSON.stringify(updatedStorage)
+              JSON.stringify(updatedStorage),
             );
           }
 
@@ -338,7 +339,7 @@ const ShopeeBatchPrint = () => {
       } else if (shopeeOrderStatusCheck === "READY_TO_SHIP") {
         const storeOrderId = localStorage.getItem("ShopeePackaging") || "[]";
         mergedOrders = mergedOrders.filter(
-          (order) => !storeOrderId.includes(order.order_sn)
+          (order) => !storeOrderId.includes(order.order_sn),
         );
       } else if (shopeeOrderStatusCheck === "SHIPPED" && cardStatus === true) {
         mergedOrders = mergedOrders.filter((order) => {
@@ -360,7 +361,7 @@ const ShopeeBatchPrint = () => {
 
   // Get initailly Date rang
   const shopeeDateRange = useSelector(
-    (state) => state.user.selectedDateRangRedux
+    (state) => state.user.selectedDateRangRedux,
   );
 
   const handleToReset = useCallback(() => {
@@ -398,11 +399,11 @@ const ShopeeBatchPrint = () => {
     (orderData) => {
       openDetailsModal(orderData);
     },
-    [openDetailsModal]
+    [openDetailsModal],
   );
 
   const handleShopeePrinterExcelClick = useCallback(() => {
-    shopeeArrayToExcel(checkedItems, "ShopeeBatchPrinterOrderList");
+    shopeeArrayToExcel(checkedItems, "ShopeeBatchPrinterOrderList", t);
   }, [checkedItems]);
 
   const handleToCheckItemsPackageUpdate = useCallback(() => {
@@ -411,7 +412,7 @@ const ShopeeBatchPrint = () => {
         <div className="bg-red-200 w-16 h-16 rounded-full flex items-center justify-center">
           <TiInfoOutline className="w-10 h-10 text-red-600" />
         </div>,
-        <p>{t("NoItemsSelected")}</p>
+        <p>{t("NoItemsSelected")}</p>,
       );
     } else {
       openConfirmModal(
@@ -422,7 +423,7 @@ const ShopeeBatchPrint = () => {
           {t("AreYouSureYouHaveCompletedPackagingThisOrder")}
         </p>,
         handleConfirmPackage,
-        true
+        true,
       );
     }
   }, [checkedItems.length, t, openConfirmModal]);
@@ -433,7 +434,7 @@ const ShopeeBatchPrint = () => {
         <div className="bg-red-200 w-16 h-16 rounded-full flex items-center justify-center">
           <TiInfoOutline className="w-10 h-10 text-red-600" />
         </div>,
-        <p>{t("NoItemsSelected")}</p>
+        <p>{t("NoItemsSelected")}</p>,
       );
     } else {
       openConfirmModal(
@@ -446,14 +447,14 @@ const ShopeeBatchPrint = () => {
             : t("DoYouWantPrintAWBAgain")}
         </p>,
         handleConfirmShipping,
-        true
+        true,
       );
     }
   }, [checkedItems.length, shopeeOrderStatusCheck, t, openConfirmModal]);
 
   const handleConfirmShipping = useCallback(() => {
     dispatch(
-      checkedItemsChange({ items: checkedItems, from: shopeeOrderStatusCheck })
+      checkedItemsChange({ items: checkedItems, from: shopeeOrderStatusCheck }),
     );
     navigate("/onlineprint/shopeeAWBPrinting");
     closeConfirmModal();
@@ -479,7 +480,7 @@ const ShopeeBatchPrint = () => {
         try {
           // 1️⃣ Get shipping parameters
           const shippingParamRes = await fetch(
-            `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-shipping-parameter?shopId=${shopeeAuthShopId}&orderSn=${orderSn}`
+            `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-shipping-parameter?shopId=${shopeeAuthShopId}&orderSn=${orderSn}`,
           );
           const shippingParamData = await shippingParamRes.json();
 
@@ -502,7 +503,7 @@ const ShopeeBatchPrint = () => {
 
           for (const address of pickupList) {
             const recommendedSlot = address?.time_slot_list?.find((slot) =>
-              slot?.flags?.includes("recommended")
+              slot?.flags?.includes("recommended"),
             );
             if (recommendedSlot) {
               addressId = address.address_id;
@@ -577,7 +578,7 @@ const ShopeeBatchPrint = () => {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(requestBody),
-            }
+            },
           );
 
           const shipData = await shipRes.json();
@@ -592,13 +593,13 @@ const ShopeeBatchPrint = () => {
             if (!stored.includes(orderSn)) {
               localStorage.setItem(
                 "ShopeePackaging",
-                JSON.stringify([...stored, orderSn])
+                JSON.stringify([...stored, orderSn]),
               );
             }
           } else {
             console.warn(
               `❌ Failed to ship ${orderSn}`,
-              shipData?.body?.message || shipData?.body?.error
+              shipData?.body?.message || shipData?.body?.error,
             );
             failedOrders.push({
               orderId: orderSn,
@@ -619,7 +620,7 @@ const ShopeeBatchPrint = () => {
 
       // Update list (remove successful orders)
       const restOfOrders = customersData.filter(
-        (item) => !successfulIds.includes(item?.order_sn || item?.orderId)
+        (item) => !successfulIds.includes(item?.order_sn || item?.orderId),
       );
       setCustomersData(restOfOrders);
 
@@ -646,7 +647,7 @@ const ShopeeBatchPrint = () => {
                 </li>
               ))}
             </ul>
-          </div>
+          </div>,
         );
       } else {
         toast.success("✅ All selected orders shipped successfully!");
@@ -679,7 +680,7 @@ const ShopeeBatchPrint = () => {
 
     const filteredMultipleSearchingData = filterShopeeDataBySearchFields(
       customersData,
-      searchFields
+      searchFields,
     );
     setFilteredData(filteredMultipleSearchingData); // Use setFilteredData instead of pagination.updateData
   };

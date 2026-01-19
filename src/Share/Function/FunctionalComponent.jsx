@@ -284,7 +284,7 @@ export const lazadaArrayToExcel = async (data, fileName, t) => {
   );
 };
 
-export const shopeeArrayToExcel = async (data, fileName) => {
+export const shopeeArrayToExcel = async (data, fileName, t) => {
   const workbook = new ExcelJS.Workbook();
   const worksheet = workbook.addWorksheet("Shopee Orders");
 

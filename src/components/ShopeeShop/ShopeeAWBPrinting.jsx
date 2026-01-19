@@ -10,7 +10,7 @@ import { TiInfoOutline } from "react-icons/ti";
 const ShopeeAWBPrinting = () => {
   const checkedItems = useSelector((state) => state.user.checkedItemsFromRedux);
   const selectedLanguage = useSelector(
-    (state) => state.user.selectedLanguageRedux
+    (state) => state.user.selectedLanguageRedux,
   );
   const currentUser = useSelector((state) => state.user.accountUser);
 
@@ -40,7 +40,7 @@ const ShopeeAWBPrinting = () => {
   const fetchWarehouses = async () => {
     try {
       const res = await fetch(
-        `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/logistics/warehouse-list?cipher=${cipher[0].cipher}`
+        `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/logistics/warehouse-list?cipher=${cipher[0].cipher}`,
       );
       const json = await res.json();
       if (json.code === 0) setWarehouses(json.data.warehouses || []);
@@ -52,7 +52,7 @@ const ShopeeAWBPrinting = () => {
   const fetchShipmentProviders = async () => {
     try {
       const res = await fetch(
-        `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-channel-list?shopId=${shopeeAuthShopId}`
+        `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/logistics/get-channel-list?shopId=${shopeeAuthShopId}`,
       );
       const json = await res.json();
 
@@ -76,7 +76,7 @@ const ShopeeAWBPrinting = () => {
     setModalTitle(
       <div className="bg-red-200 w-16 h-16 rounded-full flex items-center justify-center">
         <TiInfoOutline className="w-10 h-10 text-red-600" />
-      </div>
+      </div>,
     );
     setModalMessage(<p>{message}</p>);
     setConfirmAction(null);
@@ -113,7 +113,7 @@ const ShopeeAWBPrinting = () => {
           const docTypePayload = { order_list: [{ order_sn: orderSn }] };
           console.log(
             "📤 Calling get-shipping-document-parameter with:",
-            docTypePayload
+            docTypePayload,
           );
 
           const docTypeRes = await fetch(
@@ -122,12 +122,12 @@ const ShopeeAWBPrinting = () => {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(docTypePayload),
-            }
+            },
           );
           const docTypeData = await docTypeRes.json();
           console.log(
             "📥 Response get-shipping-document-parameter:",
-            docTypeData
+            docTypeData,
           );
 
           const shippingDocType =
@@ -151,6 +151,7 @@ const ShopeeAWBPrinting = () => {
               order_list: [
                 {
                   order_sn: orderSn,
+                  package_number: order?.package_list[0]?.package_number || "",
                   shipping_document_type: shippingDocType,
                   tracking_number: trackingNumber,
                 },
@@ -158,7 +159,7 @@ const ShopeeAWBPrinting = () => {
             };
             console.log(
               "📤 Calling create-shipping-document with:",
-              createPayload
+              createPayload,
             );
 
             const createRes = await fetch(
@@ -167,7 +168,7 @@ const ShopeeAWBPrinting = () => {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(createPayload),
-              }
+              },
             );
             const createData = await createRes.json();
             console.log("📥 Response create-shipping-document:", createData);
@@ -185,13 +186,13 @@ const ShopeeAWBPrinting = () => {
                 shipping_document_type: shippingDocType,
                 order_list: [{ order_sn: orderSn }],
               }),
-            }
+            },
           );
 
           console.log(
             "📥 download-shipping-document status:",
             pdfRes.status,
-            pdfRes.statusText
+            pdfRes.statusText,
           );
 
           if (!pdfRes.ok) throw new Error("Download failed");
@@ -261,7 +262,7 @@ const ShopeeAWBPrinting = () => {
       } else if (pdfBase64Array.length > 1) {
         console.log(
           "📤 Calling backend merge-pdfs-base64 with array length:",
-          pdfBase64Array.length
+          pdfBase64Array.length,
         );
 
         try {
@@ -292,7 +293,7 @@ const ShopeeAWBPrinting = () => {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ pdfs: cleanPdfBase64Array }),
-            }
+            },
           );
 
           // ✅ Check response status BEFORE using the data
@@ -327,7 +328,7 @@ const ShopeeAWBPrinting = () => {
         for (const shopeeId of printedOrderIds) {
           try {
             const url = `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/shopee/printedIds/add?shopeePrintedId=${shopeeId}&email=${encodeURIComponent(
-              currentUser
+              currentUser,
             )}`;
             console.log("📤 Calling save printedId:", url);
 
@@ -338,7 +339,7 @@ const ShopeeAWBPrinting = () => {
           } catch (err) {
             console.error(
               `❌ Failed to store ShopeePrintedId ${shopeeId}`,
-              err
+              err,
             );
           }
         }

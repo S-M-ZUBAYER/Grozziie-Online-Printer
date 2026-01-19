@@ -26,7 +26,7 @@ const getCurrentShopId = (platform) => {
     case "shopee":
       return shopeeShopId[0]?.id;
     case "lazada":
-      return lazadaShopId[0]?.id;
+      return lazadaShopId[0]?.cipher;
     default:
       return tiktokShopId[0]?.id;
   }

@@ -133,7 +133,7 @@ function App() {
               paymentTime: new Date().toISOString().split(".")[0] + "Z",
               paymentExpireTime: calculatePaymentExpireTime(freeTrialDuration),
               amount: 0,
-              currency: "USD",
+              currency: "usd",
             };
 
             try {
@@ -281,16 +281,16 @@ function App() {
           for (const shop of matchedShops) {
             const freeTrialDuration = await fetchFreeTrialDuration();
 
-            if (!paidShopNames.includes(shop.id)) {
+            if (!paidShopNames.includes(shop.cipher)) {
               const paymentInfo = {
                 email: currentUser,
                 shopPlatform: "lazada",
-                shopName: shop.id,
+                shopName: shop.cipher,
                 paymentTime: new Date().toISOString().split(".")[0] + "Z",
                 paymentExpireTime:
                   calculatePaymentExpireTime(freeTrialDuration),
                 amount: 0,
-                currency: "USD",
+                currency: "usd",
               };
 
               const { data } = await axios.post(
@@ -405,7 +405,7 @@ function App() {
                 paymentExpireTime:
                   calculatePaymentExpireTime(freeTrialDuration),
                 amount: 0,
-                currency: "USD",
+                currency: "usd",
               };
 
               try {

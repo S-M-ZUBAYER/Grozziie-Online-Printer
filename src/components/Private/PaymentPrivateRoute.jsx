@@ -159,6 +159,10 @@ const getShopIdFromLocalStorage = (key) => {
   const stored = localStorage.getItem(key);
   return stored ? JSON.parse(stored)[0]?.id : null;
 };
+const getShopIdFromLocalStorageForLazada = (key) => {
+  const stored = localStorage.getItem(key);
+  return stored ? JSON.parse(stored)[0]?.cipher : null;
+};
 
 // 🔹 Utility: Validate payment expiration
 const isPaymentValid = (paymentExpireTime) => {
@@ -189,7 +193,7 @@ const PaymentPrivateRoute = ({ children }) => {
 
         const shopIdMap = {
           tiktok: getShopIdFromLocalStorage("tiktokShopInfo"),
-          lazada: getShopIdFromLocalStorage("lazadaShopInfo"),
+          lazada: getShopIdFromLocalStorageForLazada("lazadaShopInfo"),
           shopee: getShopIdFromLocalStorage("shopeeShopInfo"),
         };
 
