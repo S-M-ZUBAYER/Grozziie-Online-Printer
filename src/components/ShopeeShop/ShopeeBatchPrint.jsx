@@ -499,15 +499,15 @@ const ShopeeBatchPrint = () => {
 
           // 🟢 Find address with recommended pickup time slot
           let addressId = null;
-          let pickupTimeId = null;
+          let pickupTimeId = "";
 
           for (const address of pickupList) {
             const recommendedSlot = address?.time_slot_list?.find((slot) =>
               slot?.flags?.includes("recommended"),
             );
             if (recommendedSlot) {
-              addressId = address.address_id;
-              pickupTimeId = recommendedSlot.pickup_time_id;
+              addressId = address.address_id || null;
+              pickupTimeId = recommendedSlot.pickup_time_id || "";
               break;
             }
           }
@@ -516,7 +516,7 @@ const ShopeeBatchPrint = () => {
           if (!addressId && pickupList.length > 0) {
             addressId = pickupList[0]?.address_id || null;
             pickupTimeId =
-              pickupList[0]?.time_slot_list?.[0]?.pickup_time_id || null;
+              pickupList[0]?.time_slot_list?.[0]?.pickup_time_id || "";
           }
 
           const dropoff = shippingParamData?.body?.response?.dropoff;
@@ -529,10 +529,10 @@ const ShopeeBatchPrint = () => {
           };
 
           if (selectedShopeeDeliveryType === "pickup") {
-            if (!addressId || !pickupTimeId) {
+            if (!addressId) {
               failedOrders.push({
                 orderId: orderSn,
-                reason: "Missing address_id or pickup_time_id",
+                reason: "Missing address_id ",
               });
               continue;
             }
@@ -541,7 +541,7 @@ const ShopeeBatchPrint = () => {
               package_number: "",
               pickup: {
                 address_id: addressId,
-                pickup_time_id: pickupTimeId,
+                pickup_time_id: pickupTimeId || "",
                 tracking_number: "",
               },
             };
@@ -553,10 +553,10 @@ const ShopeeBatchPrint = () => {
             };
           } else {
             // Default fallback same as pickup
-            if (!addressId || !pickupTimeId) {
+            if (!addressId) {
               failedOrders.push({
                 orderId: orderSn,
-                reason: "Missing address_id or pickup_time_id",
+                reason: "Missing address_id ",
               });
               continue;
             }
@@ -565,7 +565,7 @@ const ShopeeBatchPrint = () => {
               package_number: "",
               pickup: {
                 address_id: addressId,
-                pickup_time_id: pickupTimeId,
+                pickup_time_id: pickupTimeId || "",
                 tracking_number: "",
               },
             };
