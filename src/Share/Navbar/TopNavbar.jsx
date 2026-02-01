@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { HiOutlineLanguage } from "react-icons/hi2";
+import { MdLogout } from "react-icons/md";
+import { FaCrown } from "react-icons/fa";
+import { MdClose } from "react-icons/md";
 import { useTranslation } from "react-i18next";
 import {
   accountUserChange,
@@ -11,6 +14,7 @@ import {
 import grozziieLogo from "../../assets/GrozziieLogo.png";
 import Avatar from "../../assets/avatar.jpg";
 import customerSupport from "../../assets/Vector.png";
+import EmailVerificationComponent from "./EmailVerificationComponent";
 
 const TopNavbar = () => {
   const { t, i18n } = useTranslation();
@@ -23,6 +27,12 @@ const TopNavbar = () => {
   const storedUser = localStorage.getItem("printerUser");
   const userDetails = storedUser ? JSON.parse(storedUser) : null;
   const [activeLi, setActiveLi] = useState(null);
+
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const storedShopPlatform = localStorage.getItem("SelectedPlatform");
+  const storedShopStore = localStorage.getItem("SelectedStore");
+  const [selectedPlatform, setSelectedPlatform] = useState(storedShopPlatform);
+  const [selectedStore, setSelectedStore] = useState(storedShopStore);
 
   useEffect(() => {
     const path = location.pathname.toLowerCase();
@@ -54,6 +64,28 @@ const TopNavbar = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("printerUser");
+    // localStorage.removeItem("SelectedPlatform");
+    // localStorage.removeItem("SelectedStore");
+    // localStorage.removeItem("SelectedTikTokStore");
+    // localStorage.removeItem("lazadaAccessToken");
+    // localStorage.removeItem("lazadaAccountId");
+    // localStorage.removeItem("lazadaAppKey");
+    // localStorage.removeItem("lazadaAppKeyShopInfo");
+    // localStorage.removeItem("lazadaAuthCountry");
+    // localStorage.removeItem("lazadaShopInfo");
+    // localStorage.removeItem("shopeeAppKey");
+    // localStorage.removeItem("shopeeAppKeyShopInfo");
+    // localStorage.removeItem("shopeeAuthCountry");
+    // localStorage.removeItem("shopeeAuthShopId");
+    // localStorage.removeItem("shopeeAuthShopIdShopInfo");
+    // localStorage.removeItem("shopeeDeliveryType");
+    // localStorage.removeItem("shopeeShopInfo");
+    // localStorage.removeItem("tikTokDeliveryType");
+    // localStorage.removeItem("tiktokAppKey");
+    // localStorage.removeItem("tiktokAuthCipher");
+    // localStorage.removeItem("tiktokAuthCountry");
+    // localStorage.removeItem("tiktokOpenId");
+    // localStorage.removeItem("tiktokShopInfo");
     dispatch(accountUserChange(""));
     navigate("/onlineprint/login");
   };
@@ -76,6 +108,43 @@ const TopNavbar = () => {
 
   const handleNavLiClick = (index, item) => {
     setActiveLi(index);
+  };
+
+  const handleUpgradeClick = () => {
+    // You can set platform and store from your state/context/props
+    const currentShopPlatform = localStorage.getItem("SelectedPlatform");
+    const selectedStoreCipher = localStorage.getItem("SelectedStore");
+
+    let currentShopStore = selectedStoreCipher;
+
+    if (currentShopPlatform === "shopee") {
+      const currentShopeeShopList = JSON.parse(
+        localStorage.getItem("shopeeShopInfo") || "[]",
+      );
+
+      const matchedStore = currentShopeeShopList.find(
+        (store) => store?.cipher === selectedStoreCipher,
+      );
+
+      if (matchedStore) {
+        currentShopStore = matchedStore.name;
+      }
+    } else if (currentShopPlatform === "lazada") {
+      currentShopStore = localStorage.getItem("lazadaAppKeyShopInfo");
+    }
+
+    setSelectedPlatform(currentShopPlatform); // Example - replace with actual platform
+    setSelectedStore(currentShopStore); // Example - replace with actual store name
+    setIsUpgradeModalOpen(true);
+  };
+
+  const handleUpgradeConfirm = () => {
+    setIsUpgradeModalOpen(false);
+    navigate("/onlineprint/pricing");
+  };
+
+  const handleUpgradeCancel = () => {
+    setIsUpgradeModalOpen(false);
   };
 
   return (
@@ -172,7 +241,9 @@ const TopNavbar = () => {
             <option value="ms">Malay</option>
           </select>
         </div>
-
+        <EmailVerificationComponent
+          currentUser={currentUser}
+        ></EmailVerificationComponent>
         {/* User Dropdown */}
         <div className="dropdown dropdown-end flex items-center justify-center">
           {currentUser ? (
@@ -192,7 +263,12 @@ const TopNavbar = () => {
                   <div className="w-8 h-8 rounded-[32px] flex items-center justify-center">
                     <img
                       alt="Profile"
-                      src={userDetails ? userDetails?.image : Avatar}
+                      src={
+                        userDetails?.image &&
+                        userDetails.image.startsWith("data:image/")
+                          ? userDetails.image
+                          : Avatar
+                      }
                     />
                   </div>
                 </div>
@@ -201,20 +277,30 @@ const TopNavbar = () => {
                   tabIndex={0}
                   className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-white rounded-box w-52 text-[#004368] text-opacity-60"
                 >
-                  <li>
+                  {/* <li>
                     <Link
                       to="/onlineprint/resetpassword"
                       className="hover:font-semibold hover:text-[#004368]"
                     >
                       {t("resetPassword")}
                     </Link>
+                  </li> */}
+                  <li>
+                    <button
+                      onClick={handleUpgradeClick}
+                      className="flex items-center gap-2 mb-3 hover:font-semibold hover:text-[#004368] text-amber-600 transition-all"
+                    >
+                      <FaCrown className="text-lg" />
+                      <span>{t("UpgradePlan")}</span>
+                    </button>
                   </li>
                   <li>
                     <button
                       onClick={handleLogout}
-                      className="hover:font-semibold hover:text-[#004368]"
+                      className="flex items-center gap-2 hover:font-semibold hover:text-[#004368] transition-all"
                     >
-                      {t("logout")}
+                      <MdLogout className="text-lg text-red-500" />
+                      <span className="text-red-500">{t("logout")}</span>
                     </button>
                   </li>
                 </ul>
@@ -225,6 +311,75 @@ const TopNavbar = () => {
           )}
         </div>
       </div>
+      {isUpgradeModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white rounded-lg shadow-2xl w-[500px] max-w-[90%] relative">
+            {/* Close Button */}
+            <button
+              onClick={handleUpgradeCancel}
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <MdClose className="w-6 h-6" />
+            </button>
+
+            {/* Modal Header */}
+            <div className="bg-[#004368] text-white px-8 py-6 rounded-t-lg">
+              <div className="flex items-center gap-3">
+                <FaCrown className="text-3xl" />
+                <h2 className="text-2xl font-bold">{t("UpgradeYourPlan")}</h2>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="px-8 py-8">
+              <p className="text-gray-700 text-lg leading-relaxed">
+                {t("UpgradeConfirm_1")}{" "}
+                <span className="font-semibold text-[#004368]">
+                  {selectedPlatform}
+                </span>{" "}
+                {t("UpgradeConfirm_Platform")}{" "}
+                <span className="font-semibold text-[#004368]">
+                  {selectedStore}
+                </span>
+                {t("UpgradeConfirm_Q")}
+              </p>
+
+              {/* Benefits List (Optional) */}
+              <div className="mt-6 bg-amber-50 rounded-lg p-4">
+                <p className="text-sm text-gray-600 font-medium mb-2">
+                  {t("UpgradeBenefits")}:
+                </p>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  <li className="flex items-center gap-2">
+                    <span className="text-amber-500">✓</span>
+                    {t("UnlimitedOrders")}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <span className="text-amber-500">✓</span>
+                    {t("IncreaseAccessDuration")}
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-8 py-6 bg-gray-50 rounded-b-lg flex justify-end gap-4">
+              <button
+                onClick={handleUpgradeCancel}
+                className="px-6 py-2.5 rounded-lg border-2 border-gray-300 text-gray-700 font-medium hover:bg-gray-100 transition-colors"
+              >
+                {t("Cancel")}
+              </button>
+              <button
+                onClick={handleUpgradeConfirm}
+                className="px-6 py-2.5 rounded-lg bg-[#004368] text-white font-medium hover:from-amber-600 hover:to-orange-600 transition-all shadow-md hover:shadow-lg"
+              >
+                {t("YesUpgrade")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

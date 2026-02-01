@@ -22,6 +22,7 @@ import TableHeader from "./tiktokComponents/TableHeader";
 import ActionButtons from "./tiktokComponents/ActionButtons";
 import OrderDetailsModal from "./tiktokComponents/OrderDetailsModal";
 import BatchPrintTable from "../BatchPrint/BatchPrintTable";
+import { getSubscriptionRemainingDays } from "../../lib/calculateSubscriptionRemainingDays";
 
 const TikTokBatchPrint = () => {
   const { t } = useTranslation();
@@ -52,6 +53,13 @@ const TikTokBatchPrint = () => {
   const cipher = localStorage.getItem("tiktokAuthCipher");
   const selectedShopInfoRaw = localStorage.getItem("tiktokShopInfo");
   const selectedTikTokStore = localStorage.getItem("SelectedTikTokStore");
+  const [subscriptionInfo, setSubscriptionInfo] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const currentTikTokStoreId = JSON.parse(
+    localStorage.getItem("tiktokShopInfo"),
+  );
+  const currentUser = useSelector((state) => state.user.accountUser);
   // const selectedTikTokStore = JSON.parse(selectedTikTokStoreRow);
   const selectedShopInfo = selectedShopInfoRaw
     ? JSON.parse(selectedShopInfoRaw)
@@ -59,7 +67,7 @@ const TikTokBatchPrint = () => {
 
   // find store by name
   const store = selectedShopInfo.find(
-    (item) => item.name === selectedTikTokStore
+    (item) => item.name === selectedTikTokStore,
   );
 
   // build final string
@@ -103,7 +111,7 @@ const TikTokBatchPrint = () => {
 
   const pagination = usePagination(filteredData);
   const selectedLanguage = useSelector(
-    (state) => state.user.selectedLanguageRedux
+    (state) => state.user.selectedLanguageRedux,
   );
 
   // ✅ Add debug logging to see status changes
@@ -126,7 +134,7 @@ const TikTokBatchPrint = () => {
         <div className="bg-red-200 w-16 h-16 rounded-full flex items-center justify-center">
           <TiInfoOutline className="w-10 h-10 text-red-600" />
         </div>,
-        <p>{t("NoItemsSelected")}</p>
+        <p>{t("NoItemsSelected")}</p>,
       );
     } else {
       openConfirmModal(
@@ -137,7 +145,7 @@ const TikTokBatchPrint = () => {
           {t("AreYouSureYouHaveCompletedPackagingThisOrder")}
         </p>,
         handleConfirmPackage,
-        true
+        true,
       );
     }
   };
@@ -148,7 +156,7 @@ const TikTokBatchPrint = () => {
         <div className="bg-red-200 w-16 h-16 rounded-full flex items-center justify-center">
           <TiInfoOutline className="w-10 h-10 text-red-600" />
         </div>,
-        <p>{t("NoItemsSelected")}</p>
+        <p>{t("NoItemsSelected")}</p>,
       );
     } else {
       openConfirmModal(
@@ -157,18 +165,18 @@ const TikTokBatchPrint = () => {
         </div>,
         <p className="text-xl font-semibold">
           {tikTokOrderStatusCheck === "AWAITING_COLLECTION"
-            ? t("AreYouSureToAcceptThisOrder")
+            ? t("AreYouSureToPrintForReadyToShip")
             : t("DoYouWantPrintAWBAgain")}
         </p>,
         handleConfirmShipping,
-        true
+        true,
       );
     }
   };
 
   const handleConfirmShipping = () => {
     dispatch(
-      checkedItemsChange({ items: checkedItems, from: tikTokOrderStatusCheck })
+      checkedItemsChange({ items: checkedItems, from: tikTokOrderStatusCheck }),
     );
     navigate("/onlineprint/tikTokPrintPrinting");
     closeConfirmModal();
@@ -193,7 +201,7 @@ const TikTokBatchPrint = () => {
           let url = "";
           let body = null;
           url = `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/package/ship-package-new?cipher=${encodeURIComponent(
-            cipher
+            cipher,
           )}&openId=${encodeURIComponent(tiktokOpenId)}`;
 
           body = {
@@ -218,19 +226,19 @@ const TikTokBatchPrint = () => {
           console.log(`📦 Package created for order ${item?.id}:`, result);
 
           dispatch(
-            checkedItemsChange({ items: [], from: tikTokOrderStatusCheck })
+            checkedItemsChange({ items: [], from: tikTokOrderStatusCheck }),
           );
           setCheckedItems([]);
           setSelectAll(false);
 
           return result;
-        })
+        }),
       );
 
       // Optional: Filter out successfully processed items
       const successfulIds = checkedItems.map((item) => item.id);
       const restOfOrders = filteredData.filter(
-        (item) => !successfulIds.includes(item?.id)
+        (item) => !successfulIds.includes(item?.id),
       );
       setFilteredData(restOfOrders.slice(0, 5));
       setIsConfirmModalOpen(false); // close the modal
@@ -249,7 +257,7 @@ const TikTokBatchPrint = () => {
 
     // ✅ collect unique sku_id for THIS order only
     const uniqueSkuSet = new Set(
-      items.map((item) => item.skuId).filter(Boolean)
+      items.map((item) => item.skuId).filter(Boolean),
     );
 
     return total + uniqueSkuSet.size;
@@ -258,6 +266,35 @@ const TikTokBatchPrint = () => {
   const totalOrders = customersData?.length;
 
   console.log(filteredData, "sdkljfaksd");
+
+  useEffect(() => {
+    const fetchSubscriptionRemainingData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const result = await getSubscriptionRemainingDays(
+          currentUser,
+          "tiktok",
+          currentTikTokStoreId[0]?.id,
+        );
+
+        if (result.success) {
+          setSubscriptionInfo(result);
+        } else {
+          setError(result.message);
+        }
+      } catch (err) {
+        setError(err.message || "An unexpected error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (currentUser && currentTikTokStoreId[0]?.id) {
+      fetchSubscriptionRemainingData();
+    }
+  }, [currentUser, currentTikTokStoreId[0]?.id]);
 
   return (
     <div className="bg-[#004368] bg-opacity-5 w-full h-screen">
@@ -292,6 +329,8 @@ const TikTokBatchPrint = () => {
             totalOrders={totalOrders}
             totalOrderSkus={totalOrderSkus}
             pagination={pagination}
+            durationInfo={subscriptionInfo}
+            loading={loading}
             onExport={handleBatchPrinterExcelClick}
             t={t}
           />

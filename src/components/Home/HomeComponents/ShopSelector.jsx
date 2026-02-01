@@ -235,7 +235,6 @@ const ShopSelector = ({
 
   // 1. UPDATE: handlePlatformSelect function
   // FIND the existing handlePlatformSelect function and REPLACE with this:
-  console.log(selectedStore);
 
   const handlePlatformSelect = (platformId) => {
     setSelectedPlatform(platformId);
@@ -281,7 +280,7 @@ const ShopSelector = ({
         // ✅ Priority 1: Match by saved store name
         if (savedStoreName) {
           const matchedByName = savedShopee.find(
-            (shop) => String(shop.name) === String(savedStoreName)
+            (shop) => String(shop.name) === String(savedStoreName),
           );
           console.log(matchedByName, "matchedByName");
           if (matchedByName) selectedShop = matchedByName;
@@ -289,7 +288,7 @@ const ShopSelector = ({
         // ✅ Priority 2: Match by shopeeAuthShopId (only if no name match)
         else if (shopeeAuthShopId) {
           const matchedShop = savedShopee.find(
-            (shop) => String(shop.cipher) === String(shopeeAuthShopId)
+            (shop) => String(shop.cipher) === String(shopeeAuthShopId),
           );
           console.log(matchedShop, "matchedShop");
           if (matchedShop) selectedShop = matchedShop;
@@ -315,38 +314,60 @@ const ShopSelector = ({
         JSON.parse(localStorage.getItem("tiktokShopInfo")) || [];
       const savedStoreName = localStorage.getItem("SelectedStore");
 
-      console.log(savedTikTok);
-
-      let selectedStoreObj;
+      let selectedStoreObj = null;
 
       // ✅ Priority 1: Match by saved store name
-      if (savedStoreName) {
+      if (savedStoreName && savedTikTok.length > 0) {
         selectedStoreObj = savedTikTok.find((s) => s.name === savedStoreName);
       }
 
-      // ✅ Priority 2: Use first store if no match
-      if (!selectedStoreObj && platformObj.stores.length > 0) {
+      // ✅ Priority 2: If nothing matched, use FIRST store
+      if (!selectedStoreObj && savedTikTok.length > 0) {
+        selectedStoreObj = savedTikTok[0];
+      }
+
+      // ✅ Priority 3: Absolute fallback (platform data)
+      if (!selectedStoreObj && platformObj?.stores?.length > 0) {
         selectedStoreObj = platformObj.stores[0];
       }
 
       if (selectedStoreObj) {
+        // UI state
         setSelectedStore(selectedStoreObj.name);
+
+        // helper: set only if not exists
+        const setIfNotExists = (key, value) => {
+          if (value === undefined || value === null) return;
+          const existing = localStorage.getItem(key);
+          if (!existing) {
+            localStorage.setItem(
+              key,
+              typeof value === "string" ? value : JSON.stringify(value),
+            );
+          }
+        };
+
+        // ✅ Store selection
         localStorage.setItem("SelectedStore", selectedStoreObj.name);
         localStorage.setItem("SelectedTikTokStore", selectedStoreObj.name);
-        saveShopToLocalStorage("tiktok", [selectedStoreObj]);
 
-        const appKeyValue = selectedStoreObj.tiktokOpenId;
-        const appCipherValue = selectedStoreObj.cipher;
+        // ✅ Ensure shop info exists
+        setIfNotExists(
+          "tiktokShopInfo",
+          savedTikTok.length ? savedTikTok : [selectedStoreObj],
+        );
 
-        const cleanedAppKey =
-          typeof appKeyValue === "string"
-            ? appKeyValue.replace(/^"|"$/g, "")
-            : String(appKeyValue);
+        // ✅ Ensure auth values exist
+        const cleanedOpenId =
+          typeof selectedStoreObj.tiktokOpenId === "string"
+            ? selectedStoreObj.tiktokOpenId.replace(/^"|"$/g, "")
+            : String(selectedStoreObj.tiktokOpenId);
 
-        localStorage.setItem("tiktokOpenId", cleanedAppKey);
-        localStorage.setItem("tiktokAuthCipher", appCipherValue);
-        localStorage.setItem("tiktokAuthCountry", "MY");
+        setIfNotExists("tiktokOpenId", cleanedOpenId);
+        setIfNotExists("tiktokAuthCipher", selectedStoreObj.cipher);
+        setIfNotExists("tiktokAuthCountry", "MY");
       }
+
       return;
     }
 
@@ -375,7 +396,7 @@ const ShopSelector = ({
     if (!platformObj) return;
 
     const fullShopObj = platformObj.stores.find(
-      (shop) => shop.name === storeName
+      (shop) => shop.name === storeName,
     );
 
     if (fullShopObj) {
@@ -385,7 +406,7 @@ const ShopSelector = ({
       if (platformId === "lazada") {
         localStorage.setItem(
           "lazadaAppKey",
-          JSON.stringify(fullShopObj.cipher)
+          JSON.stringify(fullShopObj.cipher),
         );
         localStorage.setItem("lazadaAuthCountry", fullShopObj.region);
         localStorage.setItem("lazadaAccountId", fullShopObj.cipher);
@@ -432,8 +453,8 @@ const ShopSelector = ({
     }
 
     if (platform === "shopee") {
-      const last3 = String(store.name ?? "").slice(-3);
-      return `${store.region ?? ""}-(***${last3})`;
+      // const last3 = String(store.name ?? "").slice(-3);
+      return `${store.region ?? ""}-${store.name}`;
     }
 
     return store.name ?? "";

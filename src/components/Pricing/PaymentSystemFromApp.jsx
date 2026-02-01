@@ -298,10 +298,11 @@ const PaymentForm = ({
     try {
       const { data } = await axios.post(
         "https://grozziieget.zjweiting.com:8033/tht/payment-intent",
+        // "https://grozziie.zjweiting.com:8033/tht/payment-intent",
         {
           amount: convertToCents(amount),
           currency: "usd",
-        }
+        },
       );
 
       await confirmPayment(data.clientSecret);
@@ -326,7 +327,6 @@ const PaymentForm = ({
         duration,
         amount,
         currency: "usd",
-        country,
       };
       localStorage.setItem("pendingPaymentData", JSON.stringify(paymentData));
 
@@ -338,7 +338,7 @@ const PaymentForm = ({
             payment_method_data: { billing_details: { email: decodedEmail } },
             return_url: `${window.location.origin}/onlineprint/success?email=${decodedEmail}&duration=${duration}&amount=${amount}&currency=usd`,
           },
-        }
+        },
       );
 
       if (stripeError) setError(stripeError.message);

@@ -53,7 +53,7 @@ const Home = () => {
   const storedShopPlatform = localStorage.getItem("SelectedPlatform");
   const storedShopStore = localStorage.getItem("SelectedStore");
   const [selectedPlatform, setSelectedPlatform] = useState(
-    storedShopPlatform || "tiktok"
+    storedShopPlatform || "tiktok",
   );
   const [selectedStore, setSelectedStore] = useState(storedShopStore || null);
   const [openShop, setOpenShop] = useState(null);
@@ -71,7 +71,7 @@ const Home = () => {
   const [awaitingShipment, setAwaitingShipment] = useState([]);
   const [awaitingCollection, setAwaitingCollection] = useState([]);
   const [awaitingCollectionPrinted, setAwaitingCollectionPrinted] = useState(
-    []
+    [],
   );
   const [awaitingCollectionUnprinted, setAwaitingCollectionUnprinted] =
     useState([]);
@@ -134,10 +134,10 @@ const Home = () => {
         selectedPlatform === "tiktok"
           ? awaitingCollectionPrinted?.length || 0
           : selectedPlatform === "lazada"
-          ? lazadaPackedPrinted?.length || 0
-          : selectedPlatform === "shopee"
-          ? shopeeProcessedPrinted?.length || 0
-          : 0,
+            ? lazadaPackedPrinted?.length || 0
+            : selectedPlatform === "shopee"
+              ? shopeeProcessedPrinted?.length || 0
+              : 0,
     },
     {
       name: t("New Orders"),
@@ -145,10 +145,10 @@ const Home = () => {
         selectedPlatform === "tiktok"
           ? awaitingShipment?.length || 0
           : selectedPlatform === "lazada"
-          ? lazadaNewOrders?.length || 0
-          : selectedPlatform === "shopee"
-          ? shopeeReadyToShip?.length || 0
-          : 0,
+            ? lazadaNewOrders?.length || 0
+            : selectedPlatform === "shopee"
+              ? shopeeReadyToShip?.length || 0
+              : 0,
     },
     {
       name: t("Cancelled"),
@@ -156,21 +156,21 @@ const Home = () => {
         selectedPlatform === "tiktok"
           ? cancelledOrders?.length || 0
           : selectedPlatform === "lazada"
-          ? lazadacancelledOrders?.length || 0
-          : selectedPlatform === "shopee"
-          ? shopeeCancelledOrders?.length || 0
-          : 0,
+            ? lazadacancelledOrders?.length || 0
+            : selectedPlatform === "shopee"
+              ? shopeeCancelledOrders?.length || 0
+              : 0,
     },
     {
       name: t("Processing for Delivery"),
       value:
         selectedPlatform === "tiktok"
-          ? awaitingCollection?.length || 0
+          ? awaitingCollectionUnprinted?.length || 0
           : selectedPlatform === "lazada"
-          ? lazadaOnShipping?.length || 0
-          : selectedPlatform === "shopee"
-          ? shopeeProcessedUnprinted?.length || 0
-          : 0,
+            ? lazadaPackedUnprinted?.length || 0
+            : selectedPlatform === "shopee"
+              ? shopeeProcessedUnprinted?.length || 0
+              : 0,
     },
   ];
   const total = chartData.reduce((sum, item) => sum + item.value, 0);
@@ -250,13 +250,13 @@ const Home = () => {
               LazadaAPPKey: accountId,
               active: true,
             }),
-          }
+          },
         );
 
         const saveResult = await saveResponse.json();
         if (saveResult.code !== 201) {
           alert(
-            "Failed to save Lazada shop. Please try again or contact support."
+            "Failed to save Lazada shop. Please try again or contact support.",
           );
           return;
         }
@@ -297,7 +297,7 @@ const Home = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
-        }
+        },
       )
         .then(async (res) => {
           // Handle cases where backend sends no JSON
@@ -312,7 +312,7 @@ const Home = () => {
         .catch((err) => {
           console.error(
             "❌ There was a problem with the fetch operation:",
-            err
+            err,
           );
         });
 
@@ -338,14 +338,14 @@ const Home = () => {
       setTikTokHomeLoading(true); // ✅ Enable this
       try {
         const res = await fetch(
-          `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds/by-email/${user?.email}`
+          `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/printedIds/by-email/${user?.email}`,
         );
         const data = await res.json();
 
         if (Array.isArray(data)) {
           setTikTokPrintedIds(data);
           const todayPrinted = data.filter((item) =>
-            isSameDay(parseISO(item.createdAt), now)
+            isSameDay(parseISO(item.createdAt), now),
           );
         }
       } catch (err) {
@@ -388,7 +388,7 @@ const Home = () => {
       const sevenDaysAgoUnix = tiktokDateRange?.sevenDaysAgo;
 
       const printedSet = new Set(
-        tikTokPrintedIds.map((item) => item.tikTokPrintedId?.toString())
+        tikTokPrintedIds.map((item) => item.tikTokPrintedId?.toString()),
       );
 
       try {
@@ -408,10 +408,10 @@ const Home = () => {
 
             const orderList = response?.data?.orders || [];
             const printedOrders = orderList?.filter((item) =>
-              printedSet.has(item.id?.toString())
+              printedSet.has(item.id?.toString()),
             );
             const unprintedOrders = orderList.filter(
-              (item) => !printedSet.has(item.id?.toString())
+              (item) => !printedSet.has(item.id?.toString()),
             );
 
             if (status === "AWAITING_SHIPMENT") {
@@ -422,16 +422,16 @@ const Home = () => {
               const todayPrintedObjects = () => {
                 const today = new Date().toISOString().split("T")[0];
                 return tikTokPrintedIds.filter((item) =>
-                  item.createdAt?.startsWith(today)
+                  item.createdAt?.startsWith(today),
                 );
               };
 
               const todayPrintedData = todayPrintedObjects();
               const todayPrintedIdSet = new Set(
-                todayPrintedData.map((item) => item.tikTokPrintedId)
+                todayPrintedData.map((item) => item.tikTokPrintedId),
               );
               const todayTiktokPrinted = printedOrders.filter((order) =>
-                todayPrintedIdSet.has(order?.id)
+                todayPrintedIdSet.has(order?.id),
               );
               setTikTokPrintedToday(todayTiktokPrinted);
               setAwaitingCollectionUnprinted(unprintedOrders);
@@ -449,7 +449,7 @@ const Home = () => {
           } catch (error) {
             console.error(
               `❌ Failed to load orders for status: ${status}`,
-              error
+              error,
             );
             // ✅ REMOVED finally block from here - continue to next status
           }
@@ -475,14 +475,14 @@ const Home = () => {
       setLazadaHomeLoading(true);
       try {
         const res = await fetch(
-          `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds/by-email/${user?.email}`
+          `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/lazada/printedIds/by-email/${user?.email}`,
         );
         const data = await res.json();
 
         if (Array.isArray(data)) {
           setLazadaPrintedIds(data);
           const todayPrinted = data.filter((item) =>
-            isSameDay(parseISO(item.createdAt), now)
+            isSameDay(parseISO(item.createdAt), now),
           );
         }
       } catch (err) {
@@ -525,7 +525,7 @@ const Home = () => {
       const tenDaysAgo = lazadaDateRange.sevenDaysAgo;
 
       const printedSet = new Set(
-        lazadaPrintedIds.map((item) => String(item.lazadaPrintedId))
+        lazadaPrintedIds.map((item) => String(item.lazadaPrintedId)),
       );
 
       try {
@@ -547,7 +547,7 @@ const Home = () => {
             const parsedBody = JSON.parse(response?.body || "{}");
             const orderList = parsedBody?.data?.orders || [];
             const printedOrders = orderList.filter((item) =>
-              printedSet.has(String(item.order_id))
+              printedSet.has(String(item.order_id)),
             );
 
             if (status === "pending") {
@@ -556,7 +556,7 @@ const Home = () => {
               setLazadaPacked(orderList);
               setLazadaPackedPrinted(printedOrders);
               const unprintedOrders = orderList.filter(
-                (item) => !printedSet.has(String(item.order_id))
+                (item) => !printedSet.has(String(item.order_id)),
               );
 
               setLazadaPackedUnprinted(unprintedOrders);
@@ -564,15 +564,15 @@ const Home = () => {
               const todayLazadaPrintedObjects = () => {
                 const today = new Date().toISOString().split("T")[0];
                 return lazadaPrintedIds.filter((item) =>
-                  item.createdAt?.startsWith(today)
+                  item.createdAt?.startsWith(today),
                 );
               };
               const todayLazadaPrintedData = todayLazadaPrintedObjects();
               const todayLazadaPrintedIdSet = new Set(
-                todayLazadaPrintedData.map((item) => item.lazadaPrintedId)
+                todayLazadaPrintedData.map((item) => item.lazadaPrintedId),
               );
               const todayLazadaPrinted = printedOrders.filter((order) =>
-                todayLazadaPrintedIdSet.has(String(order?.order_number))
+                todayLazadaPrintedIdSet.has(String(order?.order_number)),
               );
 
               setLazadaPrintedToday(todayLazadaPrinted);
@@ -595,7 +595,7 @@ const Home = () => {
           } catch (error) {
             console.error(
               `❌ Failed to load Lazada orders for status: ${status}`,
-              error
+              error,
             );
           }
         }
@@ -620,7 +620,7 @@ const Home = () => {
       setShopeeHomeLoading(true);
       try {
         const res = await fetch(
-          `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/shopee/printedIds/by-email/${user.email}`
+          `https://grozziie.zjweiting.com:3091/tiktokshop-print/api/dev/shopee/printedIds/by-email/${user.email}`,
         );
 
         const data = await res.json();
@@ -663,19 +663,19 @@ const Home = () => {
       const sevenDaysAgo = shopeeDateRange?.sevenDaysAgo;
 
       const printedSet = new Set(
-        shopeePrintedIds.map((item) => String(item.shopeePrintedId))
+        shopeePrintedIds.map((item) => String(item.shopeePrintedId)),
       );
 
       const todayPrintedObjects = () => {
         const today = new Date().toISOString().split("T")[0];
         return shopeePrintedIds.filter((item) =>
-          item.createdAt?.startsWith(today)
+          item.createdAt?.startsWith(today),
         );
       };
 
       const todayPrintedData = todayPrintedObjects();
       const todayPrintedIdSet = new Set(
-        todayPrintedData.map((item) => item.shopeePrintedId)
+        todayPrintedData.map((item) => item.shopeePrintedId),
       );
 
       try {
@@ -703,7 +703,7 @@ const Home = () => {
                 if (currentPlatform === "shopee") {
                   setShowAccessTokenModal(true);
                   console.log(
-                    "🟡 Showing Shopee authorization expired modal..."
+                    "🟡 Showing Shopee authorization expired modal...",
                   );
                 } else {
                   console.log("⚪ Skipped modal — platform changed.");
@@ -734,16 +734,16 @@ const Home = () => {
 
             const mergedOrders = orderList.map((order) => {
               const details = detailedOrders.find(
-                (d) => d.order_sn === order.order_sn
+                (d) => d.order_sn === order.order_sn,
               );
               return { ...order, ...details };
             });
 
             const printedOrders = mergedOrders.filter((item) =>
-              printedSet.has(String(item.order_sn))
+              printedSet.has(String(item.order_sn)),
             );
             const unprintedOrders = mergedOrders.filter(
-              (item) => !printedSet.has(String(item.order_sn))
+              (item) => !printedSet.has(String(item.order_sn)),
             );
 
             if (status === "READY_TO_SHIP") {
@@ -754,13 +754,13 @@ const Home = () => {
               setShopeeProcessedUnprinted(unprintedOrders);
 
               const todayPrinted = printedOrders.filter((order) =>
-                todayPrintedIdSet.has(order.order_sn)
+                todayPrintedIdSet.has(order.order_sn),
               );
 
               setShopeeTodayPrinted(todayPrinted);
             } else if (status === "SHIPPED") {
               const shippedOrders = mergedOrders.filter(
-                (order) => order.order_status === "SHIPPED"
+                (order) => order.order_status === "SHIPPED",
               );
 
               setShopeeShippedOrders(shippedOrders);
@@ -770,7 +770,7 @@ const Home = () => {
                   (order.update_time ||
                     order.ship_by_date ||
                     order.created_time ||
-                    Date.now() / 1000) * 1000
+                    Date.now() / 1000) * 1000,
                 );
 
                 const today = new Date();
@@ -790,7 +790,7 @@ const Home = () => {
           } catch (error) {
             console.error(
               `❌ Failed to load Shopee orders for ${status}`,
-              error
+              error,
             );
           }
         }
@@ -858,12 +858,13 @@ const Home = () => {
                   ? tikTokPrintedToday?.length?.toString().padStart(2, "0") ||
                     "00"
                   : selectedPlatform === "lazada"
-                  ? lazadaPrintedToday?.length?.toString().padStart(2, "0") ||
-                    "00"
-                  : selectedPlatform === "shopee"
-                  ? shopeeTodayPrinted?.length?.toString().padStart(2, "0") ||
-                    "00"
-                  : "00"
+                    ? lazadaPrintedToday?.length?.toString().padStart(2, "0") ||
+                      "00"
+                    : selectedPlatform === "shopee"
+                      ? shopeeTodayPrinted?.length
+                          ?.toString()
+                          .padStart(2, "0") || "00"
+                      : "00"
               }
               image={print}
             />
@@ -876,13 +877,13 @@ const Home = () => {
                   ? tikTokShippedToday?.length?.toString().padStart(2, "0") ||
                     "00"
                   : selectedPlatform === "lazada"
-                  ? lazadaShippedToday?.length?.toString().padStart(2, "0") ||
-                    "00"
-                  : selectedPlatform === "shopee"
-                  ? shopeeShippedTodayOrders?.length
-                      ?.toString()
-                      .padStart(2, "0") || "00"
-                  : "00"
+                    ? lazadaShippedToday?.length?.toString().padStart(2, "0") ||
+                      "00"
+                    : selectedPlatform === "shopee"
+                      ? shopeeShippedTodayOrders?.length
+                          ?.toString()
+                          .padStart(2, "0") || "00"
+                      : "00"
               }
               image={shipped}
             />
@@ -896,14 +897,14 @@ const Home = () => {
                       ?.toString()
                       .padStart(2, "0") || "00"
                   : selectedPlatform === "lazada"
-                  ? lazadaPackedUnprinted?.length
-                      ?.toString()
-                      .padStart(2, "0") || "00"
-                  : selectedPlatform === "shopee"
-                  ? shopeeProcessedUnprinted?.length
-                      ?.toString()
-                      .padStart(2, "0") || "00"
-                  : "00"
+                    ? lazadaPackedUnprinted?.length
+                        ?.toString()
+                        .padStart(2, "0") || "00"
+                    : selectedPlatform === "shopee"
+                      ? shopeeProcessedUnprinted?.length
+                          ?.toString()
+                          .padStart(2, "0") || "00"
+                      : "00"
               }
               image={needPrint}
             />
@@ -1008,14 +1009,14 @@ const Home = () => {
                             ?.toString()
                             .padStart(2, "0") || "00"
                         : selectedPlatform === "lazada"
-                        ? lazadaPackedPrinted?.length
-                            ?.toString()
-                            .padStart(2, "0") || "00"
-                        : selectedPlatform === "shopee"
-                        ? shopeeProcessedPrinted?.length
-                            ?.toString()
-                            .padStart(2, "0") || "00"
-                        : "00"
+                          ? lazadaPackedPrinted?.length
+                              ?.toString()
+                              .padStart(2, "0") || "00"
+                          : selectedPlatform === "shopee"
+                            ? shopeeProcessedPrinted?.length
+                                ?.toString()
+                                .padStart(2, "0") || "00"
+                            : "00"
                     }
                   />
                 </div>
@@ -1030,14 +1031,14 @@ const Home = () => {
                             ?.toString()
                             .padStart(2, "0") || "00"
                         : selectedPlatform === "lazada"
-                        ? lazadaNewOrders?.length
-                            ?.toString()
-                            .padStart(2, "0") || "00"
-                        : selectedPlatform === "shopee"
-                        ? shopeeReadyToShip?.length
-                            ?.toString()
-                            .padStart(2, "0") || "00"
-                        : "00"
+                          ? lazadaNewOrders?.length
+                              ?.toString()
+                              .padStart(2, "0") || "00"
+                          : selectedPlatform === "shopee"
+                            ? shopeeReadyToShip?.length
+                                ?.toString()
+                                .padStart(2, "0") || "00"
+                            : "00"
                     }
                   />
                 </div>
@@ -1052,14 +1053,14 @@ const Home = () => {
                             ?.toString()
                             .padStart(2, "0") || "00"
                         : selectedPlatform === "lazada"
-                        ? lazadacancelledOrders?.length
-                            ?.toString()
-                            .padStart(2, "0") || "00"
-                        : selectedPlatform === "shopee"
-                        ? shopeeCancelledOrders?.length
-                            ?.toString()
-                            .padStart(2, "0") || "00"
-                        : "00"
+                          ? lazadacancelledOrders?.length
+                              ?.toString()
+                              .padStart(2, "0") || "00"
+                          : selectedPlatform === "shopee"
+                            ? shopeeCancelledOrders?.length
+                                ?.toString()
+                                .padStart(2, "0") || "00"
+                            : "00"
                     }
                   />
                 </div>
@@ -1074,13 +1075,13 @@ const Home = () => {
                             ?.toString()
                             .padStart(2, "0") || "00"
                         : selectedPlatform === "lazada"
-                        ? lazadaPacked?.length?.toString().padStart(2, "0") ||
-                          "00"
-                        : selectedPlatform === "shopee"
-                        ? shopeeProcessedUnprinted?.length
-                            ?.toString()
-                            .padStart(2, "0") || "00"
-                        : "00"
+                          ? lazadaPacked?.length?.toString().padStart(2, "0") ||
+                            "00"
+                          : selectedPlatform === "shopee"
+                            ? shopeeProcessedUnprinted?.length
+                                ?.toString()
+                                .padStart(2, "0") || "00"
+                            : "00"
                     }
                   />
                 </div>
@@ -1102,8 +1103,8 @@ const Home = () => {
               {selectedPlatform === "tiktok"
                 ? t("TikTok")
                 : selectedPlatform === "lazada"
-                ? t("Lazada")
-                : t("Shopee")}{" "}
+                  ? t("Lazada")
+                  : t("Shopee")}{" "}
               {t("Orders")}
             </p>
           </div>

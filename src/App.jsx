@@ -30,7 +30,7 @@ function App() {
   const fetchFreeTrialDuration = async () => {
     try {
       const res = await fetch(
-        `https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/pricing/country/MY/platform/tiktok`
+        `https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/pricing/country/MY/platform/tiktok`,
       );
 
       if (!res.ok) throw new Error("Failed to fetch pricing");
@@ -38,7 +38,7 @@ function App() {
       const json = await res.json();
 
       const freeTrial = json?.data?.find(
-        (pkg) => pkg.packageName === "Free Trial"
+        (pkg) => pkg.packageName === "Free Trial",
       );
       setFreeTrailDays(freeTrial?.duration || "03 Month");
       return freeTrial?.duration || "03 Month"; // fallback
@@ -72,7 +72,7 @@ function App() {
       try {
         // 1️⃣ Fetch TikTok shop data from backend
         const backendRes = await fetch(
-          `https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/tiktok/shop/${currentUser}`
+          `https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/tiktok/shop/${currentUser}`,
         );
         if (!backendRes.ok)
           throw new Error("Failed to fetch TikTok shops from backend");
@@ -92,12 +92,12 @@ function App() {
           const freeTrialDuration = await fetchFreeTrialDuration();
 
           const partnerRes = await fetch(
-            `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/shops/authorizedShops?openId=${tiktokOpenId}`
+            `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/shops/authorizedShops?openId=${tiktokOpenId}`,
           );
 
           if (!partnerRes.ok) {
             console.warn(
-              `Failed to fetch authorized shops for appKey: ${tiktokOpenId}`
+              `Failed to fetch authorized shops for appKey: ${tiktokOpenId}`,
             );
             continue;
           }
@@ -108,7 +108,7 @@ function App() {
           let paidShopNames = [];
           try {
             const paymentRes = await fetch(
-              `https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/${currentUser}`
+              `https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/${currentUser}`,
             );
             const paymentData = await paymentRes.json();
             paidShopNames =
@@ -139,12 +139,15 @@ function App() {
             try {
               const { data } = await axios.post(
                 "https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/add",
-                paymentInfo
+                // "https://grozziie.zjweiting.com:8033/tht/printerUserPaymentInfo/add",
+                paymentInfo,
               );
               localStorage.setItem("paymentInfo", JSON.stringify(data));
               // ✅ Show success modal
               setFreeTrailPlatform("TikTok");
-              setShowSuccessModal(true);
+              if (data?.message === "Created new payment info with amount 0") {
+                setShowSuccessModal(true);
+              }
             } catch (err) {
               console.error("❌ Failed to create payment info:", err);
             }
@@ -166,20 +169,31 @@ function App() {
           return;
         }
 
-        setTikTokShopCipher(allAuthorizedShops[0].cipher);
-        localStorage.setItem(
-          "tiktokOpenId",
-          allAuthorizedShops[0].tiktokOpenId
-        );
-        localStorage.setItem(
+        // keep your setter
+        setTikTokShopCipher(allAuthorizedShops[0]?.cipher);
+
+        // helper to set only if not exists
+        const setIfNotExists = (key, value) => {
+          if (value === undefined || value === null) return;
+
+          const existing = localStorage.getItem(key);
+          if (!existing) {
+            localStorage.setItem(
+              key,
+              typeof value === "string" ? value : JSON.stringify(value),
+            );
+          }
+        };
+
+        // TikTok keys
+        setIfNotExists("tiktokOpenId", allAuthorizedShops[0]?.tiktokOpenId);
+        setIfNotExists(
           "tiktokAuthCountry",
-          allAuthorizedShops[0].tiktokAuthCountry
+          allAuthorizedShops[0]?.tiktokAuthCountry,
         );
-        localStorage.setItem("tiktokAuthCipher", allAuthorizedShops[0].cipher);
-        localStorage.setItem(
-          "tiktokShopInfo",
-          JSON.stringify(allAuthorizedShops)
-        );
+        setIfNotExists("tiktokAuthCipher", allAuthorizedShops[0]?.cipher);
+        setIfNotExists("tiktokShopInfo", allAuthorizedShops);
+
         dispatch(setAllTikTokShopList(allAuthorizedShops));
       } catch (error) {
         console.error("Error fetching TikTok shops:", error);
@@ -205,7 +219,7 @@ function App() {
 
         // 1️⃣ Fetch active Lazada shops from backend
         const shopRes = await fetch(
-          `https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/${currentUser}/active`
+          `https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/${currentUser}/active`,
         );
         if (!shopRes.ok) throw new Error("Failed to fetch active Lazada shops");
 
@@ -218,7 +232,7 @@ function App() {
 
         // 2️⃣ Fetch dynamic Lazada data (tokens, country, etc.)
         const dynamicRes = await fetch(
-          "https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/dynamic/all"
+          "https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/dynamic/all",
         );
         if (!dynamicRes.ok)
           throw new Error("Failed to fetch Lazada dynamic data");
@@ -251,19 +265,38 @@ function App() {
 
         if (!matchedShops.length) {
           console.warn(
-            "⚠️ No Lazada shops matched between DB and dynamic data."
+            "⚠️ No Lazada shops matched between DB and dynamic data.",
           );
           return;
         }
 
         // 4️⃣ Store in localStorage
-        localStorage.setItem("lazadaShopInfo", JSON.stringify(matchedShops));
-        localStorage.setItem("lazadaAuthCountry", matchedShops[0]?.region);
-        localStorage.setItem("lazadaAccountId", matchedShops[0]?.cipher);
-        localStorage.setItem(
-          "lazadaAccessToken",
-          matchedShops[0]?.cipher || ""
-        );
+        const setIfNotExists = (key, value) => {
+          if (value === undefined || value === null) return;
+
+          const existing = localStorage.getItem(key);
+          if (!existing) {
+            localStorage.setItem(key, value.toString());
+          }
+        };
+
+        setIfNotExists("lazadaShopInfo", JSON.stringify(matchedShops));
+
+        setIfNotExists("lazadaAuthCountry", matchedShops[0]?.region);
+
+        setIfNotExists("lazadaAccountId", matchedShops[0]?.cipher);
+
+        setIfNotExists("lazadaAccessToken", matchedShops[0]?.cipher);
+
+        setIfNotExists("lazadaAccessToken", matchedShops[0]?.cipher || "");
+
+        // localStorage.setItem("lazadaShopInfo", JSON.stringify(matchedShops));
+        // localStorage.setItem("lazadaAuthCountry", matchedShops[0]?.region);
+        // localStorage.setItem("lazadaAccountId", matchedShops[0]?.cipher);
+        // localStorage.setItem(
+        //   "lazadaAccessToken",
+        //   matchedShops[0]?.cipher || "",
+        // );
 
         // 5️⃣ Dispatch to Redux
         dispatch(setAllLazadaShopList(matchedShops));
@@ -271,7 +304,7 @@ function App() {
         // 6️⃣ Lazada Payment Info Check / Add Free Trial if missing
         try {
           const paymentRes = await fetch(
-            `https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/${currentUser}`
+            `https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/${currentUser}`,
           );
           const paymentData = await paymentRes.json();
 
@@ -295,12 +328,15 @@ function App() {
 
               const { data } = await axios.post(
                 "https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/add",
-                paymentInfo
+                // "https://grozziie.zjweiting.com:8033/tht/printerUserPaymentInfo/add",
+                paymentInfo,
               );
 
               localStorage.setItem("paymentInfo", JSON.stringify(data));
               setFreeTrailPlatform("Lazada");
-              setShowSuccessModal(true);
+              if (data?.message === "Created new payment info with amount 0") {
+                setShowSuccessModal(true);
+              }
               console.log(`✅ Free trial added for Lazada shop: ${shop.name}`);
             }
           }
@@ -315,6 +351,8 @@ function App() {
     fetchActiveLazadaShops();
   }, [currentUser, dispatch]);
 
+  // Shopeeeeeeeeeeeeeeeeeeeeeeeeee...............
+
   useEffect(() => {
     if (!currentUser) return; // ✅ Skip if no user
 
@@ -322,85 +360,178 @@ function App() {
       try {
         // 1️⃣ Fetch user’s saved shops from local backend
         const localShopRes = await fetch(
-          `https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/shopee/shop/${currentUser}`
+          `https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/shopee/shop/${currentUser}`,
         );
-        if (!localShopRes.ok)
+
+        if (!localShopRes.ok) {
           throw new Error("Failed to fetch local Shopee shops");
+        }
+
         const localShopData = await localShopRes.json();
         const savedShops = localShopData?.data || [];
+        const localShopMap = {};
+        savedShops.forEach((s) => {
+          if (s.ShopeeAPPKey) {
+            localShopMap[s.ShopeeAPPKey.toString()] = s;
+          }
+        });
 
         if (savedShops.length === 0) {
           console.warn("⚠️ No saved Shopee shops found for this user.");
+          return;
         }
+        // 🔁 Deduplicate ShopeeAPPKey (shopId)
+        const uniqueShopIds = [
+          ...new Set(
+            savedShops.map((shop) => shop.ShopeeAPPKey).filter(Boolean),
+          ),
+        ];
 
-        // 2️⃣ Fetch all authorized Shopee shops from main Shopee API
-        const partnerRes = await fetch(
-          "https://grozziie.zjweiting.com:3091/shopee-open-shop/auth/get_shops_by_partner?pageNo=1&pageSize=100"
-        );
-        if (!partnerRes.ok)
-          throw new Error("Shopee partner API response was not ok");
-
-        const partnerData = await partnerRes.json();
-        const apiShops = partnerData?.authed_shop_list || [];
-
-        if (apiShops.length === 0) {
-          console.warn("⚠️ No authorized shops returned from Shopee API.");
+        if (uniqueShopIds.length === 0) {
+          console.warn("⚠️ No valid Shopee shop IDs found.");
           return;
         }
 
-        // 3️⃣ Match shops: local ShopeeAPPKey === shop_id from Shopee API
-        const matchedShops = apiShops.filter((apiShop) =>
-          savedShops.some(
-            (local) =>
-              local.ShopeeAPPKey?.toString() === apiShop.shop_id?.toString()
-          )
+        // 2️⃣ Fetch Shopee shop-info API ONE BY ONE (parallel)
+        // const shopInfoList = await Promise.all(
+        //   uniqueShopIds.map(async (shopId) => {
+        //     try {
+        //       const res = await fetch(
+        //         `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/shop/shop-info?shopId=${shopId}`,
+        //       );
+
+        //       if (!res.ok) {
+        //         console.warn(`⚠️ Failed to fetch shop-info for ${shopId}`);
+        //         return null;
+        //       }
+
+        //       const data = await res.json();
+
+        //       if (data?.error) {
+        //         console.warn(`⚠️ Shopee error for shop ${shopId}:`, data.error);
+        //         return null;
+        //       }
+
+        //       return {
+        //         shopId,
+        //         shopInfo: data,
+        //       };
+        //     } catch (err) {
+        //       console.error(`❌ Error fetching shop-info for ${shopId}`, err);
+        //       return null;
+        //     }
+        //   }),
+        // );
+        const shopInfoList = await Promise.all(
+          uniqueShopIds.map(async (shopId) => {
+            const shopIdStr = shopId.toString();
+
+            try {
+              const res = await fetch(
+                `https://grozziie.zjweiting.com:3091/shopee-open-shop/api/dev/shop/shop-info?shopId=${shopId}`,
+              );
+
+              const data = await res.json();
+
+              // ❌ Shopee token error
+              if (!res.ok || data?.error) throw new Error("Shopee API error");
+
+              // ✅ Success response
+              return {
+                shopId,
+                shopInfo: {
+                  shop_name: data.shop_name,
+                  region: data.region,
+                  status: data.status,
+                  is_sip: data.is_sip,
+                  auth_time: data.auth_time,
+                  expire_time: data.expire_time,
+                },
+              };
+            } catch (err) {
+              console.warn(
+                `⚠️ Shopee API failed for ${shopId}, using local DB data`,
+              );
+
+              const local = localShopMap[shopIdStr];
+
+              return {
+                shopId,
+                shopInfo: {
+                  shop_name: shopIdStr, // fallback name
+                  region: local?.ShopCountry || "MY", // ✅ from local DB
+                  status: "UNKNOWN",
+                  is_sip: false,
+                  auth_time: null,
+                  expire_time: null,
+                },
+              };
+            }
+          }),
         );
 
-        if (matchedShops.length === 0) {
-          console.warn(
-            "⚠️ No matching Shopee shops found between local DB and Shopee API."
-          );
+        const validShops = shopInfoList;
+
+        if (validShops.length === 0) {
+          console.warn("⚠️ No valid Shopee shop-info returned.");
           return;
         }
 
-        // 4️⃣ Prepare the data structure for Redux/localStorage
-        const shopeeInItData = matchedShops.map((shop) => ({
-          cipher: shop.shop_id,
-          code: shop.shop_id,
-          id: shop.shop_id,
-          name: shop.shop_name || shop.shop_id,
-          region: shop.region,
-          sellerType: "LOCAL",
+        // 3️⃣ Prepare Redux / localStorage data FROM shop-info API
+        const shopeeInitData = validShops.map(({ shopId, shopInfo }) => ({
+          cipher: shopId,
+          code: shopId,
+          id: shopId,
+          name: shopInfo.shop_name || shopId,
+          region: shopInfo.region,
+          sellerType: shopInfo.is_sip ? "SIP" : "LOCAL",
+          status: shopInfo.status,
+          authTime: shopInfo.auth_time,
+          expireTime: shopInfo.expire_time,
         }));
 
-        // ✅ Store shop info locally & in Redux
-        localStorage.setItem("shopeeShopInfo", JSON.stringify(shopeeInItData));
-        localStorage.setItem(
-          "shopeeAuthShopId",
-          JSON.stringify(shopeeInItData[0]?.cipher)
+        // 4️⃣ Store locally + Redux
+        const existing = JSON.parse(
+          localStorage.getItem("shopeeShopInfo") || "[]",
         );
-        dispatch(setAllShopeeShopList(shopeeInItData));
 
-        console.log("✅ Shopee matched shops initialized:", shopeeInItData);
+        if (existing.length === 0 && shopeeInitData?.length) {
+          localStorage.setItem(
+            "shopeeShopInfo",
+            JSON.stringify(shopeeInitData),
+          );
+        }
 
-        // 5️⃣ Payment check + free trial add logic (same as before)
+        const existingShopId = localStorage.getItem("shopeeAuthShopId");
+        const newShopId = shopeeInitData[0]?.cipher?.toString();
+
+        if (!existingShopId && newShopId) {
+          localStorage.setItem("shopeeAuthShopId", newShopId);
+        }
+
+        dispatch(setAllShopeeShopList(shopeeInitData));
+
+        console.log("✅ Shopee shops initialized:", shopeeInitData);
+
+        // 5️⃣ Payment check + free trial logic (UNCHANGED, but cleaner)
         try {
           const paymentRes = await fetch(
-            `https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/${currentUser}`
+            `https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/${currentUser}`,
           );
           const paymentData = await paymentRes.json();
+
           const paidShopNames =
             paymentData?.result?.["shopee"]?.map((p) => p.shopName) || [];
 
-          for (const shop of matchedShops) {
-            const shopId = shop.shop_id?.toString();
+          for (const { shopId } of validShops) {
+            const shopIdStr = shopId.toString();
             const freeTrialDuration = await fetchFreeTrialDuration();
 
-            if (!paidShopNames.includes(shopId)) {
+            if (!paidShopNames.includes(shopIdStr)) {
               const paymentInfo = {
                 email: currentUser,
                 shopPlatform: "shopee",
-                shopName: shopId,
+                shopName: shopIdStr,
                 paymentTime: new Date().toISOString().split(".")[0] + "Z",
                 paymentExpireTime:
                   calculatePaymentExpireTime(freeTrialDuration),
@@ -411,16 +542,25 @@ function App() {
               try {
                 const { data } = await axios.post(
                   "https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/add",
-                  paymentInfo
+                  // "https://grozziie.zjweiting.com:8033/tht/printerUserPaymentInfo/add",
+                  paymentInfo,
                 );
+
                 setFreeTrailPlatform("Shopee");
-                setShowSuccessModal(true);
-                console.log(`✅ Free trial added for Shopee shop ${shopId}`);
+                if (
+                  data?.message === "Created new payment info with amount 0"
+                ) {
+                  setShowSuccessModal(true);
+                }
+
                 localStorage.setItem("paymentInfo", JSON.stringify(data));
+                console.log(data);
+
+                console.log(`✅ Free trial added for shop ${shopIdStr}`);
               } catch (err) {
                 console.error(
-                  `❌ Failed to add payment for shop ${shopId}:`,
-                  err
+                  `❌ Failed to add payment for shop ${shopIdStr}`,
+                  err,
                 );
               }
             }

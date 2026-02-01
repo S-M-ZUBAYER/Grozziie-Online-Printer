@@ -1,5 +1,6 @@
 import React from "react";
 import PaginationControls from "./PaginationControls";
+import { LoaderIcon } from "react-hot-toast";
 
 const TableHeader = ({
   selectAll,
@@ -11,6 +12,8 @@ const TableHeader = ({
   totalItems,
   totalOrderSkus,
   pagination,
+  durationInfo,
+  loading,
   onExport,
   t,
 }) => (
@@ -37,7 +40,24 @@ const TableHeader = ({
 
     <div>
       <p className="text-[#004368] text-sm font-medium capitalize text-center">
-        {t("Shop")}: {selectedStore}
+        <span className="inline-flex items-center gap-2 justify-center">
+          <span>
+            {t("Shop")}: {selectedStore}
+          </span>
+          {loading ? (
+            <LoaderIcon className="inline-block" />
+          ) : (
+            <span
+              className={`${durationInfo?.remainingDays < 7 ? "text-red-500" : "text-green-600"}`}
+            >
+              (
+              {durationInfo?.remainingDays < 0
+                ? 0
+                : durationInfo?.remainingDays}{" "}
+              {t("Days")})
+            </span>
+          )}
+        </span>
       </p>
     </div>
     <div>

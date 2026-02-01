@@ -36,6 +36,7 @@ export const CountrySelector = ({ country, setCountry, t }) => (
     <option value="GLOBAL">{t("others")}</option>{" "}
   </select>
 );
+
 export const PlanCard = ({
   plan,
   activePlan,
@@ -147,7 +148,7 @@ export const FreePlanModal = ({
           {" "}
           <input
             type="email"
-            placeholder="Enter your email"
+            placeholder={t("enter_email")}
             value={currentUser}
             readOnly
             className="w-full border px-3 py-2 rounded focus:ring focus:ring-[#004368]"

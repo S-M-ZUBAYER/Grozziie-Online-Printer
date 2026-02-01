@@ -33,6 +33,7 @@ import { useModalStates } from "./shopeeHooks/useModalStates";
 import { orderListData } from "../../features/slice/orderListSlice";
 import { filterShopeeDataBySearchFields } from "../../Share/SearchComponent/SearchComponentFunction";
 import { endOfDay, fromUnixTime, startOfDay } from "date-fns";
+import { getSubscriptionRemainingDays } from "../../lib/calculateSubscriptionRemainingDays";
 
 const ShopeeBatchPrint = () => {
   const { t } = useTranslation();
@@ -65,8 +66,14 @@ const ShopeeBatchPrint = () => {
   const shopeeAuthCountry = localStorage.getItem("shopeeAuthCountry");
   const shopeeAuthShopId = localStorage.getItem("shopeeAuthShopId");
   const selectedShopInfo = JSON.parse(localStorage.getItem("shopeeShopInfo"));
+  const currentUser = useSelector((state) => state.user.accountUser);
+  const [subscriptionInfo, setSubscriptionInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const last3 = String(selectedShopInfo[0].name ?? "").slice(-3);
-  const selectedStore = `${selectedShopInfo[0].region ?? ""}-(***${last3})`;
+  const selectedStore = selectedShopInfo
+    ? `${selectedShopInfo[0].region ?? ""}-(***${last3})`
+    : "";
   const storedUser = localStorage.getItem("printerUser");
   const user = storedUser ? JSON.parse(storedUser) : null;
 
@@ -145,10 +152,16 @@ const ShopeeBatchPrint = () => {
   // Route-based status updates
   useEffect(() => {
     const parts = location.pathname.split("/");
-    localStorage.setItem(
-      "SelectedStore",
-      localStorage.getItem("shopeeAuthShopId"),
+    const currentShopeeShopList = JSON.parse(
+      localStorage.getItem("shopeeShopInfo") || "[]",
     );
+    const selectedStoreCipher = localStorage.getItem("shopeeAuthShopId");
+    const matchedStore = currentShopeeShopList.find(
+      (store) => store?.cipher === selectedStoreCipher,
+    );
+    console.log(matchedStore);
+
+    localStorage.setItem("SelectedStore", matchedStore?.name);
     console.log("Current path:", location.pathname); // Debug
     console.log("Path parts:", parts); // Debug
 
@@ -204,6 +217,35 @@ const ShopeeBatchPrint = () => {
     clearSelection,
     shopeeInitialDateRange,
   ]);
+
+  useEffect(() => {
+    const fetchSubscriptionRemainingData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const result = await getSubscriptionRemainingDays(
+          currentUser,
+          "shopee",
+          shopeeAuthShopId,
+        );
+
+        if (result.success) {
+          setSubscriptionInfo(result);
+        } else {
+          setError(result.message);
+        }
+      } catch (err) {
+        setError(err.message || "An unexpected error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (currentUser && shopeeAuthShopId) {
+      fetchSubscriptionRemainingData();
+    }
+  }, [currentUser, shopeeAuthShopId]);
 
   const fetchShopeeOrdersWithDetails = async () => {
     try {
@@ -737,6 +779,8 @@ const ShopeeBatchPrint = () => {
             totalOrders={totalOrders}
             totalOrderSkus={totalOrderSkus}
             pagination={pagination}
+            durationInfo={subscriptionInfo}
+            loading={loading}
             onExport={handleShopeePrinterExcelClick}
             t={t}
           />

@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { checkedItemsChange } from "../../features/slice/userSlice";
@@ -24,6 +24,7 @@ import OrderDetailsModal from "./lazadaComponents/OrderDetailsModal";
 import LazadaBatchPrintTable from "./LazadaBatchPrintTable";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { getSubscriptionRemainingDays } from "../../lib/calculateSubscriptionRemainingDays";
 
 const LazadaBatchPrint = () => {
   const { t } = useTranslation();
@@ -34,7 +35,12 @@ const LazadaBatchPrint = () => {
   const lazadaAuthCountry = localStorage.getItem("lazadaAuthCountry");
   const lazadaAccountId = localStorage.getItem("lazadaAccountId");
   const selectedShop = JSON.parse(localStorage.getItem("lazadaShopInfo"));
-  const selectedStore = selectedShop[0]?.name;
+  const currentLazadaShop = localStorage.getItem("lazadaAppKeyShopInfo");
+  const currentUser = useSelector((state) => state.user.accountUser);
+  const selectedStore = selectedShop ? selectedShop[0]?.name : "";
+  const [subscriptionInfo, setSubscriptionInfo] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   // Custom hooks
   const { lazadaOrderStatusCheck, setLazadaOrderStatusCheck, selectedStatus } =
     useLazadaOrderStatus();
@@ -74,8 +80,51 @@ const LazadaBatchPrint = () => {
 
   const pagination = usePagination(filteredData);
   const selectedLanguage = useSelector(
-    (state) => state.user.selectedLanguageRedux
+    (state) => state.user.selectedLanguageRedux,
   );
+
+  useEffect(() => {
+    const savedLazada = JSON.parse(localStorage.getItem("lazadaShopInfo"));
+    const savedStoreName = localStorage.getItem("SelectedStore");
+    console.log(savedLazada, "saveLazada");
+
+    if (savedLazada && savedLazada.length > 0) {
+      // ✅ Check if saved store name matches platform
+      const currentStore = savedLazada.find((s) => s.name === savedStoreName);
+      const storeToUse = currentStore || savedLazada[0];
+      localStorage.setItem("SelectedStore", storeToUse.name);
+    }
+  }, []);
+
+  useEffect(() => {
+    const fetchSubscriptionRemainingData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        console.log(currentUser, "lazada", currentLazadaShop);
+
+        const result = await getSubscriptionRemainingDays(
+          currentUser,
+          "lazada",
+          currentLazadaShop,
+        );
+
+        if (result.success) {
+          setSubscriptionInfo(result);
+        } else {
+          setError(result.message);
+        }
+      } catch (err) {
+        setError(err.message || "An unexpected error occurred");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (currentUser && currentLazadaShop) {
+      fetchSubscriptionRemainingData();
+    }
+  }, [currentLazadaShop, currentUser]);
 
   // Handlers - same as before
   const handleLazadaPrinterExcelClick = useCallback(() => {
@@ -88,7 +137,7 @@ const LazadaBatchPrint = () => {
         <div className="bg-red-200 w-16 h-16 rounded-full flex items-center justify-center">
           <TiInfoOutline className="w-10 h-10 text-red-600" />
         </div>,
-        <p>{t("NoItemsSelected")}</p>
+        <p>{t("NoItemsSelected")}</p>,
       );
     } else {
       openConfirmModal(
@@ -99,7 +148,7 @@ const LazadaBatchPrint = () => {
           {t("AreYouSureYouHaveCompletedPackagingThisOrder")}
         </p>,
         handleConfirmPackage,
-        true
+        true,
       );
     }
   }, [checkedItems.length, t, openConfirmModal]);
@@ -110,7 +159,7 @@ const LazadaBatchPrint = () => {
         <div className="bg-red-200 w-16 h-16 rounded-full flex items-center justify-center">
           <TiInfoOutline className="w-10 h-10 text-red-600" />
         </div>,
-        <p>{t("NoItemsSelected")}</p>
+        <p>{t("NoItemsSelected")}</p>,
       );
     } else {
       openConfirmModal(
@@ -123,7 +172,7 @@ const LazadaBatchPrint = () => {
             : t("DoYouWantPrintAWBAgain")}
         </p>,
         handleConfirmShipping,
-        true
+        true,
       );
     }
   }, [checkedItems.length, lazadaOrderStatusCheck, t, openConfirmModal]);
@@ -146,7 +195,7 @@ const LazadaBatchPrint = () => {
               headers: {
                 Accept: "*/*",
               },
-            }
+            },
           );
 
           const rawBody = response?.data?.body;
@@ -171,7 +220,7 @@ const LazadaBatchPrint = () => {
         checkedItemsChange({
           items: allOrderItems, // Now an array of { order_id, data }
           from: lazadaOrderStatusCheck,
-        })
+        }),
       );
 
       navigate("/onlineprint/lazadaAWBPrinting");
@@ -204,7 +253,7 @@ const LazadaBatchPrint = () => {
 
         // Step 1: Get order item ID
         const itemRes = await fetch(
-          `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}&account=${lazadaAccountId}`
+          `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}&account=${lazadaAccountId}`,
         );
         const itemData = await itemRes.json();
 
@@ -218,7 +267,7 @@ const LazadaBatchPrint = () => {
         // Extract shipment provider for THIS specific order
         const orderShipmentProvider =
           parsedBody?.data?.find(
-            (it) => it.order_id?.toString() === orderId?.toString()
+            (it) => it.order_id?.toString() === orderId?.toString(),
           )?.shipment_provider || parsedBody?.data[0]?.shipment_provider;
 
         if (!orderItemIds.length) {
@@ -229,14 +278,14 @@ const LazadaBatchPrint = () => {
 
         console.log(
           { order_id: orderId, order_item_ids: orderItemIds },
-          "shipment provider payload"
+          "shipment provider payload",
         );
 
         // Step 2: Get shipment provider
         const shipmentRes = await fetch(
           // `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/order/shipment-provider`,
           `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/order/shipment-provider?account=${encodeURIComponent(
-            lazadaAccountId
+            lazadaAccountId,
           )}`,
           {
             method: "POST",
@@ -252,7 +301,7 @@ const LazadaBatchPrint = () => {
                 },
               ],
             }),
-          }
+          },
         );
 
         const shipmentData = await shipmentRes.json();
@@ -277,12 +326,12 @@ const LazadaBatchPrint = () => {
         console.log(
           shipmentProviderCode,
           shippingAllocateType,
-          "log shipment provider"
+          "log shipment provider",
         );
         // Step 3: Pack the order
         const packRes = await fetch(
           `https://grozziie.zjweiting.com:3091/lazada-open-shop/fulfillment/pack2?account=${encodeURIComponent(
-            lazadaAccountId
+            lazadaAccountId,
           )}`,
           {
             method: "POST",
@@ -301,7 +350,7 @@ const LazadaBatchPrint = () => {
               shipment_provider_code: shipmentProviderCode,
               shipping_allocate_type: shippingAllocateType,
             }),
-          }
+          },
         );
 
         const packResult = await packRes.json();
@@ -312,7 +361,7 @@ const LazadaBatchPrint = () => {
         } else {
           console.warn(
             `❌ Failed to pack order ${orderId}`,
-            packResult?.result?.error_msg
+            packResult?.result?.error_msg,
           );
           failedOrders.push({
             orderId,
@@ -323,7 +372,7 @@ const LazadaBatchPrint = () => {
 
       // ✅ Remove only successful orders from current view
       const restOfOrders = customersData.filter(
-        (item) => !successfulIds.includes(item?.order_id)
+        (item) => !successfulIds.includes(item?.order_id),
       );
       setCustomersData(restOfOrders);
       dispatch(checkedItemsChange({ items: [], from: lazadaOrderStatusCheck }));
@@ -349,7 +398,7 @@ const LazadaBatchPrint = () => {
             </ul>
           </div>,
           null,
-          false
+          false,
         );
       } else {
         console.log("✅ All selected orders packed successfully!");
@@ -384,7 +433,7 @@ const LazadaBatchPrint = () => {
 
     // ✅ collect unique sku_id for THIS order only
     const uniqueSkuSet = new Set(
-      items.map((item) => item.sku_id).filter(Boolean)
+      items.map((item) => item.sku_id).filter(Boolean),
     );
 
     return total + uniqueSkuSet.size;
@@ -413,6 +462,8 @@ const LazadaBatchPrint = () => {
             totalOrders={totalOrders}
             totalOrderSkus={totalOrderSkus}
             pagination={pagination}
+            durationInfo={subscriptionInfo}
+            loading={loading}
             onExport={handleLazadaPrinterExcelClick}
             t={t}
           />

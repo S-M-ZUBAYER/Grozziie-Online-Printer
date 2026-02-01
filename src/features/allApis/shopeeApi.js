@@ -146,6 +146,8 @@ const shopeeApi = baseApi.injectEndpoints({
             ) {
                 try {
                     const shopeeAuthShopId = localStorage.getItem("shopeeAuthShopId");
+                    console.log(shopeeAuthShopId, typeof (shopeeAuthShopId));
+
                     let allOrders = [];
                     let currentCursor = cursor;
                     let hasMore = true;

@@ -13,13 +13,13 @@ import { CountrySelector, FreePlanModal, PlanCard } from "./FreePlanModal";
 // --- Helper: Get Shop ID based on platform ---
 const getCurrentShopId = (platform) => {
   const tiktokShopId = JSON.parse(
-    localStorage.getItem("tiktokShopInfo") || "[]"
+    localStorage.getItem("tiktokShopInfo") || "[]",
   );
   const lazadaShopId = JSON.parse(
-    localStorage.getItem("lazadaShopInfo") || "[]"
+    localStorage.getItem("lazadaShopInfo") || "[]",
   );
   const shopeeShopId = JSON.parse(
-    localStorage.getItem("shopeeShopInfo") || "[]"
+    localStorage.getItem("shopeeShopInfo") || "[]",
   );
 
   switch (platform) {
@@ -37,6 +37,7 @@ const Pricing = () => {
   const navigate = useNavigate();
   const currentUser = useSelector((state) => state.user.accountUser);
   const storedShopPlatform = localStorage.getItem("SelectedPlatform");
+  const storedShopStore = localStorage.getItem("SelectedStore");
 
   // --- State ---
   const [plans, setPlans] = useState([]);
@@ -59,8 +60,22 @@ const Pricing = () => {
   const [confirmAction, setConfirmAction] = useState(null);
   const [showConfirmButton, setShowConfirmButton] = useState(false);
   const [showShopModal, setShowShopModal] = useState(false);
-
   const currentShopId = getCurrentShopId(storedShopPlatform);
+
+  // check email verification state
+  const [showVerifyNoticeModal, setShowVerifyNoticeModal] = useState(false);
+  const [showVerifyFormModal, setShowVerifyFormModal] = useState(false);
+  const [altEmail, setAltEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isError, setIsError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState("");
+
+  // check email verification
+  const isEmailVerified = () => {
+    const printUser = JSON.parse(localStorage.getItem("printerUser") || "{}");
+    return printUser?.emailVerified === true;
+  };
 
   // --- Fetch plans ---
   const fetchPlans = useCallback(
@@ -75,7 +90,7 @@ const Pricing = () => {
 
       try {
         const res = await fetch(
-          `https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/pricing/country/${countryCode}/platform/${storedShopPlatform}`
+          `https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/pricing/country/${countryCode}/platform/${storedShopPlatform}`,
         );
         const data = await res.json();
 
@@ -102,7 +117,7 @@ const Pricing = () => {
 
         // Fetch user’s existing payments
         const paymentRes = await fetch(
-          `https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/${currentUser}`
+          `https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/${currentUser}`,
         );
         const paymentData = await paymentRes.json();
 
@@ -113,13 +128,13 @@ const Pricing = () => {
         // If shop already has a plan, filter out free trial
         if (paidShopNames.includes(currentShopId.toString())) {
           const newStoredShopPlans = storedShopPlans.filter(
-            (p) => p.amount !== 0
+            (p) => p.amount !== 0,
           );
           setPlans(newStoredShopPlans);
-          setActivePlan(storedShopPlans[0] || null);
+          setActivePlan(storedShopPlans[1] || null);
         } else {
           setPlans(storedShopPlans);
-          setActivePlan(storedShopPlans[0] || null);
+          setActivePlan(storedShopPlans[1] || null);
         }
       } catch (err) {
         console.error(err);
@@ -129,7 +144,7 @@ const Pricing = () => {
         setLoading(false);
       }
     },
-    [currentUser, storedShopPlatform, currentShopId]
+    [currentUser, storedShopPlatform, currentShopId],
   );
   useEffect(() => {
     if (currentUser) {
@@ -154,7 +169,7 @@ const Pricing = () => {
     try {
       const { data } = await axios.post(
         "https://grozziieget.zjweiting.com:8033/tht/printerUserPaymentInfo/add",
-        paymentInfo
+        paymentInfo,
       );
       localStorage.setItem("paymentInfo", JSON.stringify(data));
 
@@ -162,7 +177,7 @@ const Pricing = () => {
       setModalTitle(
         <div className="bg-green-200 w-16 h-16 rounded-full flex items-center justify-center">
           <TiInfoOutline className="w-10 h-10 text-gray-600" />
-        </div>
+        </div>,
       );
       setModalMessage(<p>{t("free_plan_activated_success")}</p>);
       setConfirmAction(() => () => navigate("/onlineprint/home"));
@@ -173,7 +188,7 @@ const Pricing = () => {
       setModalTitle(
         <div className="bg-red-200 w-16 h-16 rounded-full flex items-center justify-center">
           <TiInfoOutline className="w-10 h-10 text-red-600" />
-        </div>
+        </div>,
       );
       setModalMessage(<p>{t("failed_to_store_payment_info")}</p>);
       setConfirmAction(() => () => setIsConfirmModalOpen(false));
@@ -186,6 +201,11 @@ const Pricing = () => {
 
   // --- Handle plan selection ---
   const handleChoosePlan = (plan) => {
+    if (!isEmailVerified()) {
+      setSelectedPlan(plan);
+      setShowVerifyNoticeModal(true);
+      return;
+    }
     setSelectedPlan(plan);
     if (plan.amount === 0) {
       setShowFreeModal(true);
@@ -196,17 +216,32 @@ const Pricing = () => {
 
   return (
     <div className="bg-[#004368] bg-opacity-5 min-h-screen">
-      <div className="pt-[70px] pb-[70px] flex flex-col items-center">
+      <div className="pt-[50px] pb-[70px] flex flex-col items-center">
         {/* Header */}
-        <div className="flex flex-col items-center mb-14">
-          <img
-            src={logo}
-            alt="Logo"
-            className="w-60 h-[60px] object-fit mb-10"
-          />
-          <h4 className="text-black text-4xl font-semibold capitalize mb-4">
-            {t("purchase_subscription")}
-          </h4>
+        <div className="mb-14">
+          <div className="flex flex-col items-center">
+            <img
+              src={logo}
+              alt="Logo"
+              className="w-30 h-[30px] object-fit mb-5"
+            />
+          </div>
+
+          <div className=" px-1 p-4 ">
+            <h4 className=" flex justify-center items-center text-transparent bg-clip-text bg-gradient-to-r from-gray-800 to-gray-800 text-4xl font-bold capitalize mb-6">
+              {t("purchase_subscription")}
+            </h4>
+
+            <div className="flex justify-center items-center">
+              <p className="text-gray-500 mx-10">
+                {t("PurchasedPlan_1")}{" "}
+                <span className="font-bold">{storedShopPlatform}</span>{" "}
+                {t("PurchasedPlan_Platform")}{" "}
+                <span className="font-bold">{storedShopStore}</span>
+                {t("PurchasedPlan_Dot")}
+              </p>
+            </div>
+          </div>
           {/* <h6 className="text-black text-opacity-60 text-xl mb-4">
             {t("Selected Shop Platform Country")}
           </h6>
@@ -247,18 +282,16 @@ const Pricing = () => {
       {showShopModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white p-6 rounded-lg w-[400px] text-center">
-            <h2 className="text-lg font-bold mb-4">Notice</h2>
-            <p className="mb-6">
-              First, please add your shop before selecting a plan.
-            </p>
+            <h2 className="text-lg font-bold mb-4">{t("Notice")}</h2>
+            <p className="mb-6">{t("AddShopFirst")}</p>
             <button
               className="bg-[#004368] text-white px-4 py-2 rounded hover:bg-opacity-80"
               onClick={() => {
                 setShowShopModal(false);
-                window.location.href = "/online"; // Redirect to /online
+                window.location.href = "/onlineprint"; // Redirect to /online
               }}
             >
-              OK
+              {t("Ok")}
             </button>
           </div>
         </div>
@@ -289,6 +322,180 @@ const Pricing = () => {
         onConfirm={confirmAction}
         showConfirmButton={showConfirmButton}
       />
+
+      {/* part for verification account */}
+      {showVerifyNoticeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white p-6 rounded-lg w-[420px] text-center">
+            <h2 className="text-lg font-semibold mb-3">
+              {t("PleaseVerifyAccount")}
+            </h2>
+
+            <p className="text-gray-600 mb-4">{t("VerifyBeforePayment")}</p>
+
+            <p className="font-medium mb-6">{currentUser}</p>
+
+            <div className="flex justify-center gap-3">
+              <button
+                onClick={() => setShowVerifyNoticeModal(false)}
+                className="px-4 py-2 border rounded-md"
+              >
+                {t("Cancel")}
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowVerifyNoticeModal(false);
+                  setShowVerifyFormModal(true);
+                }}
+                className="px-4 py-2 bg-[#004368] text-white rounded-md"
+              >
+                {t("VerifyEmail")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showVerifyFormModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white p-6 rounded-lg w-[440px]">
+            <h2 className="text-lg font-semibold mb-4">{t("VerifyEmail")}</h2>
+
+            {/* Email */}
+            <div className="mb-3">
+              <label className="block text-sm mb-1">{t("Email")})</label>
+              <input
+                value={currentUser}
+                readOnly
+                className="w-full px-3 py-2 border rounded bg-gray-100"
+              />
+            </div>
+
+            {/* Password */}
+            <div className="mb-3">
+              <label className="block text-sm mb-1">{t("password")}</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 border rounded"
+                placeholder={t("enter_email")}
+              />
+            </div>
+
+            {/* Alternative Email */}
+            <div className="mb-4">
+              <label className="block text-sm mb-1">
+                {t("AlternativeEmailOptional")}
+              </label>
+              <input
+                value={altEmail}
+                onChange={(e) => setAltEmail(e.target.value)}
+                className="w-full px-3 py-2 border rounded"
+                placeholder={t("EnterAlternativeEmail")}
+              />
+            </div>
+
+            {/* Message */}
+            {message && (
+              <p
+                className={`mb-3 text-sm ${
+                  isError ? "text-red-600" : "text-green-600"
+                }`}
+              >
+                {message}
+              </p>
+            )}
+
+            {/* Actions */}
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowVerifyFormModal(false)}
+                className="px-4 py-2 border rounded-md"
+                disabled={isLoading}
+              >
+                {t("Cancel")}
+              </button>
+
+              <button
+                disabled={isLoading}
+                onClick={async () => {
+                  if (!password) {
+                    setMessage("Password is required");
+                    setIsError(true);
+                    return;
+                  }
+
+                  try {
+                    setIsLoading(true);
+                    setMessage("");
+                    setIsError(false);
+
+                    let response;
+
+                    if (altEmail) {
+                      // ✅ Alternate email API
+                      response = await fetch(
+                        `https://grozziieget.zjweiting.com:3091/CustomerService-Chat/api/v1/user/alternate-email/add?email=${encodeURIComponent(
+                          currentUser,
+                        )}&password=${password}&alternateEmail=${encodeURIComponent(
+                          altEmail,
+                        )}`,
+                        { method: "POST" },
+                      );
+                    } else {
+                      // ✅ Resend verification API
+                      response = await fetch(
+                        `https://grozziieget.zjweiting.com:3091/CustomerService-Chat/api/v1/user/resend-verification?email=${encodeURIComponent(
+                          currentUser,
+                        )}&password=${password}`,
+                        { method: "POST" },
+                      );
+                    }
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                      setMessage(result.message);
+
+                      // ✅ Update localStorage
+                      const printUser = JSON.parse(
+                        localStorage.getItem("printerUser") || "{}",
+                      );
+                      printUser.emailVerified = true;
+                      localStorage.setItem(
+                        "printerUser",
+                        JSON.stringify(printUser),
+                      );
+
+                      // ⏳ Delay then redirect
+                      setTimeout(() => {
+                        setShowVerifyFormModal(false);
+                        navigate("/onlineprint/verifyemail");
+                      }, 2000);
+                    } else {
+                      setMessage(result.message || "Something went wrong");
+                      setIsError(true);
+                    }
+                  } catch (err) {
+                    setMessage("Server error. Please try again.");
+                    setIsError(true);
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+                className={`px-4 py-2 text-white rounded-md flex items-center ${
+                  isLoading
+                    ? "bg-gray-400 cursor-not-allowed"
+                    : "bg-[#004368] hover:bg-[#021d2b]"
+                }`}
+              >
+                {isLoading ? t("Processing") : t("Submit")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
