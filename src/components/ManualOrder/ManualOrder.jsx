@@ -37,7 +37,7 @@ import { useTranslation } from "react-i18next";
 const ManualOrder = () => {
   //   language change
   const selectedLanguage = useSelector(
-    (state) => state.user.selectedLanguageRedux
+    (state) => state.user.selectedLanguageRedux,
   );
   const [selectedOption, setSelectedOption] = useState(0);
   const [selectAll, setSelectAll] = useState(false);
@@ -48,7 +48,7 @@ const ManualOrder = () => {
   const [startDate, setStartDate] = useState(new Date());
   const [endDate, setEndDate] = useState(new Date());
   const [deliveryCompanyName, setDeliveryCompanyName] = useState(
-    deliveryCompanyNames[0]
+    deliveryCompanyNames[0],
   );
   const [tikTokOrderStatusCheck, setTikTokOrderStatusCheck] =
     useState("AWAITING_SHIPMENT");
@@ -92,7 +92,7 @@ const ManualOrder = () => {
         "https://grozziieget.zjweiting.com:3091/GrozziiePrint-LoginRegistration/user/details",
         {
           params: { token: token },
-        }
+        },
       );
       setUserEmail(response?.data?.email);
     } catch (error) {
@@ -119,7 +119,7 @@ const ManualOrder = () => {
     if (checkedItems.some((item) => item?.id === customer?.id)) {
       // If the customer id is already in the checkedItems, remove it
       const updatedItems = checkedItems.filter(
-        (item) => item?.id !== customer?.id
+        (item) => item?.id !== customer?.id,
       );
       setCheckedItems(updatedItems);
       setSelectAll(false);
@@ -172,15 +172,6 @@ const ManualOrder = () => {
     setSearchAllQuery(event.target.value);
   };
 
-  // const filteredAllProduct = mallProduct.filter((request) =>
-  //   request?.productName.toLowerCase().includes(searchAllQuery.toLowerCase()) ||
-  //   request?.productCountryName.toLowerCase().includes(searchAllQuery.toLowerCase()) ||
-  //   request?.productPrice.toLowerCase().includes(searchAllQuery.toLowerCase()) ||
-  //   // request?.id.includes(searchAllQuery.toLowerCase()) ||
-  //   request?.modelNumber.toLowerCase().includes(searchAllQuery.toLowerCase())
-  //   // request?.printerColo.toLowerCase().includes(searchAllQuery.toLowerCase())
-  // );
-
   // pagination part
   const [showPage, setShowPage] = useState(1);
   const [currentBar, setCurrentBar] = useState(1);
@@ -189,11 +180,11 @@ const ManualOrder = () => {
   const [senderData, setSenderData] = useState([]);
   const [goodsData, setGoodsData] = useState({});
   const [totalPart, setTotalPart] = useState(
-    Math.ceil(customersData?.length / 5)
+    Math.ceil(customersData?.length / 5),
   );
 
   const [currentCustomerData, setCurrentCustomerData] = useState(
-    customersData?.slice(0, 5)
+    customersData?.slice(0, 5),
   );
 
   const handleToShowCurrentBarData = (count) => {
@@ -229,26 +220,6 @@ const ManualOrder = () => {
       setRightPaginationBtn(false);
     }
   };
-
-  // const handleToNext = (count) => {
-  //   if (count <= totalPart) {
-  //     const currentData = count * 5;
-  //     // setCurrentCustomerData(customersData.slice(currentData - 5, currentData));
-  //     // setCurrentBar(count);
-  //     setFilteredData(customersData.slice(currentData - 5, currentData));
-  //     setCurrentBar(count);
-  //   }
-  // };
-
-  // const handleToPrevious = (count) => {
-  //   if (count > 0) {
-  //     const currentData = count * 5;
-  //     // setCurrentCustomerData(customersData.slice(currentData - 5, currentData));
-  //     // setCurrentBar(count);
-  //     setFilteredData(customersData.slice(currentData - 5, currentData));
-  //     setCurrentBar(count);
-  //   }
-  // };
 
   // pagination prev option
   const handleToPrevious = (count) => {
@@ -330,7 +301,7 @@ const ManualOrder = () => {
       // Extract provinces from data
       const provincesData =
         getAllAddressData.logistics_address_get_response.logistics_address_list.filter(
-          (item) => item.region_type === 1
+          (item) => item.region_type === 1,
         );
       // Store the provinces data in state
       setProvinces(provincesData);
@@ -342,7 +313,7 @@ const ManualOrder = () => {
     // console.log(parentId);
     const cityData =
       getAllAddressData?.logistics_address_get_response?.logistics_address_list?.filter(
-        (item) => item.parent_id === parentId
+        (item) => item.parent_id === parentId,
       );
     setCities(cityData);
   };
@@ -350,7 +321,7 @@ const ManualOrder = () => {
   const filterDistrictUnderCity = (parentId) => {
     const districtData =
       getAllAddressData?.logistics_address_get_response?.logistics_address_list?.filter(
-        (item) => item.parent_id === parentId
+        (item) => item.parent_id === parentId,
       );
     setDistricts(districtData);
   };
@@ -388,7 +359,7 @@ const ManualOrder = () => {
 
   // Dell the value of checked items
   const checkedItemsChecking = useSelector(
-    (state) => state.user.checkedItemsFromRedux
+    (state) => state.user.checkedItemsFromRedux,
   );
   const dispatch = useDispatch();
 
@@ -404,14 +375,14 @@ const ManualOrder = () => {
       setModalTitle(
         <div className="bg-red-200 w-16 h-16 rounded-full flex items-center justify-center">
           <TiInfoOutline className="w-10 h-10 text-red-600" />
-        </div>
+        </div>,
       );
       setModalMessage(
         <p>
           {selectedLanguage === "zh-CN"
             ? "沒有選擇任何項目。"
             : "No items selected."}
-        </p>
+        </p>,
       );
       setConfirmAction(null);
       setShowConfirmButton(false);
@@ -420,14 +391,14 @@ const ManualOrder = () => {
       setModalTitle(
         <div className="bg-green-200 w-16 h-16 rounded-full flex items-center justify-center">
           <AiOutlineCheckCircle className="w-10 h-10 text-green-600" />
-        </div>
+        </div>,
       );
       setModalMessage(
         <p className="text-xl font-semibold">
           {selectedLanguage === "zh-CN"
             ? "您确定接受这个订单吗？"
             : "Are you sure to accept this order?"}
-        </p>
+        </p>,
       );
       setConfirmAction(() => handleConfirm);
       setShowConfirmButton(true);
@@ -676,7 +647,7 @@ const ManualOrder = () => {
           },
         ],
         from: "ManualOrder",
-      })
+      }),
     );
 
     setFormData({
@@ -747,7 +718,7 @@ const ManualOrder = () => {
       {
         method: "POST",
         body: formData,
-      }
+      },
     );
     const res = await response.json();
     console.log(res);
@@ -818,7 +789,7 @@ const ManualOrder = () => {
     // Usage:
     const filteredMultipleSearchingData = filterDataBySearchFields(
       customersData,
-      searchFields
+      searchFields,
     );
     setFilteredData(filteredMultipleSearchingData);
   };
@@ -1101,7 +1072,7 @@ const ManualOrder = () => {
                           value={customerData?.id}
                           // checked={checkedItems.includes(customerData.id)}
                           checked={checkedItems.some(
-                            (item) => item?.id === customerData?.id
+                            (item) => item?.id === customerData?.id,
                           )}
                           onChange={() => handleCheckboxChange(customerData)}
                           // checked={selectedItems.includes(product.id)}

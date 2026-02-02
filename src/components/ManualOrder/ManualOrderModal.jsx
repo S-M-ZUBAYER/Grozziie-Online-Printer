@@ -102,34 +102,6 @@ const ManualOrderModal = ({
 
                 {/* middle section */}
                 <div className="mt-14 flex items-start justify-center">
-                  {/* <div className="w-28 ml-0">
-                    <span className="capitalize text-black text-[15px] font-medium leading-normal">
-                      smart entry
-                    </span>
-                  </div>
-                  <textarea
-                    placeholder="Enter the recipient information"
-                    className="textarea textarea-bordered textarea-lg w-[556px] h-[135px] bg-white bg-transparent ml-[63px] mr-4"
-                  ></textarea>
-                  <div className="grid grid-cols-2 gap-3 mr-4">
-                    <div className="bg-[#004368] bg-opacity-10 hover:bg-opacity-100 text-black text-opacity-80 hover:text-white w-[160px] h-10 px-4 py-2 rounded-md cursor-pointer flex items-center">
-                      <FaRegCopy className="w-5 h-5 mr-3" />
-                      <button className="text-[15px] font-normal capitalize">
-                        copy order
-                      </button>
-                    </div>
-                    <div className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[101px] h-10 px-8 py-2 rounded-md cursor-pointer ml-4">
-                      <button className="text-[15px] font-medium capitalize">
-                        Entry
-                      </button>
-                    </div>
-                    <div className="bg-[#004368] hover:bg-opacity-30 text-white hover:text-black w-[124px] h-10 px-8 py-2 rounded-md cursor-pointer text-center">
-                      <button className="text-[15px] font-medium capitalize">
-                        Save
-                      </button>
-                    </div>
-                  </div> */}
-
                   <input
                     type="file"
                     id="fileInput"
@@ -207,7 +179,7 @@ const ManualOrderModal = ({
                       required
                       onChange={(e) => {
                         const selectedId = provinces?.find(
-                          (province) => province.region_name === e.target.value
+                          (province) => province.region_name === e.target.value,
                         ).id;
                         filterCityUnderProvince(selectedId);
                       }}
@@ -236,7 +208,7 @@ const ManualOrderModal = ({
                       required
                       onChange={(e) => {
                         const selectedId = cities?.find(
-                          (city) => city.region_name === e.target.value
+                          (city) => city.region_name === e.target.value,
                         ).id;
                         filterDistrictUnderCity(selectedId);
                       }}
