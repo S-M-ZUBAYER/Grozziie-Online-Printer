@@ -1,0 +1,726 @@
+// import React, { useState } from "react";
+// import login from "../../assets/login.png";
+// import { Link, useNavigate } from "react-router-dom";
+// import { useDispatch, useSelector } from "react-redux";
+// import { FiEye, FiEyeOff } from "react-icons/fi";
+// import {
+//   accountUserChange,
+//   paymentUserChange,
+// } from "../../features/slice/userSlice";
+// import ClipLoader from "react-spinners/ClipLoader";
+// import axios from "axios";
+// import { useTranslation } from "react-i18next";
+
+// const Login = () => {
+//   const selectedLanguage = useSelector(
+//     (state) => state.user.selectedLanguageRedux,
+//   );
+//   const [formData, setFormData] = useState({
+//     email: "",
+//     password: "",
+//   });
+//   const [forgotEmail, setForgotEmail] = useState("");
+//   const [showPassword, setShowPassword] = useState(false);
+//   const [emailError, setEmailError] = useState("");
+//   const [passwordError, setPasswordError] = useState("");
+//   const [forbiddenError, setForbiddenError] = useState("");
+//   const [forgotPasswordError, setForgotPasswordError] = useState("");
+//   const [loading, setLoading] = useState(false);
+//   const navigate = useNavigate();
+//   const dispatch = useDispatch();
+//   const { t } = useTranslation();
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData((prevData) => ({
+//       ...prevData,
+//       [name]: value,
+//     }));
+
+//     // Clear errors when the input value changes
+//     if (name === "email" && emailError) {
+//       setEmailError("");
+//       setForbiddenError("");
+//     }
+//     if (name === "password" && passwordError) {
+//       setPasswordError("");
+//     }
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     setLoading(true);
+//     try {
+//       const response = await fetch(
+//         // "https://grozziieget.zjweiting.com:3091/tiktokshop-print/user/signin",
+//         "https://grozziie.zjweiting.com:3091/tiktokshop-print/user/signin",
+
+//         {
+//           method: "POST",
+//           headers: {
+//             "Content-Type": "application/json",
+//           },
+//           body: JSON.stringify(formData),
+//         },
+//       );
+
+//       const res = await response.json();
+
+//       if (response.status === 200) {
+//         localStorage.setItem("printerUser", JSON.stringify(res));
+//         dispatch(accountUserChange(formData.email));
+//         dispatch(paymentUserChange(res));
+//         navigate("/onlineprint/");
+//         window.location.reload();
+//       } else if (response.status === 400) {
+//         res.message === "User Email Not Found" &&
+//           setEmailError("Incorrect email. Please try again");
+//         setFormData((prevData) => ({
+//           ...prevData,
+//           password: "",
+//         }));
+//       } else if (response.status === 401) {
+//         res.message === "Bad credentials" &&
+//           setPasswordError("Your password did not match. Please try again");
+//         setFormData((prevData) => ({
+//           ...prevData,
+//           password: "",
+//         }));
+//       } else if (response.status === 403) {
+//         setForbiddenError("Please verify your email!");
+//       }
+//     } catch (error) {
+//       console.error("Error occurred:", error);
+//       setPasswordError(
+//         "Your password did not match Or Somethingse else. Please try again",
+//       );
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   // const handleModalSubmit = async (e) => {
+//   //   e.preventDefault();
+//   //   setLoading(true);
+//   //   try {
+//   //     const response = await fetch(
+//   //       `https://grozziieget.zjweiting.com:3091/CustomerService-Chat/api/dev/user/forgot-password?email=${forgotEmail}`,
+//   //       {
+//   //         method: "GET",
+//   //         headers: {
+//   //           "Content-Type": "application/json",
+//   //         },
+//   //       },
+//   //     );
+
+//   //     const res = await response.json();
+
+//   //     if (response.status === 200) {
+//   //       setLoading(false);
+//   //       navigate("/onlineprint/forgotpassword");
+//   //     } else {
+//   //       setForgotPasswordError("This email is not valid. Please try another");
+//   //       setLoading(false);
+//   //     }
+//   //   } catch (error) {
+//   //     console.error("Error occurred:", error);
+//   //     setLoading(false);
+//   //   }
+//   //   // You can perform further actions here, such as sending the email for password reset
+//   //   setForgotEmail("");
+//   //   // Close the modal if needed
+//   //   // document.getElementById("my_modal_settings").close();
+//   // };
+
+//   const handleModalSubmit = async (e) => {
+//     e.preventDefault();
+//     setLoading(true);
+//     // Reset error state
+//     setForgotPasswordError("");
+
+//     try {
+//       // Encode email for URL safety
+//       const encodedEmail = encodeURIComponent(forgotEmail);
+//       const response = await fetch(
+//         `https://grozziieget.zjweiting.com:3091/CustomerService-Chat/api/dev/user/forgot-password?email=${encodedEmail}`,
+//         {
+//           method: "POST", // Changed from GET to POST
+//           headers: {
+//             accept: "*/*",
+//             "Content-Type": "application/x-www-form-urlencoded",
+//           },
+//           body: "", // Empty body as shown in curl example
+//         },
+//       );
+
+//       const res = await response.json();
+//       console.log(res);
+
+//       // Check based on the response structure from curl example
+//       if (res.code === 200 && res.status === "success") {
+//         setLoading(false);
+//         // Show success message
+//         setSuccessMessage(
+//           res.message || "Password reset email sent successfully",
+//         );
+
+//         // Clear the email input
+//         setForgotEmail("");
+
+//         // Navigate after a short delay
+//         setTimeout(() => {
+//           navigate("/onlineprint/forgotpassword");
+//         }, 1500);
+//       } else {
+//         // Handle error based on response
+//         setForgotPasswordError(
+//           res.message || "This email is not valid. Please try another",
+//         );
+//         setLoading(false);
+//       }
+//     } catch (error) {
+//       console.error("Error occurred:", error);
+//       setForgotPasswordError("Network error. Please try again.");
+//       setLoading(false);
+//     }
+//   };
+
+//   const togglePasswordVisibility = () => {
+//     setShowPassword(!showPassword);
+//   };
+
+//   return (
+//     <div className="bg-[#004368] bg-opacity-5 min-h-screen py-32">
+//       <div className="w-[1140px] mx-auto grid grid-cols-7 shadow-lg rounded-2xl">
+//         <div className="col-span-3 bg-white  rounded-l-2xl">
+//           <div className="flex flex-col items-center justify-center bg-[#004368] bg-opacity-5 py-20 m-[6px] rounded-2xl">
+//             <div className="flex flex-col items-center gap-y-7">
+//               <h1 className="text-[#004368] text-6xl font-bold">Grozziie</h1>
+//               <p className="text-[#004368] text-xl font-normal">
+//                 {t("login_to_explore")}
+//               </p>
+//             </div>
+//             <div className="mt-8">
+//               <img src={login} alt="LogIn" className="w-72 h-80" />
+//             </div>
+//           </div>
+//         </div>
+//         <div className="col-span-4 bg-white flex flex-col items-center py-20 relative rounded-r-2xl">
+//           <h1 className="text-[#004368] text-3xl font-semibold mb-7">
+//             {t("login")}
+//           </h1>
+//           <form className="w-full px-20" onSubmit={handleSubmit}>
+//             {/* Email */}
+//             <div className="mb-[10px]">
+//               <label className="form-control w-full">
+//                 <span className="text-[#004368] text-base font-semibold">
+//                   {t("email")}
+//                 </span>
+//                 <input
+//                   type="email"
+//                   name="email"
+//                   required
+//                   value={formData.email}
+//                   onChange={handleChange}
+//                   placeholder={t("enter_email")}
+//                   className={`h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg ${
+//                     emailError || forbiddenError ? "border-red-500" : ""
+//                   }`}
+//                 />
+//               </label>
+//               <p className="text-xs pt-1 text-red-500 font-bold">
+//                 {emailError}
+//               </p>
+//               <p className="text-xs pt-1 text-red-500 font-bold">
+//                 {forbiddenError}
+//               </p>
+//             </div>
+
+//             {/* Password */}
+//             <div className="my-[10px]">
+//               <label className="form-control w-full">
+//                 <span className="text-[#004368] text-base font-semibold">
+//                   {t("password")}
+//                 </span>
+//                 <div className="relative">
+//                   <input
+//                     type={showPassword ? "text" : "password"}
+//                     name="password"
+//                     required
+//                     value={formData.password}
+//                     onChange={handleChange}
+//                     placeholder={t("enter_password")}
+//                     className={`h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg ${
+//                       passwordError ? "border-red-500" : ""
+//                     }`}
+//                   />
+//                   <button
+//                     type="button"
+//                     onClick={togglePasswordVisibility}
+//                     className="absolute inset-y-0 right-0 pr-3 flex items-center"
+//                   >
+//                     {showPassword ? <FiEyeOff /> : <FiEye />}
+//                   </button>
+//                 </div>
+//               </label>
+//               <p className="text-xs pt-1 text-red-500 font-bold">
+//                 {passwordError}
+//               </p>
+//             </div>
+
+//             <div className="flex items-center justify-center mb-6 mt-16">
+//               <button
+//                 className="bg-[#004368] hover:bg-opacity-60 text-white hover:text-black w-[250px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mr-3 mt-6"
+//                 type="submit"
+//                 disabled={loading}
+//               >
+//                 {loading ? (
+//                   <ClipLoader color="#c3c1c8" size={28} />
+//                 ) : (
+//                   t("login")
+//                 )}
+//               </button>
+//             </div>
+//           </form>
+
+//           {/* forgot password */}
+//           <div className="absolute top-[290px] right-20 mt-6">
+//             <button
+//               className="text-[#004368] hover:text-blue-600"
+//               onClick={() =>
+//                 document.getElementById("my_modal_settings").showModal()
+//               }
+//             >
+//               {t("forgot_password")}
+//             </button>
+//             <dialog id="my_modal_settings" className="modal">
+//               <div className="bg-white w-[500px] h-[240px] rounded-md pt-10">
+//                 <h1 className="text-center text-2xl font-bold text-[#004368]">
+//                   {t("enter_email")}
+//                 </h1>
+//                 <div className="modal-action w-full text-center flex items-center justify-center">
+//                   <form method="dialog" onSubmit={handleModalSubmit}>
+//                     <div className="">
+//                       <input
+//                         type="email"
+//                         name="forgotEmail"
+//                         placeholder={t("enter_email")}
+//                         required
+//                         className={`w-80 text-black text-opacity-55 text-[15px] font-normal leading-normal pl-2 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg ${
+//                           forgotPasswordError ? "border-red-500" : ""
+//                         }`}
+//                         value={forgotEmail}
+//                         onChange={(e) => setForgotEmail(e.target.value)}
+//                       />
+//                       <p className="text-xs pt-1 text-red-500 font-bold">
+//                         {forgotPasswordError}
+//                       </p>
+//                     </div>
+//                     <div className="flex justify-end">
+//                       <p
+//                         className="bg-[#004368] bg-opacity-30 hover:bg-[#004368] text-black hover:text-white w-[100px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mt-5 mr-3"
+//                         onClick={() =>
+//                           document.getElementById("my_modal_settings").close()
+//                         }
+//                       >
+//                         {t("close")}
+//                       </p>
+//                       <button
+//                         className="bg-[#004368] hover:bg-opacity-60 text-white hover:text-black w-[100px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mt-5"
+//                         type="submit"
+//                       >
+//                         {loading ? (
+//                           <ClipLoader color="#c3c1c8" size={28} />
+//                         ) : (
+//                           t("submit")
+//                         )}
+
+//                         {/* {selectedLanguage === "zh-CN" ? "提交" : "Submit"} */}
+//                       </button>
+//                     </div>
+//                   </form>
+//                 </div>
+//               </div>
+//             </dialog>
+//           </div>
+//           <p className="mt-16 text-black text-opacity-60">
+//             {t("no_account")}{" "}
+//             <Link
+//               to="/onlineprint/register"
+//               className="font-semibold text-[#004368]"
+//             >
+//               {t("create_account")}
+//             </Link>
+//           </p>
+//         </div>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Login;
+
+import React, { useState } from "react";
+import login from "../../assets/login.png";
+import { Link, useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { FiEye, FiEyeOff } from "react-icons/fi";
+import {
+  accountUserChange,
+  paymentUserChange,
+} from "../../features/slice/userSlice";
+import ClipLoader from "react-spinners/ClipLoader";
+import { useTranslation } from "react-i18next";
+
+const Login = () => {
+  const selectedLanguage = useSelector(
+    (state) => state.user.selectedLanguageRedux,
+  );
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [forbiddenError, setForbiddenError] = useState("");
+  const [forgotPasswordError, setForgotPasswordError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { t } = useTranslation();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+
+    // Clear errors when the input value changes
+    if (name === "email" && emailError) {
+      setEmailError("");
+      setForbiddenError("");
+    }
+    if (name === "password" && passwordError) {
+      setPasswordError("");
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setEmailError("");
+    setPasswordError("");
+    setForbiddenError("");
+
+    try {
+      const response = await fetch(
+        "https://grozziieget.zjweiting.com:3091/CustomerService-Chat/api/dev/user/signIn2",
+        {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userEmail: formData.email,
+            userPassword: formData.password,
+          }),
+        },
+      );
+
+      const res = await response.json();
+
+      if (res.status === "success") {
+        // Transform response to match old structure
+        const transformedData = {
+          id: res.data.userId,
+          fullName: res.data.userName,
+          email: res.data.userEmail,
+          phoneNumber: res.data.phone,
+          shopName: res.data.designation || "",
+          region: res.data.country,
+          image: res.data.photo,
+          role: res.data.role,
+          alternateEmail: res.data.alternateEmail,
+          deviceId: res.data.deviceId,
+          joiningTime: res.data.joiningTime,
+          lastUpdate: res.data.lastUpdate,
+          lastSignIn: res.data.lastSignIn,
+          status: res.data.status,
+          addresses: res.data.addresses,
+          deviceType: res.data.deviceType,
+          printerModel: res.data.printerModel,
+          emailVerified: res.data.emailVerified,
+          transactions: [],
+          subscription: null,
+          lastPayment: null,
+          expireTime: null,
+        };
+
+        localStorage.setItem("printerUser", JSON.stringify(transformedData));
+        dispatch(accountUserChange(formData.email));
+        dispatch(paymentUserChange(transformedData));
+        navigate("/onlineprint/");
+        window.location.reload();
+      } else if (res.status === "error") {
+        // Handle errors based on message
+        if (res.message.includes("incorrect email")) {
+          setEmailError("Incorrect email. Please try again");
+        } else if (res.message.includes("password")) {
+          setPasswordError("Your password did not match. Please try again");
+        } else if (res.message.includes("verify")) {
+          setForbiddenError("Please verify your email!");
+        } else {
+          setPasswordError(res.message || "Login failed. Please try again");
+        }
+
+        setFormData((prev) => ({ ...prev, password: "" }));
+      }
+    } catch (error) {
+      console.error("Error occurred:", error);
+      setPasswordError("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleModalSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    // Reset error and success states
+    setForgotPasswordError("");
+    setSuccessMessage("");
+
+    try {
+      // Encode email for URL safety
+      const encodedEmail = encodeURIComponent(forgotEmail);
+      const response = await fetch(
+        `https://grozziieget.zjweiting.com:3091/CustomerService-Chat/api/dev/user/forgot-password?email=${encodedEmail}`,
+        {
+          method: "POST",
+          headers: {
+            accept: "*/*",
+            "Content-Type": "application/x-www-form-urlencoded",
+          },
+          body: "",
+        },
+      );
+
+      const res = await response.json();
+
+      // Check based on the response structure
+      if (res.code === 200 && res.status === "success") {
+        setLoading(false);
+        // Show success message
+        setSuccessMessage(
+          res.message || "Password reset email sent successfully",
+        );
+
+        // Clear the email input
+        setForgotEmail("");
+
+        // Navigate after a short delay
+        setTimeout(() => {
+          document.getElementById("my_modal_settings").close();
+          navigate("/onlineprint/forgotpassword");
+        }, 1500);
+      } else {
+        // Handle error based on response
+        setForgotPasswordError(
+          res.message || "This email is not valid. Please try another",
+        );
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("Error occurred:", error);
+      setForgotPasswordError("Network error. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  return (
+    <div className="bg-[#004368] bg-opacity-5 min-h-screen py-32">
+      <div className="w-[1140px] mx-auto grid grid-cols-7 shadow-lg rounded-2xl">
+        <div className="col-span-3 bg-white rounded-l-2xl">
+          <div className="flex flex-col items-center justify-center bg-[#004368] bg-opacity-5 py-20 m-[6px] rounded-2xl">
+            <div className="flex flex-col items-center gap-y-7">
+              <h1 className="text-[#004368] text-6xl font-bold">Grozziie</h1>
+              <p className="text-[#004368] text-xl font-normal">
+                {t("LoginToExplore")}
+              </p>
+            </div>
+            <div className="mt-8">
+              <img src={login} alt="LogIn" className="w-72 h-80" />
+            </div>
+          </div>
+        </div>
+        <div className="col-span-4 bg-white flex flex-col items-center py-20 relative rounded-r-2xl">
+          <h1 className="text-[#004368] text-3xl font-semibold mb-7">
+            {t("login")}
+          </h1>
+          <form className="w-full px-20" onSubmit={handleSubmit}>
+            {/* Email */}
+            <div className="mb-[10px]">
+              <label className="form-control w-full">
+                <span className="text-[#004368] text-base font-semibold">
+                  {t("email")}
+                </span>
+                <input
+                  type="email"
+                  name="email"
+                  required
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder={t("enter_email")}
+                  className={`h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg ${
+                    emailError || forbiddenError ? "border-red-500" : ""
+                  }`}
+                />
+              </label>
+              <p className="text-xs pt-1 text-red-500 font-bold">
+                {emailError}
+              </p>
+              <p className="text-xs pt-1 text-red-500 font-bold">
+                {forbiddenError}
+              </p>
+            </div>
+
+            {/* Password */}
+            <div className="my-[10px]">
+              <label className="form-control w-full">
+                <span className="text-[#004368] text-base font-semibold">
+                  {t("password")}
+                </span>
+                <div className="relative">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    name="password"
+                    required
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder={t("enter_password")}
+                    className={`h-full w-full text-black text-opacity-55 text-[15px] font-normal leading-normal pl-3 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg ${
+                      passwordError ? "border-red-500" : ""
+                    }`}
+                  />
+                  <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  >
+                    {showPassword ? <FiEyeOff /> : <FiEye />}
+                  </button>
+                </div>
+              </label>
+              <p className="text-xs pt-1 text-red-500 font-bold">
+                {passwordError}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center mb-6 mt-16">
+              <button
+                className="bg-[#004368] hover:bg-opacity-60 text-white hover:text-black w-[250px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mr-3 mt-6"
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? (
+                  <ClipLoader color="#c3c1c8" size={28} />
+                ) : (
+                  t("login")
+                )}
+              </button>
+            </div>
+          </form>
+
+          {/* forgot password */}
+          <div className="absolute top-[290px] right-20 mt-6">
+            <button
+              className="text-[#004368] hover:text-blue-600"
+              onClick={() =>
+                document.getElementById("my_modal_settings").showModal()
+              }
+            >
+              {t("forgot_password")}
+            </button>
+            <dialog id="my_modal_settings" className="modal">
+              <div className="bg-white w-[500px] h-[280px] rounded-md pt-10">
+                <h1 className="text-center text-2xl font-bold text-[#004368]">
+                  {t("enter_email")}
+                </h1>
+                <div className="modal-action w-full text-center flex items-center justify-center">
+                  <form method="dialog" onSubmit={handleModalSubmit}>
+                    <div className="">
+                      <input
+                        type="email"
+                        name="forgotEmail"
+                        placeholder={t("enter_email")}
+                        required
+                        className={`w-80 text-black text-opacity-55 text-[15px] font-normal leading-normal pl-2 bg-[#004368] bg-opacity-5 outline-none border py-2 rounded-lg ${
+                          forgotPasswordError ? "border-red-500" : ""
+                        }`}
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                      />
+                      {forgotPasswordError && (
+                        <p className="text-xs pt-1 text-red-500 font-bold">
+                          {forgotPasswordError}
+                        </p>
+                      )}
+                      {successMessage && (
+                        <p className="text-xs pt-1 text-green-600 font-bold">
+                          {successMessage}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex justify-end">
+                      <p
+                        className="bg-[#004368] bg-opacity-30 hover:bg-[#004368] text-black hover:text-white w-[100px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mt-5 mr-3"
+                        onClick={() => {
+                          document.getElementById("my_modal_settings").close();
+                          setForgotPasswordError("");
+                          setSuccessMessage("");
+                        }}
+                      >
+                        {t("close")}
+                      </p>
+                      <button
+                        className="bg-[#004368] hover:bg-opacity-60 text-white hover:text-black w-[100px] h-10 px-2 py-2 rounded-md cursor-pointer text-center mt-5"
+                        type="submit"
+                        disabled={loading}
+                      >
+                        {loading ? (
+                          <ClipLoader color="#c3c1c8" size={28} />
+                        ) : (
+                          t("submit")
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </dialog>
+          </div>
+          <p className="mt-16 text-black text-opacity-60">
+            {t("no_account")}{" "}
+            <Link
+              to="/onlineprint/register"
+              className="font-semibold text-[#004368]"
+            >
+              {t("create_account")}
+            </Link>
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Login;

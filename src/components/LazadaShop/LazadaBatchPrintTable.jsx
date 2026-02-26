@@ -1,0 +1,303 @@
+import React, { useEffect, useRef, useState } from "react";
+import { useSelector } from "react-redux";
+import { RxCross1 } from "react-icons/rx";
+import FadeLoader from "react-spinners/FadeLoader";
+import { useTranslation } from "react-i18next";
+
+const LazadaBatchPrintTable = ({
+  filteredData,
+  isLoading,
+  isError,
+  handleDetailsClick,
+  checkedItems,
+  handleCheckboxChange,
+  lazadaOrderStatusCheck,
+  cipher,
+  detailsLoading,
+}) => {
+  const { t } = useTranslation();
+
+  console.log(lazadaOrderStatusCheck);
+
+  const [showModal, setShowModal] = useState(false);
+  const [trackingInfo, setTrackingInfo] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const lazadaAppKey = localStorage.getItem("lazadaAppKey");
+  const lazadaAuthCountry = localStorage.getItem("lazadaAuthCountry");
+  const lazadaAccountId = localStorage.getItem("lazadaAccountId");
+
+  const formatText = (text) => {
+    if (!text) return t("No Data");
+    return text.length > 20 ? `${text.slice(0, 20)}***` : text;
+  };
+
+  const handleGetTracking = async (order) => {
+    setLoading(true);
+    setError("");
+    setTrackingInfo(null);
+
+    try {
+      const orderId = order?.order_id;
+      if (!orderId) {
+        setError("Missing order ID.");
+        return;
+      }
+
+      // Step 1: Get item data to extract package_id(s)
+      const itemRes = await fetch(
+        // `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}`
+        `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/orders/items?orderId=${orderId}&account=${lazadaAccountId}`
+      );
+      const itemJson = await itemRes.json();
+      const parsedItemData = JSON.parse(itemJson?.body || "{}");
+      const items = parsedItemData?.data || [];
+      // Step 2: Collect all valid package_ids
+      const ofcPackageIdList = items
+        .map((item) => item?.package_id)
+        .filter(Boolean); // remove undefined/null
+
+      if (!ofcPackageIdList.length) {
+        setError(t("No package IDs found for tracking."));
+        return;
+      }
+
+      // Step 3: Build query string with multiple ofcPackageIdList
+      const queryParams = new URLSearchParams({ orderId });
+      ofcPackageIdList.forEach((id) => {
+        const cleanId = id.startsWith("FP") ? id.slice(2) : id;
+        queryParams.append("ofcPackageIdList", cleanId);
+      });
+
+      // const trackingUrl = `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/logistic/order/trace?${queryParams.toString()}`;
+
+      // Append appKey
+      // queryParams.append("appKey", lazadaAppKey);
+      queryParams.append("account", lazadaAccountId);
+
+      const trackingUrl = `https://grozziie.zjweiting.com:3091/lazada-open-shop/api/dev/logistic/order/trace?${queryParams.toString()}`;
+
+      // Step 4: Call tracking API
+      const traceRes = await fetch(trackingUrl);
+      const traceJson = await traceRes.json();
+      console.log(traceJson, ofcPackageIdList, "tracking");
+
+      if (traceJson.code === 0 && traceJson.data) {
+        setTrackingInfo(traceJson.data);
+        setShowModal(true);
+      } else {
+        setError(t("No tracking data available."));
+      }
+    } catch (err) {
+      console.error("Failed to fetch tracking data:", err);
+      setError(t("Failed to fetch tracking data."));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  console.log(filteredData, "lazada");
+
+  return (
+    <div className="mt-6">
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center pt-10 text-center w-full mx-auto pb-60">
+          <FadeLoader color="#004368" size={25} />
+          <p className="text-2xl font-medium pt-10 text-[#004368]">
+            {t("DataLoading")}
+          </p>
+        </div>
+      ) : isError ? (
+        <p className="text-center text-3xl text-gray-800 font-medium py-20">
+          {t("DataNotFound")}
+        </p>
+      ) : filteredData?.length === 0 || !filteredData?.length ? (
+        <p className="text-center text-3xl text-gray-800 font-medium py-20">
+          {t("NoAvailableOrder")}
+        </p>
+      ) : (
+        <table className="table">
+          <thead className="">
+            <tr className="h-11 text-black text-opacity-80 capitalize text-center text-sm font-normal leading-4">
+              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
+                <span className="mr-[10px]">{t("orderId")}</span>
+                <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
+              </th>
+              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-l-md">
+                <span className="mr-[10px]">{t("AccountName")}</span>
+                <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
+              </th>
+              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
+                <span className="mr-[10px]">{t("Address")}</span>
+                <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
+              </th>
+              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
+                <span className="mr-[10px]">{t("DeliveryType")}</span>
+                <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
+              </th>
+              <th className="sticky top-0 bg-[#0043681A] bg-opacity-80">
+                <div className="absolute h-8 my-auto top-0 bottom-0 right-0 w-[1px] bg-white mx-2"></div>
+                {t("ProductDetails")}
+              </th>
+              {(lazadaOrderStatusCheck === "delivered" ||
+                lazadaOrderStatusCheck === "ready_to_ship" ||
+                lazadaOrderStatusCheck === "Packed_Printed" ||
+                lazadaOrderStatusCheck === "shipped") && (
+                <th className="sticky top-0 bg-[#0043681A] bg-opacity-80 rounded-r-md">
+                  <span className="mr-[10px]">{t("Tracking")}</span>
+                </th>
+              )}
+            </tr>
+          </thead>
+          <tbody>
+            {filteredData?.map((order) => {
+              const address = order.address_billing || {};
+              const fullAddress = [
+                address.country,
+                address.city,
+                address.post_code,
+              ]
+                .filter(Boolean)
+                .join(", ");
+
+              return (
+                <tr
+                  key={order?.order_id || Math.random()}
+                  className="capitalize hover:bg-[#0043681A] cursor-pointer"
+                >
+                  {/* Checkbox & Buyer Name */}
+                  <td className="flex items-center justify-start cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="w-4 h-4 rounded-[2px] text-black text-opacity-60 bg-[#004368] cursor-pointer"
+                      value={order?.order_id || ""}
+                      checked={checkedItems.some(
+                        (i) => i?.order_id === order?.order_id
+                      )}
+                      onChange={() => order && handleCheckboxChange(order)}
+                      disabled={!order?.order_id} // disable checkbox if no id
+                    />
+                    {/* Order Number */}
+                    <p className="ml-[7px] text-black opacity-80 text-sm font-normal leading-4">
+                      {order?.order_number
+                        ? formatText(order.order_number.toString())
+                        : t("NoData")}
+                    </p>
+                  </td>
+
+                  {/* Account name */}
+                  <td className=" text-black opacity-80 text-sm font-normal leading-4">
+                    {formatText(order?.customer_first_name) || t("NoData")}
+                  </td>
+
+                  {/* Full Address */}
+                  <td className="text-black opacity-80 text-sm font-normal leading-4">
+                    {formatText(fullAddress || "") || t("NoData")}
+                  </td>
+
+                  {/* Warehouse Code */}
+                  <td className="text-black opacity-80 text-sm font-normal leading-4">
+                    {formatText(order?.warehouse_code) || t("NoData")}
+                  </td>
+
+                  {/* Product Details */}
+                  <td className="flex items-center justify-between cursor-pointer">
+                    <span className="text-black opacity-80 text-xs font-normal capitalize ml-[6px] mr-6">
+                      {order?.items_count
+                        ? `Items: ${order.items_count}`
+                        : t("NoData")}
+                    </span>
+
+                    <p
+                      className="text-[#004368] text-xs font-normal leading-[14px] capitalize cursor-pointer"
+                      onClick={() => order && handleDetailsClick(order)}
+                    >
+                      {detailsLoading ? t("Loading") : t("Details")}
+                    </p>
+                  </td>
+
+                  {/* Optional Tracking Button */}
+                  {(lazadaOrderStatusCheck === "delivered" ||
+                    lazadaOrderStatusCheck === "ready_to_ship" ||
+                    lazadaOrderStatusCheck === "Packed_Printed" ||
+                    lazadaOrderStatusCheck === "shipped") && (
+                    <td className="text-black opacity-80 text-sm font-normal leading-4">
+                      <p
+                        className={`text-xs font-normal leading-[14px] capitalize cursor-pointer ${
+                          order?.orderItemInfo?.[0]?.tracking_code
+                            ? "text-[#004368] hover:underline"
+                            : "text-gray-400 cursor-not-allowed"
+                        }`}
+                        onClick={() => {
+                          if (order?.orderItemInfo?.[0]?.tracking_code) {
+                            handleGetTracking(order);
+                          } else {
+                            console.warn(
+                              "⚠️ No tracking code found for this order:",
+                              order
+                            );
+                            // optional toast
+                            // toast.error("Tracking code not available");
+                          }
+                        }}
+                      >
+                        {order?.orderItemInfo?.[0]?.tracking_code ||
+                          "No Tracking Code"}
+                      </p>
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
+      {/* MODAL */}
+      {showModal && trackingInfo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl p-6 relative">
+            {/* Close Button */}
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-red-500 text-2xl"
+              onClick={() => setShowModal(false)}
+              aria-label="Close"
+            >
+              <RxCross1 />
+            </button>
+
+            {/* Header */}
+            <h2 className="text-2xl font-semibold mb-6 text-[#004368] text-center">
+              {t("TrackingUpdates")}
+            </h2>
+
+            {/* Timeline List */}
+            <ul className="space-y-4 max-h-72 overflow-y-auto pr-1">
+              {trackingInfo.map((item, index) => (
+                <li key={index} className="border-l-4 border-[#004368] pl-4">
+                  <p className="text-sm font-semibold text-gray-800">
+                    {item.description}
+                  </p>
+                  <p className="text-xs text-gray-500">
+                    {new Date(item.updateTimeMillis).toLocaleString()}
+                  </p>
+                </li>
+              ))}
+            </ul>
+
+            {/* Footer */}
+            <div className="mt-6 text-center">
+              <button
+                onClick={() => setShowModal(false)}
+                className="bg-[#004368] hover:bg-[#00324d] text-white font-medium py-2 px-6 rounded-lg transition"
+              >
+                {t("Close")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default LazadaBatchPrintTable;
