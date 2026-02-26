@@ -1,0 +1,40 @@
+.calendarElement {
+  background-color: transparent !important;
+  position: absolute;
+  /* left: 50%; */
+  transform: translateX(-50%);
+  top: 270px;
+  /* border: 1px solid #363131; */
+  z-index: 9999;
+}
+
+.app {
+  max-width: 1440px;
+  margin: 0 auto;
+  font-family: "Manrope", sans-serif;
+  font-family: "Poppins", sans-serif;
+  background-color: #ffffff;
+}
+
+.custom-scrollbar {
+  max-width: 1000px; /* Set a maximum weight for the container */
+  overflow-y: auto; /* Enable vertical scrollbar if content overflows */
+  padding-left: 70px;
+}
+
+/* Define styles for the scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 12px; /* Set the width of the scrollbar */
+  height: 6px;
+}
+
+/* Handle */
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #888; /* Set the background color of the scrollbar handle */
+  border-radius: 6px; /* Set the border radius of the scrollbar handle */
+}
+
+/* Handle on hover */
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #555; /* Set the background color of the scrollbar handle on hover */
+}
