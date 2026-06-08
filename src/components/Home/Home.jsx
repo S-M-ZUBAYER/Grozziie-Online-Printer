@@ -63,6 +63,17 @@ const Home = () => {
   const start = startOfDay(now);
   const end = endOfDay(now);
   const navigate = useNavigate();
+  const storedUser = localStorage.getItem("printerUser");
+  const user = storedUser ? JSON.parse(storedUser) : null;
+
+  const isWmsTikTokCallback = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return (
+      Boolean(urlParams.get("openId")) &&
+      Boolean(urlParams.get("tiktok-state")?.startsWith("WMS")) &&
+      Boolean(user)
+    );
+  };
 
   // TikTok States
   const [tikTokPrintedIds, setTikTokPrintedIds] = useState([]);
@@ -111,11 +122,9 @@ const Home = () => {
   const [tiktokHomeLoading, setTikTokHomeLoading] = useState(false);
   const [lazadaHomeLoading, setLazadaHomeLoading] = useState(false);
   const [shopeeHomeLoading, setShopeeHomeLoading] = useState(false);
+  const [wmsStoreLoading, setWmsStoreLoading] = useState(isWmsTikTokCallback);
 
   // ✅ Parse the user from localStorage properly
-  const storedUser = localStorage.getItem("printerUser");
-  const user = storedUser ? JSON.parse(storedUser) : null;
-
   //TikTok Orders Call
   const [loadOrderList] = useLoadOrderListMutation();
   const [getLazadaOrders, { isLoading, isError }] =
@@ -124,6 +133,9 @@ const Home = () => {
   // Shoppe Orders call
   const [getShopeeOrderDetails] = useLazyGetShopeeOrderDetailsQuery();
   const [getShopeeOrders] = useLazyGetShopeeOrdersQuery();
+
+  console.log(shopeeReadyToShip,"loadOrderLIst,,,,,,,,,,,,,,");
+  
 
   //Pie Chart intial part \
   const COLORS = ["#34D399", "#FBBF24", "#F87171", "#60A5FA"];
@@ -278,6 +290,99 @@ const Home = () => {
     const tiktokOpenId = urlParams.get("openId"); // e.g. 6grr1iku02uoh
 
     if (tiktokOpenId && user) {
+      if (tiktokEmail?.startsWith("WMS")) {
+        const handleWmsTikTokStoreAdd = async () => {
+          setWmsStoreLoading(true);
+
+          try {
+            const wmsPayload = tiktokEmail.slice(3);
+            const separatorIndex = wmsPayload.indexOf("/");
+
+            if (separatorIndex === -1) {
+              throw new Error("Invalid WMS state format.");
+            }
+
+            const companyId = Number(wmsPayload.slice(0, separatorIndex));
+            const email = wmsPayload.slice(separatorIndex + 1);
+
+            if (!companyId || !email) {
+              throw new Error("Invalid WMS company id or email.");
+            }
+
+            localStorage.setItem("tiktokOpenId", tiktokOpenId);
+            localStorage.setItem("tiktokAuthCountry", "MY");
+
+            const authorizedResponse = await fetch(
+              `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/shops/authorizedShops?openId=${tiktokOpenId}`,
+            );
+
+            if (!authorizedResponse.ok) {
+              throw new Error(
+                `TikTok authorized shops failed. Status: ${authorizedResponse.status}`,
+              );
+            }
+
+            const authorizedData = await authorizedResponse.json();
+            const shops = authorizedData?.data?.shops || [];
+
+            if (!shops.length) {
+              throw new Error("No authorized TikTok shops found.");
+            }
+
+            const storeSaveResults = await Promise.allSettled(
+              shops.map((shop) =>
+                fetch(
+                  "https://grozziieget.zjweiting.com:8035/api/v1/platform-stores/public",
+                  {
+                    method: "POST",
+                    headers: {
+                      accept: "application/json",
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                      companyId,
+                      platform: "tiktok",
+                      storeName: shop.name,
+                      externalStoreId: String(shop.id),
+                      externalStoreName: shop.name,
+                      storeShopId: String(shop.id),
+                      storeOpenId: tiktokOpenId,
+                      storeCipher: shop.cipher,
+                      region: shop.region,
+                      webhookSecret: "",
+                    }),
+                  },
+                ).then(async (res) => {
+                  if (!res.ok) {
+                    const errorText = await res.text();
+                    throw new Error(
+                      `WMS store save failed. Status: ${res.status}. ${errorText}`,
+                    );
+                  }
+                  return res.json();
+                }),
+              ),
+            );
+
+            const failedStoreSaves = storeSaveResults.filter(
+              (result) => result.status === "rejected",
+            );
+
+            if (failedStoreSaves.length) {
+              console.error("Some WMS store saves failed:", failedStoreSaves);
+            }
+
+          } catch (err) {
+            console.error("TikTok WMS store connection failed:", err);
+          } finally {
+            window.location.href = "https://printernoble.com/warehouse_management";
+          }
+        };
+
+        handleWmsTikTokStoreAdd();
+        return;
+      }
+
       // 1️⃣ Save TikTok APP key (state) locally
       localStorage.setItem("tiktokOpenId", tiktokOpenId);
       localStorage.setItem("tiktokAuthCountry", "MY");
@@ -1091,8 +1196,11 @@ const Home = () => {
         </div>
       </div>
       {/* Loading Overlay */}
-      {(tiktokHomeLoading || lazadaHomeLoading || shopeeHomeLoading) && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[9999]">
+      {(tiktokHomeLoading ||
+        lazadaHomeLoading ||
+        shopeeHomeLoading ||
+        wmsStoreLoading) && (
+        <div className="fixed inset-0 bg-white flex items-center justify-center z-[9999]">
           <div className="bg-white rounded-lg shadow-2xl p-8 flex flex-col items-center min-w-80">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#004368]"></div>
             <p className="mt-4 text-[#004368] text-lg font-semibold">
@@ -1100,12 +1208,14 @@ const Home = () => {
             </p>
             <p className="mt-2 text-gray-600 text-sm">
               {t("Loading")}{" "}
-              {selectedPlatform === "tiktok"
+              {wmsStoreLoading
                 ? t("TikTok")
-                : selectedPlatform === "lazada"
-                  ? t("Lazada")
-                  : t("Shopee")}{" "}
-              {t("Orders")}
+                : selectedPlatform === "tiktok"
+                  ? t("TikTok")
+                  : selectedPlatform === "lazada"
+                    ? t("Lazada")
+                    : t("Shopee")}{" "}
+              {wmsStoreLoading ? t("Shop") : t("Orders")}
             </p>
           </div>
         </div>
