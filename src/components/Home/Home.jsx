@@ -66,15 +66,6 @@ const Home = () => {
   const storedUser = localStorage.getItem("printerUser");
   const user = storedUser ? JSON.parse(storedUser) : null;
 
-  const isWmsTikTokCallback = () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    return (
-      Boolean(urlParams.get("openId")) &&
-      Boolean(urlParams.get("tiktok-state")?.startsWith("WMS")) &&
-      Boolean(user)
-    );
-  };
-
   // TikTok States
   const [tikTokPrintedIds, setTikTokPrintedIds] = useState([]);
   const [tikTokShippedToday, setTikTokShippedToday] = useState([]);
@@ -122,7 +113,6 @@ const Home = () => {
   const [tiktokHomeLoading, setTikTokHomeLoading] = useState(false);
   const [lazadaHomeLoading, setLazadaHomeLoading] = useState(false);
   const [shopeeHomeLoading, setShopeeHomeLoading] = useState(false);
-  const [wmsStoreLoading, setWmsStoreLoading] = useState(isWmsTikTokCallback);
 
   // ✅ Parse the user from localStorage properly
   //TikTok Orders Call
@@ -233,198 +223,6 @@ const Home = () => {
       setCipher([]);
     }
   }, [tiktokAuthCountry, selectedPlatform]);
-
-  //Lazada Shope Confirmation
-
-  useEffect(() => {
-    const handleLazadaAuth = async () => {
-      try {
-        const urlParams = new URLSearchParams(window.location.search);
-        const stateEmail = urlParams.get("lgd-state"); // e.g., 135059
-        const accountId = urlParams.get("account"); // e.g., account
-
-        if (!stateEmail || !accountId) return;
-
-        // 1️⃣ Store in localStorage
-        localStorage.setItem("lazadaAppKey", accountId);
-        localStorage.setItem("lazadaAccountId", accountId);
-        localStorage.setItem("lazadaAppKeyShopInfo", accountId);
-
-        // 2️⃣ Send to backend to add / activate Lazada shop
-        const saveResponse = await fetch(
-          "https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/add",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              LazadaUserEmail: stateEmail || user?.email,
-              ShopCountry: "MY",
-              LazadaAPPKey: accountId,
-              active: true,
-            }),
-          },
-        );
-
-        const saveResult = await saveResponse.json();
-        if (saveResult.code !== 201) {
-          alert(
-            "Failed to save Lazada shop. Please try again or contact support.",
-          );
-          return;
-        }
-
-        // 3️⃣ Remove query params → redirect to homepage
-        navigate("/onlineprint/", { replace: true });
-      } catch (error) {
-        console.error("Error saving Lazada shop:", error);
-        alert("An error occurred while saving Lazada shop. Please try again.");
-      }
-    };
-
-    handleLazadaAuth();
-  }, [navigate]);
-
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tiktokEmail = urlParams.get("tiktok-state"); // e.g. 6grr1iku02uoh
-    const tiktokOpenId = urlParams.get("openId"); // e.g. 6grr1iku02uoh
-
-    if (tiktokOpenId && user) {
-      if (tiktokEmail?.startsWith("WMS")) {
-        const handleWmsTikTokStoreAdd = async () => {
-          setWmsStoreLoading(true);
-
-          try {
-            const wmsPayload = tiktokEmail.slice(3);
-            const separatorIndex = wmsPayload.indexOf("/");
-
-            if (separatorIndex === -1) {
-              throw new Error("Invalid WMS state format.");
-            }
-
-            const companyId = Number(wmsPayload.slice(0, separatorIndex));
-            const email = wmsPayload.slice(separatorIndex + 1);
-
-            if (!companyId || !email) {
-              throw new Error("Invalid WMS company id or email.");
-            }
-
-            localStorage.setItem("tiktokOpenId", tiktokOpenId);
-            localStorage.setItem("tiktokAuthCountry", "MY");
-
-            const authorizedResponse = await fetch(
-              `https://grozziie.zjweiting.com:3091/tiktokshop-partner-country/api/dev/shops/authorizedShops?openId=${tiktokOpenId}`,
-            );
-
-            if (!authorizedResponse.ok) {
-              throw new Error(
-                `TikTok authorized shops failed. Status: ${authorizedResponse.status}`,
-              );
-            }
-
-            const authorizedData = await authorizedResponse.json();
-            const shops = authorizedData?.data?.shops || [];
-
-            if (!shops.length) {
-              throw new Error("No authorized TikTok shops found.");
-            }
-
-            const storeSaveResults = await Promise.allSettled(
-              shops.map((shop) =>
-                fetch(
-                  "https://grozziieget.zjweiting.com:8035/api/v1/platform-stores/public",
-                  {
-                    method: "POST",
-                    headers: {
-                      accept: "application/json",
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      companyId,
-                      platform: "tiktok",
-                      storeName: shop.name,
-                      externalStoreId: String(shop.id),
-                      externalStoreName: shop.name,
-                      storeShopId: String(shop.id),
-                      storeOpenId: tiktokOpenId,
-                      storeCipher: shop.cipher,
-                      region: shop.region,
-                      webhookSecret: "",
-                    }),
-                  },
-                ).then(async (res) => {
-                  if (!res.ok) {
-                    const errorText = await res.text();
-                    throw new Error(
-                      `WMS store save failed. Status: ${res.status}. ${errorText}`,
-                    );
-                  }
-                  return res.json();
-                }),
-              ),
-            );
-
-            const failedStoreSaves = storeSaveResults.filter(
-              (result) => result.status === "rejected",
-            );
-
-            if (failedStoreSaves.length) {
-              console.error("Some WMS store saves failed:", failedStoreSaves);
-            }
-
-          } catch (err) {
-            console.error("TikTok WMS store connection failed:", err);
-          } finally {
-            window.location.href = "https://printernoble.com/warehouse_management";
-          }
-        };
-
-        handleWmsTikTokStoreAdd();
-        return;
-      }
-
-      // 1️⃣ Save TikTok APP key (state) locally
-      localStorage.setItem("tiktokOpenId", tiktokOpenId);
-      localStorage.setItem("tiktokAuthCountry", "MY");
-      // 2️⃣ Prepare data
-      const ShopCountry = localStorage.getItem("tiktokAuthCountry") || "MY"; // default if missing
-      const payload = {
-        TikTokUserEmail: tiktokEmail || user.email,
-        ShopCountry,
-        TikTokAPPKey: tiktokOpenId,
-        active: true,
-      };
-
-      // 3️⃣ Send to backend
-      fetch(
-        "https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/tiktok/shop/add",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        },
-      )
-        .then(async (res) => {
-          // Handle cases where backend sends no JSON
-          if (!res.ok) throw new Error(`HTTP error! Status: ${res.status}`);
-
-          const text = await res.text(); // Read as text first
-          return text ? JSON.parse(text) : {}; // Parse only if not empty
-        })
-        .then((data) => {
-          window.location.reload();
-        })
-        .catch((err) => {
-          console.error(
-            "❌ There was a problem with the fetch operation:",
-            err,
-          );
-        });
-
-      // 4️⃣ Clean URL → redirect home
-      navigate("/onlineprint/", { replace: true });
-    }
-  }, [navigate, user]);
 
   // Get current Selected Platform
   useEffect(() => {
@@ -1196,10 +994,7 @@ const Home = () => {
         </div>
       </div>
       {/* Loading Overlay */}
-      {(tiktokHomeLoading ||
-        lazadaHomeLoading ||
-        shopeeHomeLoading ||
-        wmsStoreLoading) && (
+      {(tiktokHomeLoading || lazadaHomeLoading || shopeeHomeLoading) && (
         <div className="fixed inset-0 bg-white flex items-center justify-center z-[9999]">
           <div className="bg-white rounded-lg shadow-2xl p-8 flex flex-col items-center min-w-80">
             <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#004368]"></div>
@@ -1208,14 +1003,12 @@ const Home = () => {
             </p>
             <p className="mt-2 text-gray-600 text-sm">
               {t("Loading")}{" "}
-              {wmsStoreLoading
+              {selectedPlatform === "tiktok"
                 ? t("TikTok")
-                : selectedPlatform === "tiktok"
-                  ? t("TikTok")
-                  : selectedPlatform === "lazada"
-                    ? t("Lazada")
-                    : t("Shopee")}{" "}
-              {wmsStoreLoading ? t("Shop") : t("Orders")}
+                : selectedPlatform === "lazada"
+                  ? t("Lazada")
+                  : t("Shopee")}{" "}
+              {t("Orders")}
             </p>
           </div>
         </div>

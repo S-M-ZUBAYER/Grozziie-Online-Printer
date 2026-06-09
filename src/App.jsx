@@ -1,10 +1,10 @@
-import { RouterProvider, useLocation } from "react-router-dom";
+import { RouterProvider } from "react-router-dom";
 import "./App.css";
 import { routes } from "./routes/Routes";
 import "react-date-range/dist/styles.css";
 import "react-date-range/dist/theme/default.css";
 import toast, { Toaster } from "react-hot-toast";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   accountUserChange,
   paymentUserChange,
@@ -18,6 +18,15 @@ import {
 import calculatePaymentExpireTime from "./lib/calculatePaymentExpireTime";
 import axios from "axios";
 
+const hasMarketplaceCallback = () => {
+  const urlParams = new URLSearchParams(window.location.search);
+  return (
+    (Boolean(urlParams.get("tiktok-state")) &&
+      Boolean(urlParams.get("openId"))) ||
+    (Boolean(urlParams.get("lgd-state")) && Boolean(urlParams.get("account")))
+  );
+};
+
 function App() {
   const dispatch = useDispatch();
   const [tikTokShopCipher, setTikTokShopCipher] = useState("");
@@ -25,6 +34,9 @@ function App() {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [freeTrailPlatform, setFreeTrailPlatform] = useState("");
   const [freeTrailDays, setFreeTrailDays] = useState("3 Months");
+  const [marketplaceCallbackLoading, setMarketplaceCallbackLoading] =
+    useState(hasMarketplaceCallback);
+  const marketplaceCallbackHandledRef = useRef(false);
 
   // Get the Free Trail package duration information
   const fetchFreeTrialDuration = async () => {
@@ -48,9 +60,103 @@ function App() {
     }
   };
 
-  const freeTrailsTime = fetchFreeTrialDuration();
+  useEffect(() => {
+    fetchFreeTrialDuration();
+  }, []);
 
   useEffect(() => {
+    if (marketplaceCallbackHandledRef.current) return;
+
+    const handleMarketplaceCallback = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tiktokState = urlParams.get("tiktok-state");
+      const tiktokOpenId = urlParams.get("openId");
+      const lazadaStateEmail = urlParams.get("lgd-state");
+      const lazadaAccountId = urlParams.get("account");
+
+      if (!hasMarketplaceCallback()) {
+        setMarketplaceCallbackLoading(false);
+        return;
+      }
+
+      marketplaceCallbackHandledRef.current = true;
+      setMarketplaceCallbackLoading(true);
+
+      if (tiktokState && tiktokOpenId) {
+        try {
+          localStorage.setItem("tiktokOpenId", tiktokOpenId);
+          localStorage.setItem("tiktokAuthCountry", "MY");
+
+          const saveResponse = await fetch(
+            "https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/tiktok/shop/add",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                TikTokUserEmail: tiktokState,
+                ShopCountry: "MY",
+                TikTokAPPKey: tiktokOpenId,
+                active: true,
+              }),
+            },
+          );
+
+          if (!saveResponse.ok) {
+            throw new Error(`HTTP error! Status: ${saveResponse.status}`);
+          }
+        } catch (err) {
+          console.error("TikTok shop connection failed:", err);
+        } finally {
+          window.location.href = tiktokState.startsWith("WMS")
+            ? "https://printernoble.com/warehouse_management"
+            : "/onlineprint/";
+        }
+
+        return;
+      }
+
+      if (lazadaStateEmail && lazadaAccountId) {
+        try {
+          localStorage.setItem("lazadaAppKey", lazadaAccountId);
+          localStorage.setItem("lazadaAccountId", lazadaAccountId);
+          localStorage.setItem("lazadaAppKeyShopInfo", lazadaAccountId);
+
+          const saveResponse = await fetch(
+            "https://grozziieget.zjweiting.com:8033/tht/grozziiePrinter/lazada/shop/add",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                LazadaUserEmail: lazadaStateEmail,
+                ShopCountry: "MY",
+                LazadaAPPKey: lazadaAccountId,
+                active: true,
+              }),
+            },
+          );
+
+          if (!saveResponse.ok) {
+            throw new Error(`HTTP error! Status: ${saveResponse.status}`);
+          }
+
+          const saveResult = await saveResponse.json();
+          if (saveResult.code !== 201) {
+            throw new Error("Failed to save Lazada shop.");
+          }
+        } catch (error) {
+          console.error("Error saving Lazada shop:", error);
+        } finally {
+          window.location.href = "/onlineprint/";
+        }
+      }
+    };
+
+    handleMarketplaceCallback();
+  }, []);
+
+  useEffect(() => {
+    if (hasMarketplaceCallback()) return;
+
     const storedUser = localStorage.getItem("printerUser");
     if (storedUser) {
       try {
@@ -575,6 +681,19 @@ function App() {
 
     fetchShopeeShops();
   }, [currentUser, dispatch]);
+
+  if (marketplaceCallbackLoading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#004368]"></div>
+          <p className="mt-4 text-[#004368] text-lg font-semibold">
+            Connecting shop...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white app">
